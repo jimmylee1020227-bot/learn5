@@ -100,6 +100,21 @@ function cloudSyncPlugin() {
       state.question_overrides = { ...(state.question_overrides || {}), ...value }
       return state.question_overrides
     }
+    if (key === 'support_chats' && typeof value === 'object' && value !== null) {
+      if (!state.support_chats || typeof state.support_chats !== 'object') {
+        state.support_chats = {}
+      }
+      Object.keys(value).forEach(threadKey => {
+        const existingMsgs = Array.isArray(state.support_chats[threadKey]) ? state.support_chats[threadKey] : []
+        const clientMsgs = Array.isArray(value[threadKey]) ? value[threadKey] : []
+        const msgMap = new Map()
+        existingMsgs.forEach(m => { if (m?.id) msgMap.set(m.id, m) })
+        clientMsgs.forEach(m => { if (m?.id) msgMap.set(m.id, m) })
+        const merged = Array.from(msgMap.values()).sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0))
+        state.support_chats[threadKey] = merged.slice(-200)
+      })
+      return state.support_chats
+    }
     state[key] = value
     return value
   }

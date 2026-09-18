@@ -488,32 +488,104 @@ export function modifyQuestion(qId, patchData, operatorUser) {
   });
 }
 
-// --- 7. 管理員 1 對 1 線上即時諮詢聊天室 ---
+// --- 7. 管理員 1 對 1 線上即時諮詢聊天室 (支援跨裝置即時同步) ---
+export function getAllChatThreads() {
+  const allChats = getJson('support_chats', {});
+  const threadKeys = Object.keys(allChats);
+  
+  return threadKeys.map(key => {
+    const parts = key.split('__');
+    const studentId = parts[0] || 'student';
+    const adminId = parts[1] || 'admin';
+    const msgs = allChats[key] || [];
+    const latestMsg = msgs[msgs.length - 1];
+    const unreadCount = msgs.filter(m => !m.isRead && m.senderRole === 'student').length;
+
+    return {
+      threadKey: key,
+      studentId,
+      adminId,
+      studentName: latestMsg?.studentName || (latestMsg?.senderRole === 'student' ? latestMsg.senderName : '學生戰友'),
+      studentSchool: latestMsg?.studentSchool || '會考戰友',
+      latestMsg,
+      unreadCount,
+      updatedAt: latestMsg?.timestamp || new Date(0).toISOString()
+    };
+  }).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+}
+
 export function getChatMessages(studentId, adminId) {
-  const threadKey = `chat_${studentId}_${adminId}`;
-  return getJson(threadKey, [
+  if (!studentId || !adminId) return [];
+  const allChats = getJson('support_chats', {});
+  const threadKey = `${studentId}__${adminId}`;
+  
+  if (allChats[threadKey] && allChats[threadKey].length > 0) {
+    return allChats[threadKey];
+  }
+
+  // 嘗試相容讀取舊格式
+  const legacy = getJson(`chat_${studentId}_${adminId}`, null);
+  if (legacy && legacy.length > 0) return legacy;
+
+  return [
     {
-      id: 'welcome_msg',
+      id: 'welcome_' + threadKey,
       senderId: adminId,
       senderName: '管理員',
       senderRole: 'admin',
-      text: '同學你好！我是負責該領域的管理員，有任何題目疑問、答案爭議或課綱內容都可以直接告訴我！',
-      timestamp: new Date().toISOString()
+      text: '同學你好！我是負責該學科的管理員，有任何題目疑問、詳解爭議或課綱內容都可以直接告訴我！',
+      timestamp: new Date().toISOString(),
+      isRead: true
     }
-  ]);
+  ];
 }
 
 export function sendChatMessage(studentId, adminId, message) {
-  const threadKey = `chat_${studentId}_${adminId}`;
-  const messages = getJson(threadKey, []);
+  if (!studentId || !adminId) return null;
+  const allChats = getJson('support_chats', {});
+  const threadKey = `${studentId}__${adminId}`;
+  const existing = allChats[threadKey] || [];
+
   const newMsg = {
-    id: 'msg_' + Date.now(),
-    ...message,
-    timestamp: new Date().toISOString()
+    id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+    studentId,
+    adminId,
+    studentName: message.studentName || (message.senderRole === 'student' ? message.senderName : '學生戰友'),
+    studentSchool: message.studentSchool || '會考戰友',
+    senderId: message.senderId || studentId,
+    senderName: message.senderName || '同學',
+    senderRole: message.senderRole || 'student',
+    text: (message.text || '').trim(),
+    timestamp: new Date().toISOString(),
+    isRead: message.senderRole !== 'student' // 管理員發言預設已讀
   };
-  messages.push(newMsg);
-  setJson(threadKey, messages);
+
+  const updatedMsgs = [...existing, newMsg];
+  allChats[threadKey] = updatedMsgs;
+  setJson('support_chats', allChats);
+  setJson(`chat_${studentId}_${adminId}`, updatedMsgs);
+
   return newMsg;
+}
+
+export function markThreadAsRead(studentId, adminId) {
+  if (!studentId || !adminId) return;
+  const allChats = getJson('support_chats', {});
+  const threadKey = `${studentId}__${adminId}`;
+  if (!allChats[threadKey]) return;
+
+  let changed = false;
+  allChats[threadKey] = allChats[threadKey].map(m => {
+    if (!m.isRead) {
+      changed = true;
+      return { ...m, isRead: true };
+    }
+    return m;
+  });
+
+  if (changed) {
+    setJson('support_chats', allChats);
+  }
 }
 
 // --- 8. 全服廣播公告與活動設定 ---

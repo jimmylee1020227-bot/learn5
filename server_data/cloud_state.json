@@ -10,6 +10,7 @@
   "question_reports": [],
   "audit_logs": [],
   "redemption_codes": [],
+  "support_chats": {},
   "admin_notifications": [
     {
       "id": "notif_launch",
