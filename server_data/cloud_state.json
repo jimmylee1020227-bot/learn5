@@ -1,0 +1,58 @@
+{
+  "community_posts": [],
+  "deleted_community_post_ids": [],
+  "deleted_redemption_codes": [],
+  "deleted_notifications": [],
+  "question_overrides": {},
+  "practice_history": [],
+  "mistake_notebook": {},
+  "community_reports": [],
+  "question_reports": [],
+  "audit_logs": [],
+  "redemption_codes": [],
+  "admin_notifications": [
+    {
+      "id": "notif_launch",
+      "title": "🎉 歡迎來到會考讀書網！",
+      "message": "108 課綱全科複習網正式上線！每週一 00:00 排行榜歸零結算，答對一題即得 1 點積分，祝各位戰友穩穩上岸！",
+      "type": "announcement",
+      "sender": "總管理員 (Jimmy)",
+      "timestamp": "2026-09-19T00:00:00.000Z",
+      "isRead": false
+    }
+  ],
+  "admins_list": [
+    {
+      "id": "admin_super_jimmy",
+      "email": "jimmylee1020227@gmail.com",
+      "displayName": "總管理員 (Jimmy)",
+      "role": "super_admin",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
+      "specialties": [
+        "最高管理全權",
+        "審計日誌查閱",
+        "管理員任免",
+        "題庫主控"
+      ],
+      "createdAt": "2026-09-19T00:00:00.000Z"
+    }
+  ],
+  "chat_111725425020973278798_admin_super_jimmy": [
+    {
+      "id": "msg_1789773882637",
+      "senderId": "111725425020973278798",
+      "senderName": "小小發明家 小小實驗家 程式,scratch,arduino我都可以",
+      "senderRole": "student",
+      "text": "你好",
+      "timestamp": "2026-09-18T23:24:42.637Z"
+    },
+    {
+      "id": "msg_1789773884141",
+      "senderId": "admin_super_jimmy",
+      "senderName": "總管理員 (Jimmy)",
+      "senderRole": "super_admin",
+      "text": "收到你的訊息囉！我已將問題記錄下來，如果是題目答案或詳解問題，我會在後台確認並更新題庫！加油！",
+      "timestamp": "2026-09-18T23:24:44.141Z"
+    }
+  ]
+}

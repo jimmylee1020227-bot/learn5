@@ -1,0 +1,499 @@
+/* ==========================================================================
+   117 會考讀書社群 ── 溫暖手帳格線 × 新野蠻主義 (Neo-Brutalism) 設計系統
+   風格完全仿照 Manus 117 會考讀書社群 (https://examcommunit-s6xcyoxn.manus.space/)
+   ========================================================================== */
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* 核心色譜 (Signature Manus Exam Community Palette) */
+  --color-navy: #17324d;
+  --color-navy-dark: #0f2235;
+  --color-navy-light: #244766;
+  --color-coral: #ef8354;
+  --color-coral-hover: #df7549;
+  --color-coral-dark: #d76740;
+  --color-yellow: #f7cf68;
+  --color-yellow-light: #fff7d9;
+  --color-yellow-gold: #fff3bd;
+  --color-paper: #f8f3eb;
+  --color-card: #fffdf9;
+  --color-card-border: #17324d;
+  --color-text-main: #17324d;
+  --color-text-muted: #5b6772;
+  --color-text-dim: #78818a;
+  --color-text-light: #9aa2a8;
+
+  /* 粉彩標籤與背景色 */
+  --color-chinese-bg: #fff0e9;
+  --color-chinese-text: #c8643d;
+  --color-english-bg: #e8f0f2;
+  --color-english-text: #48717e;
+  --color-math-bg: #fff7d9;
+  --color-math-text: #9a741e;
+  --color-science-bg: #e8f6ed;
+  --color-science-text: #347650;
+  --color-social-bg: #f8dfcc;
+  --color-social-text: #995f3b;
+
+  --border-paper: #e8ded0;
+  --border-paper-dark: #ded3c5;
+  --border-divider: #dfd3c4;
+
+  /* 預設紙張主題變數 */
+  --bg-dark: #f8f3eb;
+  --bg-card: #fffdf9;
+  --bg-card-hover: #ffffff;
+  --bg-glass: rgba(248, 243, 235, 0.92);
+  --bg-input: #f8f3eb;
+  --color-text-input: #17324d;
+
+  --border-subtle: #ded3c5;
+  --border-glow: #17324d;
+  --border-active: #ef8354;
+
+  --text-main: #17324d;
+  --text-muted: #5b6772;
+  --text-dim: #78818a;
+
+  --shadow-card: 6px 6px 0px #17324d;
+  --shadow-card-yellow: 8px 8px 0px #f7cf68;
+  --shadow-card-soft: 0 18px 45px rgba(23, 50, 77, 0.07);
+  --shadow-card-elevated: 0 16px 35px rgba(23, 50, 77, 0.14);
+  --shadow-btn: 3px 3px 0px #17324d;
+  --shadow-btn-coral: 0px 6px 0px #d76740;
+
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  --transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8f3eb;
+  color: var(--color-text-main);
+  line-height: 1.6;
+  min-height: 100vh;
+  /* 暖紙格線紋理 (Paper Grid Background) */
+  background-image: 
+    linear-gradient(rgba(23, 50, 77, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 50, 77, 0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+.display-font {
+  font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.paper-grid {
+  background-image: 
+    linear-gradient(rgba(23, 50, 77, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 50, 77, 0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* 核心卡片 (Manus Paper Card with Neo-brutalist Offset Shadow) */
+.glass-panel {
+  background: #fffdf9;
+  border: 2px solid #17324d;
+  border-radius: var(--radius-xl);
+  box-shadow: 6px 6px 0px #17324d;
+  transition: var(--transition);
+  color: #17324d;
+}
+
+.glass-panel:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px #17324d;
+}
+
+.glass-panel-glow {
+  background: #fffdf9;
+  border: 2.5px solid #17324d;
+  box-shadow: 8px 8px 0px #f7cf68;
+}
+
+/* ==========================================================================
+   全域表單元件規範：解決所有輸入框文字發白看不見問題
+   確保所有 input / textarea / select 內輸入文字一律為深海軍藍 #17324d
+   ========================================================================== */
+input,
+textarea,
+select {
+  font-family: var(--font-sans);
+  color: #17324d !important;
+  background-color: #f8f3eb;
+  border: 1.5px solid #ded3c5;
+  border-radius: 12px;
+  outline: none;
+  font-weight: 600;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #ef8354 !important;
+  background-color: #fffdf9 !important;
+  box-shadow: 0 0 0 3px rgba(239, 131, 84, 0.22) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #8f9ba5 !important;
+  opacity: 1 !important;
+}
+
+option {
+  color: #17324d !important;
+  background-color: #fffdf9 !important;
+}
+
+/* 核心按鈕體系 (3D Push & Offset Brutalism) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  border: 2px solid #17324d;
+  cursor: pointer;
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.16s, background-color 0.16s;
+  user-select: none;
+  text-decoration: none;
+}
+
+.btn:disabled,
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #17324d !important;
+}
+
+/* 主要呼籲按鈕 (珊瑚橙色 3D 浮凸) */
+.btn-primary {
+  background: #ef8354;
+  color: #ffffff;
+  box-shadow: 0 6px 0 #d76740;
+  border-color: #17324d;
+}
+.btn-primary:hover {
+  background: #df7549;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #d76740;
+}
+
+/* 次要白底黑框按鈕 */
+.btn-secondary {
+  background: #fffdf9;
+  color: #17324d;
+  box-shadow: 3px 3px 0px #17324d;
+}
+.btn-secondary:hover {
+  background: #f8f3eb;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #17324d;
+}
+
+/* 深海軍藍圓角按鈕 */
+.btn-navy {
+  background: #17324d;
+  color: #ffffff;
+  border-radius: var(--radius-full);
+  box-shadow: 3px 3px 0px rgba(23, 50, 77, 0.25);
+}
+.btn-navy:hover {
+  background: #244766;
+}
+
+/* 狂暴火紅按鈕 */
+.btn-fire {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #17324d;
+  box-shadow: 3px 3px 0px #17324d;
+}
+.btn-fire:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0px #17324d;
+}
+
+/* 金色暖陽按鈕 */
+.btn-gold {
+  background: #f7cf68;
+  color: #17324d;
+  border-color: #17324d;
+  box-shadow: 3px 3px 0px #17324d;
+}
+.btn-gold:hover {
+  background: #eed075;
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0px #17324d;
+}
+
+/* 幽靈無框按鈕 */
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1.5px solid transparent;
+}
+.btn-ghost:hover {
+  color: #17324d;
+  background: rgba(23, 50, 77, 0.06);
+  border-color: #d8cec0;
+}
+
+.btn-icon {
+  padding: 8px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 徽章 (Pill Badges with Black Borders) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid #17324d;
+  letter-spacing: 0.02em;
+}
+
+.badge-indigo { background: #e0e7ff; color: #17324d; }
+.badge-gold { background: #fff7d9; color: #806523; }
+.badge-fire { background: #fff0e9; color: #c2410c; }
+.badge-emerald { background: #ecfdf5; color: #047857; }
+.badge-coral { background: #fff0e9; color: #c8643d; border-color: #edc8b7; }
+.badge-blue { background: #e8f0f2; color: #48717e; border-color: #a9d4d9; }
+
+/* 脈衝小圓點 */
+.pulse-dot {
+  animation: pulseDot 1.8s infinite ease-in-out;
+}
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+/* 題目選項 (Manus Quiz Option Styling) */
+.quiz-option {
+  border: 1.5px solid #e8ded0;
+  background: #faf7f2;
+  color: #68737d;
+  transition: all 0.15s ease;
+  border-radius: 16px;
+  cursor: pointer;
+}
+.quiz-option:hover {
+  border-color: #ef8354;
+  background: #fff8f0;
+  color: #17324d;
+}
+.quiz-option-selected {
+  border: 2px solid #ef8354 !important;
+  background: #fff0e9 !important;
+  color: #c8643d !important;
+  box-shadow: 0 0 0 1px rgba(239, 131, 84, 0.25), 3px 3px 0px #ef8354;
+}
+.quiz-option-correct {
+  border: 2px solid #54a87a !important;
+  background: #e8f6ed !important;
+  color: #347650 !important;
+  box-shadow: 3px 3px 0px #54a87a;
+}
+.quiz-option-wrong {
+  border: 2px solid #ef8354 !important;
+  background: #fff0e9 !important;
+  color: #c8643d !important;
+  box-shadow: 3px 3px 0px #ef8354;
+}
+
+/* 導覽列包裝 */
+.navbar-wrapper {
+  background: rgba(248, 243, 235, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1.5px solid #e8ded0;
+  box-shadow: 0 4px 20px rgba(23, 50, 77, 0.04);
+}
+
+/* 主要內容容器 */
+.main-content {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+}
+
+/* 彈窗遮罩 (Modal Overlay) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(23, 50, 77, 0.65);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.18s ease-out;
+}
+
+.modal-card {
+  background: #fffdf9;
+  border: 2.5px solid #17324d;
+  border-radius: var(--radius-xl);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 10px 10px 0px #17324d;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #17324d;
+}
+
+.modal-header {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #17324d;
+  background: #fffdf9;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 2px solid #17324d;
+  background: #fffdf9;
+}
+
+/* 微動畫 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(239, 131, 84, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(239, 131, 84, 0.6); }
+}
+
+.fire-pulse {
+  animation: pulseGlow 1.8s infinite ease-in-out;
+}
+
+/* 響應式佈局 */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 16px 12px 60px;
+  }
+}
+
+/* ==========================================================================
+   主題風格系統 (保留其他切換選項)
+   ========================================================================== */
+
+/* 海風藍潮 */
+body.theme-sea {
+  background-color: #0c1825;
+  background-image: 
+    linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
+  color: #f0f9ff;
+}
+body.theme-sea .glass-panel {
+  background: #17324d;
+  border-color: #38bdf8;
+  box-shadow: 6px 6px 0px #38bdf8;
+  color: #f0f9ff;
+}
+body.theme-sea .navbar-wrapper {
+  background: rgba(15, 31, 48, 0.95);
+  border-bottom-color: #38bdf8;
+}
+body.theme-sea .modal-card {
+  background: #17324d;
+  border-color: #38bdf8;
+  box-shadow: 8px 8px 0px #38bdf8;
+  color: #f0f9ff;
+}
+
+/* 夕陽橘光 */
+body.theme-sunset {
+  background-color: #1a0f16;
+  background-image: 
+    linear-gradient(rgba(249, 115, 22, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(249, 115, 22, 0.1) 1px, transparent 1px);
+  color: #fff7ed;
+}
+body.theme-sunset .glass-panel {
+  background: #2e1826;
+  border-color: #f97316;
+  box-shadow: 6px 6px 0px #f97316;
+  color: #fff7ed;
+}
+body.theme-sunset .navbar-wrapper {
+  background: rgba(36, 20, 30, 0.95);
+  border-bottom-color: #f97316;
+}
+
+/* 星夜專注 */
+body.theme-night {
+  background-color: #090d16;
+  background-image: 
+    linear-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+  color: #f8fafc;
+}
+body.theme-night .glass-panel {
+  background: #0f172a;
+  border-color: #6366f1;
+  box-shadow: 6px 6px 0px #6366f1;
+  color: #f8fafc;
+}
+body.theme-night .navbar-wrapper {
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom-color: #6366f1;
+}
