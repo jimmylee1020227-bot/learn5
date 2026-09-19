@@ -11,7 +11,8 @@ import {
   Gift, 
   Ticket, 
   BookOpen,
-  Trophy
+  Trophy,
+  Users
 } from 'lucide-react';
 
 const EXAM_TARGETS = [
@@ -146,6 +147,31 @@ export default function HeroBanner({
                 <Gift size={18} />
                 天天抽獎 ({gameState?.tickets ?? 1}張)
               </button>
+
+              <a 
+                href="https://openchat.line.me/tw/cover/qOdlVtQ0IBp7wnGg00kPYDMbjLCp8VkH6WSExq042v3oIIRaPjKtYRPSK0I?utm_source=line-openchat-seo&utm_medium=search_keyword&utm_campaign=default"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn"
+                style={{ 
+                  padding: '14px 22px', 
+                  fontSize: '0.98rem',
+                  fontWeight: 800,
+                  background: '#06C755',
+                  color: '#ffffff',
+                  border: '2.5px solid #17324d',
+                  borderRadius: '16px',
+                  boxShadow: '4px 4px 0px #17324d',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  textDecoration: 'none',
+                  transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+                }}
+              >
+                <Users size={18} />
+                加入群組一起討論
+              </a>
             </div>
           </div>
 

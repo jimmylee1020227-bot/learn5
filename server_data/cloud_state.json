@@ -440,5 +440,37 @@
       "timestamp": "2026-09-18T23:39:23.516Z",
       "isRead": true
     }
-  ]
+  ],
+  "user_registry": {
+    "admin_super_jimmy": {
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
+      "email": "jimmylee1020227@gmail.com",
+      "id": "admin_super_jimmy",
+      "lastActive": "2026-09-19T12:07:12.328Z",
+      "name": "總管理員",
+      "role": "super_admin",
+      "school": "系統總管理員"
+    },
+    "u_knbo67cox0xp": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
+      "email": "happybrother0717@gmail.com",
+      "id": "u_knbo67cox0xp",
+      "lastActive": "2026-09-19T12:03:16.658Z",
+      "name": "小編",
+      "role": "admin",
+      "school": "會考戰友",
+      "totalCorrect": 15,
+      "totalQuestions": 15,
+      "totalQuizzes": 2
+    }
+  },
+  "studyhub_game_state_admin_super_jimmy": {
+    "tickets": 2,
+    "pityCount": 0,
+    "lastDailyClaimDate": "2026-09-19",
+    "personalMultiplier": 1,
+    "multiplierExpiresAt": 0,
+    "unlockedBadges": [],
+    "updatedAt": 0
+  }
 }

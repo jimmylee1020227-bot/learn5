@@ -23,7 +23,8 @@ import {
   Ticket, 
   MessageSquareHeart, 
   Palette,
-  Bell
+  Bell,
+  Users
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -175,6 +176,32 @@ export default function Navbar({
             <Ticket size={15} />
             兌換碼
           </button>
+
+          {/* 加入群組一起討論 (LINE OpenChat) */}
+          <a
+            href="https://openchat.line.me/tw/cover/qOdlVtQ0IBp7wnGg00kPYDMbjLCp8VkH6WSExq042v3oIIRaPjKtYRPSK0I?utm_source=line-openchat-seo&utm_medium=search_keyword&utm_campaign=default"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn"
+            style={{ 
+              fontSize: '0.84rem', 
+              padding: '6px 12px', 
+              background: '#06C755',
+              color: '#ffffff',
+              border: '1.5px solid #17324d',
+              borderRadius: '10px',
+              fontWeight: 800,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              textDecoration: 'none',
+              boxShadow: '2px 2px 0px #17324d'
+            }}
+            title="加入 LINE 社群一起討論"
+          >
+            <Users size={14} />
+            加入群組一起討論
+          </a>
 
 
           {/* 一般管理員或總管理員後台 */}
