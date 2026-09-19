@@ -1,4 +1,6 @@
-// 雲端資料同步與儲存服務層 (Cloud Storage & Sync Service) - 正式投入使用乾淨版本
+import { db, ref, set, onValue } from './firebase';
+
+// 雲端資料同步與儲存服務層 (Cloud Storage & Sync Service) - Firebase 真正跨裝置即時全域版
 const STORAGE_PREFIX = 'studyhub_cloud_';
 const CLOUD_BUS_CHANNEL = 'studyhub_cloud_sync_bus';
 
@@ -29,9 +31,56 @@ export const INITIAL_ADMINS = [
 ];
 
 const localSyncListeners = new Set();
+let isFirebaseListening = false;
+
+// 初始化 Firebase Realtime Database 監聽 (真正跨裝置毫秒級即時同步)
+export function initFirebaseRealtimeSync() {
+  if (typeof window === 'undefined' || !db || isFirebaseListening) return;
+  isFirebaseListening = true;
+  try {
+    const rootRef = ref(db, 'studyhub');
+    onValue(rootRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data || typeof data !== 'object') return;
+      Object.keys(data).forEach((key) => {
+        try {
+          const remoteValStr = JSON.stringify(data[key]);
+          const localValStr = localStorage.getItem(STORAGE_PREFIX + key);
+          if (remoteValStr !== localValStr) {
+            localStorage.setItem(STORAGE_PREFIX + key, remoteValStr);
+            const payload = { type: 'SYNC_UPDATE', key, timestamp: Date.now(), fromRemote: true };
+            localSyncListeners.forEach(cb => {
+              try { cb(payload); } catch (err) { console.error(err); }
+            });
+          }
+        } catch (err) {}
+      });
+    }, (error) => {
+      console.warn('[Firebase RTDB Listen Error]', error);
+    });
+  } catch (e) {
+    console.error('[Firebase RTDB Setup Error]', e);
+  }
+}
+
+// 模組加載時自動啟動 Firebase 監聽
+if (typeof window !== 'undefined') {
+  initFirebaseRealtimeSync();
+}
 
 function pushServerSync(key, value) {
   if (typeof window === 'undefined') return;
+  // 1. 同步推送至 Firebase Realtime Database (永久在線雲端庫，跨裝置毫秒即時抵達)
+  if (db) {
+    try {
+      const r = ref(db, `studyhub/${key}`);
+      set(r, value).catch(err => console.warn('[Firebase Write Error]', err));
+    } catch (e) {
+      console.warn('[Firebase Write Exception]', e);
+    }
+  }
+
+  // 2. 本地開發相容
   try {
     fetch('/api/cloud-sync', {
       method: 'POST',
@@ -41,7 +90,7 @@ function pushServerSync(key, value) {
   } catch (e) {}
 }
 
-function getJson(key, defaultValue) {
+export function getJson(key, defaultValue) {
   try {
     const raw = localStorage.getItem(STORAGE_PREFIX + key);
     return raw ? JSON.parse(raw) : defaultValue;
@@ -50,7 +99,7 @@ function getJson(key, defaultValue) {
   }
 }
 
-function setJson(key, value) {
+export function setJson(key, value) {
   try {
     localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
     const payload = { type: 'SYNC_UPDATE', key, timestamp: Date.now() };
@@ -61,14 +110,14 @@ function setJson(key, value) {
     localSyncListeners.forEach(cb => {
       try { cb(payload); } catch (e) { console.error(e); }
     });
-    // 即時傳送至後端共享伺服器，同步推送給所有正在連線的好友與其他設備
+    // 即時傳送至 Firebase 共享資料庫，同步推送給所有正在連線的學生與管理員
     pushServerSync(key, value);
   } catch (e) {
     console.error('Storage save error', e);
   }
 }
 
-// 清除所有本地歷史測資（重設為直接上線標準狀態）
+// 清除所有歷史測資（重設為直接上線標準狀態，刪除全部測試數據）
 export function purgeAllTestData() {
   const keysToRemove = [
     'practice_history',
@@ -78,11 +127,22 @@ export function purgeAllTestData() {
     'question_overrides',
     'studyhub_weekly_leaderboard',
     'studyhub_hall_of_fame',
-    'studyhub_last_reset_week'
+    'studyhub_last_reset_week',
+    'support_chats',
+    'community_posts',
+    'site_issue_reports',
+    'deleted_community_post_ids',
+    'deleted_notifications',
+    'deleted_redemption_codes'
   ];
   keysToRemove.forEach(k => {
     localStorage.removeItem(STORAGE_PREFIX + k);
     localStorage.removeItem(k);
+    if (db) {
+      try {
+        set(ref(db, `studyhub/${k}`), null).catch(() => {});
+      } catch (e) {}
+    }
   });
   setJson('admins_list', INITIAL_ADMINS);
 }
@@ -545,40 +605,6 @@ export function getAllChatThreads() {
       updatedAt: latestMsg?.timestamp || new Date(0).toISOString()
     };
   }).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-
-  // 若目前無諮詢紀錄，自動加入初始諮詢範例，確保隨時可測試與點選
-  if (threadList.length === 0) {
-    const defaultStudentId = 'student_lin';
-    const defaultAdminId = 'admin_super_jimmy';
-    const defaultMsgs = [
-      {
-        id: 'msg_init_lin',
-        studentId: defaultStudentId,
-        adminId: defaultAdminId,
-        studentName: '建中前鋒‧林同學',
-        studentSchool: '國三衝刺 5A++',
-        senderId: defaultStudentId,
-        senderName: '建中前鋒‧林同學',
-        senderRole: 'student',
-        text: '老師您好！想請問二次函數配方法如果頂點不在整數上，有哪些技巧可以快速求解？',
-        timestamp: new Date().toISOString(),
-        isRead: false
-      }
-    ];
-    allChats[`${defaultStudentId}__${defaultAdminId}`] = defaultMsgs;
-    setJson('support_chats', allChats);
-
-    threadList.push({
-      threadKey: `${defaultStudentId}__${defaultAdminId}`,
-      studentId: defaultStudentId,
-      adminId: defaultAdminId,
-      studentName: '建中前鋒‧林同學',
-      studentSchool: '國三衝刺 5A++',
-      latestMsg: defaultMsgs[0],
-      unreadCount: 1,
-      updatedAt: defaultMsgs[0].timestamp
-    });
-  }
 
   return threadList;
 }

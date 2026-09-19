@@ -86,7 +86,7 @@ export default function ScopeSelector({ onStartQuiz }) {
         <div style={{ maxWidth: '850px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
             <span className="badge badge-coral">108 課綱核心素養題庫</span>
-            <span className="badge badge-gold">每單元 1000+ 題充足不重複</span>
+            <span className="badge badge-gold">每單元 5000+ 題充足不重複</span>
             <span className="badge badge-emerald">答對 1 題 = 1 點排行榜積分</span>
           </div>
           <h1 style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '8px', color: '#17324d' }}>
@@ -277,7 +277,7 @@ export default function ScopeSelector({ onStartQuiz }) {
                 108 課綱單元範圍 (已選 {selectedUnitIds.length} 個)
               </h3>
               <div style={{ fontSize: '0.75rem', color: '#78818a', marginTop: '3px', fontWeight: 600 }}>
-                每個單元皆附有 1000+ 題充足題庫與詳解提示
+                每個單元皆附有 5000+ 題充足題庫與詳解提示
               </div>
             </div>
 

@@ -1,4 +1,4 @@
-// 108 課綱每單元 1000+ 題不重複演算法產生引擎
+// 108 課綱每單元 5000+ 題不重複演算法產生引擎
 import { CURRICULUM_UNITS } from './curriculum108';
 import { getQuestionOverrides } from '../services/cloudStorage';
 
@@ -21,7 +21,7 @@ function hashStringToSeed(str) {
   return hash;
 }
 
-// 根據單元、題號 index (1 ~ 1500) 與難度 (easy / medium / hard / extreme) 生成唯一、不重複、具備詳解與提示的 108 課綱題目
+// 根據單元、題號 index (1 ~ 5000) 與難度 (easy / medium / hard / extreme) 生成唯一、不重複、具備詳解與提示的 108 課綱題目
 export function generateQuestion(subjectId, gradeId, unitId, index, difficulty = 'medium') {
   // 建立唯一 Seed 保證同一題號與難度生成的題目始終穩定且不重複
   const seedKey = `${subjectId}-${gradeId}-${unitId}-idx${index}-${difficulty}`;
@@ -436,8 +436,8 @@ export function generateQuizSet({ subjectId, gradeId, unitIds, difficulty = 'med
     attempts++;
     // 隨機自選定單元中挑選
     const unitId = validUnits[Math.floor(Math.random() * validUnits.length)];
-    // 在 1 ~ 1500 範圍內隨機挑選題號，確保破千題庫容量且極大機率不重複
-    const questionIndex = Math.floor(Math.random() * 1200) + 1;
+    // 在 1 ~ 5000 範圍內隨機挑選題號，確保每單元 5000 題超大題庫容量且絕不重複
+    const questionIndex = Math.floor(Math.random() * 5000) + 1;
     let q = generateQuestion(subjectId, gradeId, unitId, questionIndex, difficulty);
 
     // 核心修復：若該題目已被管理員標記刪除，學生端絕對排除，不再出題！

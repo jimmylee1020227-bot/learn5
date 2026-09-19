@@ -1,5 +1,5 @@
-// 每週一 00:00 歸零排行榜與點數服務層 - 正式投入使用乾淨版本
-import { logAuditEvent } from './cloudStorage';
+// 每週一 00:00 歸零排行榜與點數服務層 - 整合 Firebase 跨裝置即時同步版
+import { logAuditEvent, getJson, setJson } from './cloudStorage';
 
 const LEADERBOARD_KEY = 'studyhub_weekly_leaderboard';
 const HALL_OF_FAME_KEY = 'studyhub_hall_of_fame';
@@ -52,22 +52,20 @@ const INITIAL_HALL_OF_FAME = [];
 // 檢查每週一歸零機制
 export function checkAndExecuteWeeklyReset() {
   const currentWeekId = getTaiwanWeekId();
-  const lastResetWeek = localStorage.getItem(LAST_WEEK_KEY);
+  const lastResetWeek = getJson(LAST_WEEK_KEY, null);
 
   if (!lastResetWeek) {
-    localStorage.setItem(LAST_WEEK_KEY, currentWeekId);
+    setJson(LAST_WEEK_KEY, currentWeekId);
     return;
   }
 
   // 若發現進入全新的一週，自動將舊排行榜前三名封存至名人堂，並重置每週分數為 0
   if (lastResetWeek !== currentWeekId) {
-    const rawBoard = localStorage.getItem(LEADERBOARD_KEY);
-    const board = rawBoard ? JSON.parse(rawBoard) : INITIAL_LEADERBOARD;
+    const board = getJson(LEADERBOARD_KEY, INITIAL_LEADERBOARD);
     board.sort((a, b) => b.weeklyPoints - a.weeklyPoints);
 
     if (board.length > 0 && board[0].weeklyPoints > 0) {
-      const fameRaw = localStorage.getItem(HALL_OF_FAME_KEY);
-      const fameList = fameRaw ? JSON.parse(fameRaw) : INITIAL_HALL_OF_FAME;
+      const fameList = getJson(HALL_OF_FAME_KEY, INITIAL_HALL_OF_FAME);
       fameList.unshift({
         weekId: lastResetWeek,
         weekTitle: `${lastResetWeek} 冠軍週結算`,
@@ -78,7 +76,7 @@ export function checkAndExecuteWeeklyReset() {
         },
         runnersUp: board.slice(1, 3).map(u => `${u.displayName} (${u.weeklyPoints}分)`)
       });
-      localStorage.setItem(HALL_OF_FAME_KEY, JSON.stringify(fameList));
+      setJson(HALL_OF_FAME_KEY, fameList);
     }
 
     // 每週一分數歸零！
@@ -86,8 +84,8 @@ export function checkAndExecuteWeeklyReset() {
       ...player,
       weeklyPoints: 0
     }));
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(resetBoard));
-    localStorage.setItem(LAST_WEEK_KEY, currentWeekId);
+    setJson(LEADERBOARD_KEY, resetBoard);
+    setJson(LAST_WEEK_KEY, currentWeekId);
 
     logAuditEvent({
       operatorId: 'system_cron',
@@ -102,15 +100,13 @@ export function checkAndExecuteWeeklyReset() {
 // 取得當週即時排行榜
 export function getLeaderboard() {
   checkAndExecuteWeeklyReset();
-  const raw = localStorage.getItem(LEADERBOARD_KEY);
-  const list = raw ? JSON.parse(raw) : INITIAL_LEADERBOARD;
+  const list = getJson(LEADERBOARD_KEY, INITIAL_LEADERBOARD);
   return list.sort((a, b) => b.weeklyPoints - a.weeklyPoints);
 }
 
 // 取得歷史名人堂
 export function getHallOfFame() {
-  const raw = localStorage.getItem(HALL_OF_FAME_KEY);
-  return raw ? JSON.parse(raw) : INITIAL_HALL_OF_FAME;
+  return getJson(HALL_OF_FAME_KEY, INITIAL_HALL_OF_FAME);
 }
 
 // 學生作答答對計分：答對 1 題 = +1 點數（支援 2x / 4x 暴擊）
@@ -137,7 +133,7 @@ export function addStudentPoints(user, earnedPoints) {
   player.weeklyPoints += earnedPoints;
   player.totalPoints += earnedPoints;
 
-  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(board));
+  setJson(LEADERBOARD_KEY, board);
   return player;
 }
 
@@ -147,7 +143,7 @@ export function updatePlayerDisplayName(userId, newName) {
   const player = board.find(p => p.userId === userId);
   if (player) {
     player.displayName = newName;
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(board));
+    setJson(LEADERBOARD_KEY, board);
   }
 }
 
@@ -169,7 +165,7 @@ export function adminGrantPoints(targetUserId, points, operatorUser) {
       msg = `向玩家【${target.displayName}】發放 ${points} 點數`;
     }
   }
-  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(board));
+  setJson(LEADERBOARD_KEY, board);
 
   logAuditEvent({
     operatorId: operatorUser.id,
@@ -197,7 +193,7 @@ export function adminGrantTickets(targetUserId, ticketCount, operatorUser) {
       msg = `向玩家【${target.displayName}】發放 ${ticketCount} 張抽獎券`;
     }
   }
-  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(board));
+  setJson(LEADERBOARD_KEY, board);
 
   logAuditEvent({
     operatorId: operatorUser.id,
