@@ -53,8 +53,10 @@ export function AuthProvider({ children }) {
       if (googleUser) {
         const assignedRole = resolveUserRole(googleUser.email);
         const isJimmy = googleUser.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+        const cleanEmail = googleUser.email.trim().toLowerCase();
+        const deterministicId = 'user_' + btoa(encodeURIComponent(cleanEmail)).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
         const newUser = {
-          id: isJimmy ? 'admin_super_jimmy' : (googleUser.googleId || ('google_' + Date.now())),
+          id: isJimmy ? 'admin_super_jimmy' : (googleUser.googleId || deterministicId),
           email: googleUser.email,
           displayName: isJimmy ? '總管理員 (Jimmy)' : (googleUser.displayName || googleUser.email.split('@')[0]),
           avatar: isJimmy 

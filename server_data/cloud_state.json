@@ -436,5 +436,19 @@
       "timestamp": "2026-09-18T23:39:23.516Z",
       "isRead": true
     }
-  ]
+  ],
+  "studyhub_game_state_111725425020973278798": {
+    "tickets": 1,
+    "lastDailyClaimDate": "",
+    "personalMultiplier": 1,
+    "multiplierExpiresAt": 0,
+    "unlockedBadges": []
+  },
+  "studyhub_game_state_admin_super_jimmy": {
+    "tickets": 1,
+    "lastDailyClaimDate": "",
+    "personalMultiplier": 1,
+    "multiplierExpiresAt": 0,
+    "unlockedBadges": []
+  }
 }

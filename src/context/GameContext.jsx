@@ -1,12 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { addStudentPoints } from '../services/leaderboardService';
-import { getGlobalSettings, subscribeToCloudSync } from '../services/cloudStorage';
+import { getGlobalSettings, subscribeToCloudSync, getJson, setJson } from '../services/cloudStorage';
 import confetti from 'canvas-confetti';
 
 const GameContext = createContext();
 
 const STORAGE_GAME_KEY = 'studyhub_game_state';
+
+const DEFAULT_GAME_STATE = {
+  tickets: 1,
+  lastDailyClaimDate: '',
+  personalMultiplier: 1,
+  multiplierExpiresAt: 0,
+  unlockedBadges: []
+};
 
 export function GameProvider({ children }) {
   const { currentUser } = useAuth();
@@ -14,38 +22,31 @@ export function GameProvider({ children }) {
 
   const [globalSettings, setGlobalSettings] = useState(getGlobalSettings());
   
-  // 學生個人遊戲狀態：抽獎券、點數倍率、每日簽到日期
+  // 學生個人遊戲狀態：抽獎券、點數倍率、每日簽到日期 (雲端即時同步)
   const [gameState, setGameState] = useState(() => {
-    try {
-      const saved = localStorage.getItem(`${STORAGE_GAME_KEY}_${userId}`);
-      return saved ? JSON.parse(saved) : {
-        tickets: 1,
-        lastDailyClaimDate: '',
-        personalMultiplier: 1,
-        multiplierExpiresAt: 0,
-        unlockedBadges: []
-      };
-    } catch (e) {
-      return {
-        tickets: 1,
-        lastDailyClaimDate: '',
-        personalMultiplier: 1,
-        multiplierExpiresAt: 0,
-        unlockedBadges: []
-      };
-    }
+    return getJson(`${STORAGE_GAME_KEY}_${userId}`, DEFAULT_GAME_STATE);
   });
 
   const [isLuckyDrawOpen, setIsLuckyDrawOpen] = useState(false);
   const [multiplierRemainingSec, setMultiplierRemainingSec] = useState(0);
 
-  // 跨視窗同步全服廣播與活動
+  // 跨裝置同步全服設定與學生個人遊戲狀態
   useEffect(() => {
-    const unsub = subscribeToCloudSync(() => {
+    const unsub = subscribeToCloudSync((data) => {
       setGlobalSettings(getGlobalSettings());
+      if (data?.key === `${STORAGE_GAME_KEY}_${userId}`) {
+        setGameState(getJson(`${STORAGE_GAME_KEY}_${userId}`, DEFAULT_GAME_STATE));
+      }
     });
     return unsub;
-  }, []);
+  }, [userId]);
+
+  // 當 userId 改變 (例如登入後)，重新載入雲端該使用者的遊戲狀態
+  useEffect(() => {
+    if (userId) {
+      setGameState(getJson(`${STORAGE_GAME_KEY}_${userId}`, DEFAULT_GAME_STATE));
+    }
+  }, [userId]);
 
   // 每日贈送一張抽獎券邏輯
   useEffect(() => {
@@ -59,10 +60,10 @@ export function GameProvider({ children }) {
     }
   }, [gameState.lastDailyClaimDate]);
 
-  // 儲存狀態至本地與雲端
+  // 儲存狀態至雲端 Firebase (即時推播)
   useEffect(() => {
-    if (userId) {
-      localStorage.setItem(`${STORAGE_GAME_KEY}_${userId}`, JSON.stringify(gameState));
+    if (userId && userId !== 'guest_student') {
+      setJson(`${STORAGE_GAME_KEY}_${userId}`, gameState);
     }
   }, [gameState, userId]);
 
