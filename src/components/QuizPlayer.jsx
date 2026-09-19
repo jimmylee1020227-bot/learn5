@@ -160,6 +160,25 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
   };
   const activeFont = fontSizes[fontSize] || fontSizes.md;
 
+  // 取消語音播放
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  }, [currentIndex]);
+
+  const playAudio = (text) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert('您的瀏覽器不支援語音播放功能');
+    }
+  };
+
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '18px' }}>
       
@@ -531,6 +550,48 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               )}
             </button>
           </div>
+
+          {/* 聽力播放區塊 */}
+          {currentQ.isListening && currentQ.audioText && (
+            <div style={{ background: '#eef2ff', border: '1.5px solid #c7d2fe', borderRadius: '16px', padding: '16px 20px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#4f46e5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Play size={20} style={{ marginLeft: '2px' }} />
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, color: '#312e81', fontSize: '1rem', fontWeight: 800 }}>英聽測驗題</h4>
+                  <p style={{ margin: 0, color: '#4f46e5', fontSize: '0.85rem', fontWeight: 700 }}>點擊右側按鈕聆聽語音，可重複播放</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => playAudio(currentQ.audioText)}
+                className="btn btn-primary"
+                style={{ background: '#4f46e5', boxShadow: '0 4px 0 #3730a3', padding: '8px 16px' }}
+              >
+                <Play size={16} />
+                <span>播放語音</span>
+              </button>
+            </div>
+          )}
+
+          {/* 閱讀測驗長文區塊 */}
+          {currentQ.isReading && currentQ.readingText && (
+            <div style={{ background: '#fcf8e3', border: '1.5px solid #faebcc', borderRadius: '16px', padding: '20px 24px', marginBottom: '8px' }}>
+              <span style={{ display: 'inline-block', background: '#8a6d3b', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 900, marginBottom: '12px' }}>
+                閱讀素養文本
+              </span>
+              <div style={{ 
+                fontSize: activeFont.stem, 
+                lineHeight: activeFont.line, 
+                fontWeight: 700, 
+                color: '#4a4a4a', 
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'var(--font-serif)'
+              }}>
+                {currentQ.readingText}
+              </div>
+            </div>
+          )}
 
           {/* 題幹主文 (可縮放字級) */}
           <div 
