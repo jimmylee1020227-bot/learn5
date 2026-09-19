@@ -1,5 +1,50 @@
 export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
-  const variant = Math.floor(rand() * 15);
+  const variant = Math.floor(rand() * 17);
+
+  // --- 創新題型：SVG 圖形與對話情境 (Type 15 ~ 16) ---
+  if (variant === 15) {
+    // 電路 SVG 圖
+    return {
+      isSvg: true,
+      svgContent: `<svg width="250" height="150" viewBox="0 0 250 150" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 50 100 L 50 50 L 200 50 L 200 100" fill="none" stroke="#64748b" stroke-width="3" />
+        <path d="M 50 100 L 100 100" fill="none" stroke="#64748b" stroke-width="3" />
+        <path d="M 150 100 L 200 100" fill="none" stroke="#64748b" stroke-width="3" />
+        
+        <!-- Battery -->
+        <line x1="100" y1="85" x2="100" y2="115" stroke="#0f172a" stroke-width="4" />
+        <line x1="110" y1="90" x2="110" y2="110" stroke="#0f172a" stroke-width="8" />
+        <line x1="120" y1="85" x2="120" y2="115" stroke="#0f172a" stroke-width="4" />
+        <line x1="130" y1="90" x2="130" y2="110" stroke="#0f172a" stroke-width="8" />
+        <text x="110" y="135" font-size="12" fill="#0f172a" font-weight="bold">3V</text>
+        
+        <!-- Resistor (Bulb) -->
+        <circle cx="125" cy="50" r="15" fill="#fef08a" stroke="#ca8a04" stroke-width="3" />
+        <path d="M 115 50 L 135 50" fill="none" stroke="#ca8a04" stroke-width="2" />
+        <path d="M 125 40 L 125 60" fill="none" stroke="#ca8a04" stroke-width="2" />
+      </svg>`,
+      question: `【電路圖形判讀】如上圖所示，若每個電池的電壓為 1.5V，請問此電路中的燈泡兩端電壓為多少？`,
+      options: ['3.0V', '1.5V', '0V', '4.5V'],
+      answer: 0,
+      hint: '💡 提示：電池串聯時，總電壓為各個電池電壓的總和。',
+      explanation: `📖 詳解：圖中顯示兩個電池串聯，因此總電壓為 1.5V + 1.5V = 3.0V。燈泡與電池並聯連接在同一迴路，兩端電壓等於電池總電壓 3.0V。`
+    };
+  } else if (variant === 16) {
+    // 實驗討論 Chat
+    return {
+      isChat: true,
+      chatMessages: [
+        { sender: '小明', text: `今天的理化實驗好神奇！把鎂帶折斷，然後點火燃燒，發出超刺眼的白光！` },
+        { sender: '小華', text: `對啊，老師說鎂帶折斷是物理變化，但燃燒是化學變化。` },
+        { sender: '小明', text: `那燃燒後剩下的白色粉末，加水會變成什麼酸性還鹼性啊？` }
+      ],
+      question: `【對話情境解謎】根據上述對話，鎂帶燃燒後的產物溶於水，水溶液的酸鹼性為何？`,
+      options: ['鹼性', '酸性', '中性', '不溶於水，無法測量'],
+      answer: 0,
+      hint: `💡 提示：金屬氧化物（氧化鎂）溶於水，會形成氫氧化物。`,
+      explanation: `📖 詳解：金屬氧化物（氧化鎂 MgO）溶於水會生成氫氧化鎂 Mg(OH)2，水溶液呈鹼性。常見陷阱是誤以為所有燃燒產物都是酸性（非金屬氧化物溶於水才是酸性）。`
+    };
+  }
 
   // --- 圖表題專區 (Type 0 ~ 4) ---
   if (variant === 0) {

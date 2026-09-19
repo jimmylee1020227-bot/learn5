@@ -3,7 +3,48 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
   const a = Math.floor(rand() * 10 * diffMultiplier) + 2;
   const b = Math.floor(rand() * 8 * diffMultiplier) + 3;
   const c = Math.floor(rand() * 6 * diffMultiplier) + 1;
-  const variant = Math.floor(rand() * 15);
+  const variant = Math.floor(rand() * 17);
+
+  // --- 創新題型：幾何 SVG 與 對話式情境 (Type 15 ~ 16) ---
+  if (variant === 15) {
+    // 幾何圖形題 (直角三角形)
+    const base = 3 * a;
+    const height = 4 * a;
+    const hyp = 5 * a;
+    return {
+      isSvg: true,
+      svgContent: `<svg width="200" height="150" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="20,130 150,130 20,30" fill="#e0f2fe" stroke="#0284c7" stroke-width="3" />
+        <rect x="20" y="115" width="15" height="15" fill="none" stroke="#0284c7" stroke-width="2" />
+        <text x="75" y="145" font-size="14" fill="#0f172a" font-weight="bold">${base}</text>
+        <text x="5" y="85" font-size="14" fill="#0f172a" font-weight="bold">${height}</text>
+        <text x="95" y="75" font-size="14" fill="#ef4444" font-weight="bold">x</text>
+      </svg>`,
+      question: `【幾何圖形計算】如上圖所示，這是一個直角三角形。已知兩股長度分別為 ${base} 與 ${height}，請問斜邊長度 x 為何？`,
+      options: [hyp, hyp + a, hyp - a, hyp * 2],
+      answer: 0,
+      hint: '💡 提示：利用畢氏定理：斜邊平方 = 兩股平方和。',
+      explanation: `📖 詳解：x = √(${base}² + ${height}²) = √(${base * base} + ${height * height}) = √(${base*base + height*height}) = ${hyp}。`
+    };
+  } else if (variant === 16) {
+    // 對話式情境題
+    const discount = b % 5 + 5;
+    const original = a * 100;
+    const finalPrice = original * (discount / 10);
+    return {
+      isChat: true,
+      chatMessages: [
+        { sender: '小明', text: `欸，我看到那雙鞋子原價 ${original} 元耶！` },
+        { sender: '小華', text: `太貴了吧！不過聽說今天全館打 ${discount} 折。` },
+        { sender: '小明', text: `真的假的！那我現在買只要多少錢啊？` }
+      ],
+      question: `【對話情境解謎】根據上述對話，小明打折後買鞋子需要花多少錢？`,
+      options: [finalPrice, original - discount, original - 50, finalPrice + 100],
+      answer: 0,
+      hint: `💡 提示：打 ${discount} 折代表價格變成原來的 ${discount / 10} 倍。`,
+      explanation: `📖 詳解：${original} × 0.${discount} = ${finalPrice} 元。`
+    };
+  }
 
   // --- 圖表題專區 (Type 0 ~ 4) ---
   if (variant === 0) {

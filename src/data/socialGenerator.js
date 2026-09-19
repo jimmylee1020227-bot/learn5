@@ -1,6 +1,24 @@
 export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
-  // 社會科大幅增加圖表與多樣性，擴充至 15 種變化
-  const variant = Math.floor(rand() * 15);
+  // 社會科大幅增加圖表與多樣性，擴充至 16 種變化
+  const variant = Math.floor(rand() * 16);
+
+  if (variant === 15) {
+    // 社會科對話群組
+    return {
+      isChat: true,
+      chatMessages: [
+        { sender: '公民老師', text: `各位同學，關於我國「立法院」的職權，誰能舉個例子？` },
+        { sender: '小明', text: `可以提出糾舉與彈劾！` },
+        { sender: '小華', text: `可以審查國家預算！` },
+        { sender: '小英', text: `可以解釋憲法！` }
+      ],
+      question: `【群組討論解謎】根據上述對話，哪一位同學的說法是正確的？`,
+      options: ['小華', '小明', '小英', '全部都錯'],
+      answer: 0,
+      hint: `💡 提示：糾舉彈劾是監察院；解釋憲法是司法院。`,
+      explanation: `📖 詳解：立法院的主要職權為制定法律與審查國家預算，故小華正確。小明說的糾舉彈劾是監察院職權；小英說的解釋憲法是司法院大法官職權。`
+    };
+  }
 
   // --- 圖表題專區 (Type 0 ~ 4) ---
   if (variant === 0) {

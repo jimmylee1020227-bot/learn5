@@ -2,9 +2,30 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
   const names = ['Tom', 'Amy', 'Peter', 'Emily', 'Jason', 'Lucy', 'John', 'Sarah'];
   const name1 = names[index % names.length];
   const name2 = names[(index + 1) % names.length];
-  const variant = Math.floor(rand() * 10); 
+  const variant = Math.floor(rand() * 11); 
 
-  if (variant < 3) {
+  if (variant === 10) {
+    // 英文情境對話 Chat
+    return {
+      isChat: true,
+      chatMessages: [
+        { sender: name1, text: `Hey ${name2}, are you free this weekend?` },
+        { sender: name2, text: `I think so. What's up?`, isRight: true },
+        { sender: name1, text: `I was wondering if you'd like to go to the movies with me.` },
+        { sender: name2, text: `________. What time?`, isRight: true }
+      ],
+      question: `【英文對話情境】Which of the following is the best response to fill in the blank?`,
+      options: [
+        `Sure, I'd love to`, 
+        `No, I don't like movies`, 
+        `I am very busy`, 
+        `You are welcome`
+      ],
+      answer: 0,
+      hint: `💡 提示：根據 "${name2}" 後面接著問 "What time?"，代表他答應了邀約。`,
+      explanation: `📖 詳解：既然對方接著問時間 (What time?)，表示同意邀約，因此 "Sure, I'd love to" (當然，我很樂意) 是最合適的回答。`
+    };
+  } else if (variant < 3) {
     // 聽力題 (Listening)
     const listeningTypes = [
       { 

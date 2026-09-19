@@ -593,6 +593,49 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             </div>
           )}
 
+          {/* SVG 向量幾何/圖形題區塊 */}
+          {currentQ.isSvg && currentQ.svgContent && (
+            <div style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd', borderRadius: '16px', padding: '20px', marginBottom: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div dangerouslySetInnerHTML={{ __html: currentQ.svgContent }} />
+            </div>
+          )}
+
+          {/* Chat 模擬通訊軟體對話題區塊 */}
+          {currentQ.isChat && currentQ.chatMessages && (
+            <div style={{ background: '#e5e5ea', border: '1.5px solid #d1d1d6', borderRadius: '16px', padding: '16px', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '4px' }}>
+                <span style={{ background: '#c7c7cc', color: '#fff', padding: '2px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>今天</span>
+              </div>
+              {currentQ.chatMessages.map((msg, mIdx) => {
+                const isMe = msg.sender === '我' || msg.isRight;
+                return (
+                  <div key={mIdx} style={{ display: 'flex', flexDirection: isMe ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: '8px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isMe ? '#007aff' : '#fff', border: '1.5px solid #d1d1d6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 900, color: isMe ? '#fff' : '#8e8e93', flexShrink: 0 }}>
+                      {msg.sender.substring(0, 1)}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start' }}>
+                      <span style={{ fontSize: '0.7rem', color: '#8e8e93', marginBottom: '2px', padding: '0 4px' }}>{msg.sender}</span>
+                      <div style={{ 
+                        background: isMe ? '#007aff' : '#fff', 
+                        color: isMe ? '#fff' : '#000', 
+                        padding: '10px 14px', 
+                        borderRadius: '18px', 
+                        borderBottomLeftRadius: isMe ? '18px' : '4px',
+                        borderBottomRightRadius: isMe ? '4px' : '18px',
+                        fontSize: activeFont.opt,
+                        lineHeight: '1.5',
+                        maxWidth: '280px',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                      }}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {/* 題幹主文 (可縮放字級) */}
           <div 
             style={{ 
