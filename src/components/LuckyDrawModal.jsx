@@ -28,6 +28,7 @@ const S = {
     boxShadow: '8px 8px 0 #17324d',
     width: '100%',
     maxWidth: '520px',
+    maxHeight: '90vh',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
@@ -39,6 +40,7 @@ const S = {
     alignItems: 'center',
     justifyContent: 'space-between',
     background: '#fffdf9',
+    flexShrink: 0,
   },
   headerLeft: {
     display: 'flex',
@@ -87,6 +89,7 @@ const S = {
     flexDirection: 'column',
     alignItems: 'center',
     textAlign: 'center',
+    overflowY: 'auto',
   },
   doubleBanner: {
     width: '100%',
