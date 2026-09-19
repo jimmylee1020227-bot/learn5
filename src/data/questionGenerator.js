@@ -124,6 +124,7 @@ export function generateQuizSet({ subjectId, gradeId, unitIds, difficulty = 'med
   if (validUnits.length === 0) return [];
 
   const usedQuestionIds = new Set(excludeIds);
+  const usedQuestionTexts = new Set(); // 確保不會出現文字完全一樣但 ID 不同的重複題
   let attempts = 0;
   const maxAttempts = count * 35;
   const overrides = typeof getQuestionOverrides === 'function' ? getQuestionOverrides() : {};
@@ -149,8 +150,9 @@ export function generateQuizSet({ subjectId, gradeId, unitIds, difficulty = 'med
       };
     }
 
-    if (!usedQuestionIds.has(q.id)) {
+    if (!usedQuestionIds.has(q.id) && !usedQuestionTexts.has(q.question)) {
       usedQuestionIds.add(q.id);
+      usedQuestionTexts.add(q.question);
       quizSet.push(q);
     }
   }
