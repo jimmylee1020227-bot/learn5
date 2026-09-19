@@ -6,7 +6,8 @@ import {
   deleteAdmin, 
   getAuditLogs, 
   SUPER_ADMIN_EMAIL,
-  purgeAllTestData 
+  purgeAllTestData,
+  subscribeToCloudSync 
 } from '../services/cloudStorage';
 import { 
   Crown, 
@@ -40,6 +41,13 @@ export default function SuperAdminConsole() {
   useEffect(() => {
     setAdmins(getAdminsList());
     setAuditLogs(getAuditLogs(currentUser));
+    const unsub = subscribeToCloudSync((event) => {
+      if (!event || event.key === 'admins_list' || event.key === 'audit_logs') {
+        setAdmins(getAdminsList());
+        setAuditLogs(getAuditLogs(currentUser));
+      }
+    });
+    return () => unsub();
   }, [currentUser]);
 
   // 嚴格權限檢查（僅 jimmylee1020227@gmail.com 或 super_admin 可存取）

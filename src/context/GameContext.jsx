@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { addStudentPoints } from '../services/leaderboardService';
-import { getGlobalSettings, subscribeToCloudSync, getJson, setJson } from '../services/cloudStorage';
+import { getGlobalSettings, subscribeToCloudSync, getJson, setJson, fetchCloudUserGameState, getTaiwanDateStr } from '../services/cloudStorage';
 import confetti from 'canvas-confetti';
 
 const GameContext = createContext();
@@ -10,10 +10,12 @@ const STORAGE_GAME_KEY = 'studyhub_game_state';
 
 const DEFAULT_GAME_STATE = {
   tickets: 1,
+  pityCount: 0,
   lastDailyClaimDate: '',
   personalMultiplier: 1,
   multiplierExpiresAt: 0,
-  unlockedBadges: []
+  unlockedBadges: [],
+  updatedAt: 0
 };
 
 export function GameProvider({ children }) {
@@ -30,27 +32,83 @@ export function GameProvider({ children }) {
   const [isLuckyDrawOpen, setIsLuckyDrawOpen] = useState(false);
   const [multiplierRemainingSec, setMultiplierRemainingSec] = useState(0);
 
-  // 跨裝置同步全服設定與學生個人遊戲狀態
+  // 跨裝置同步狀態鎖：初次載入未自雲端讀取前，禁止以本地預設空值覆蓋雲端！
+  const isHydratedRef = React.useRef(false);
+  const isRemoteSyncingRef = React.useRef(false);
+
+  // 跨裝置同步全服設定與學生個人遊戲狀態 (監聽遠端 Firebase 與其他分頁)
   useEffect(() => {
     const unsub = subscribeToCloudSync((data) => {
       setGlobalSettings(getGlobalSettings());
-      if (data?.key === `${STORAGE_GAME_KEY}_${userId}`) {
-        setGameState(getJson(`${STORAGE_GAME_KEY}_${userId}`, DEFAULT_GAME_STATE));
+      if (data?.key === `${STORAGE_GAME_KEY}_${userId}` && data?.fromRemote) {
+        isRemoteSyncingRef.current = true;
+        const remoteData = getJson(`${STORAGE_GAME_KEY}_${userId}`, null);
+        if (remoteData) {
+          setGameState(prev => {
+            const remoteTime = remoteData.updatedAt || 0;
+            const localTime = prev.updatedAt || 0;
+            // 若遠端時間較新，或遠端票數顯著增加（管理員發放），採納遠端
+            if (remoteTime >= localTime || (remoteData.tickets || 0) > (prev.tickets || 0)) {
+              return {
+                ...remoteData,
+                tickets: remoteData.tickets ?? prev.tickets ?? 0,
+                pityCount: remoteData.pityCount ?? prev.pityCount ?? 0
+              };
+            }
+            return prev;
+          });
+        }
+        isHydratedRef.current = true;
+        setTimeout(() => { isRemoteSyncingRef.current = false; }, 50);
       }
     });
     return unsub;
   }, [userId]);
 
-  // 當 userId 改變 (例如登入後)，重新載入雲端該使用者的遊戲狀態
+  // 當 userId 改變 (例如登入後或跨裝置切換)，主動自 Firebase 雲端讀取最新狀態
   useEffect(() => {
-    if (userId) {
-      setGameState(getJson(`${STORAGE_GAME_KEY}_${userId}`, DEFAULT_GAME_STATE));
+    isHydratedRef.current = false;
+    const localCached = getJson(`${STORAGE_GAME_KEY}_${userId}`, null);
+    if (localCached) {
+      setGameState(localCached);
+      isHydratedRef.current = true;
+    } else {
+      setGameState(DEFAULT_GAME_STATE);
+    }
+    
+    if (userId && userId !== 'guest_student') {
+      // 主動自 Firebase 雲端拉取確認，以時間戳較新或具備資料者為準
+      fetchCloudUserGameState(userId).then(cloudState => {
+        if (cloudState) {
+          setGameState(prev => {
+            const cloudTime = cloudState.updatedAt || 0;
+            const localTime = prev.updatedAt || 0;
+            if (cloudTime >= localTime || (cloudState.tickets || 0) > (prev.tickets || 0)) {
+              const merged = {
+                ...cloudState,
+                tickets: cloudState.tickets ?? prev.tickets ?? 0,
+                pityCount: cloudState.pityCount ?? prev.pityCount ?? 0
+              };
+              setJson(`${STORAGE_GAME_KEY}_${userId}`, merged);
+              return merged;
+            }
+            return prev;
+          });
+        }
+        isHydratedRef.current = true;
+      }).catch(() => {
+        isHydratedRef.current = true;
+      });
+    } else {
+      isHydratedRef.current = true;
     }
   }, [userId]);
 
-  // 每日贈送一張抽獎券邏輯
+  // 每日贈送一張抽獎券邏輯 (已水合後才觸發，嚴格採用台北 UTC+8 時區防誤判)
   useEffect(() => {
-    const todayStr = new Date().toISOString().split('T')[0];
+    // 未水合前不執行，避免用預設值 lastDailyClaimDate 誤判
+    if (!isHydratedRef.current) return;
+    const todayStr = getTaiwanDateStr();
     if (gameState.lastDailyClaimDate !== todayStr) {
       setGameState(prev => ({
         ...prev,
@@ -58,11 +116,21 @@ export function GameProvider({ children }) {
         lastDailyClaimDate: todayStr
       }));
     }
-  }, [gameState.lastDailyClaimDate]);
+  }, [gameState.lastDailyClaimDate, userId]);
 
-  // 儲存狀態至雲端 Firebase (即時推播)
+  // 儲存狀態至雲端 Firebase (即時推播 - 嚴格保護遠端資料不被預設值覆蓋)
   useEffect(() => {
     if (userId && userId !== 'guest_student') {
+      if (isRemoteSyncingRef.current) return;
+      if (!isHydratedRef.current) {
+        // 若本機已確認有緩存數據方可認定水合
+        const currentInStorage = getJson(`${STORAGE_GAME_KEY}_${userId}`, null);
+        if (currentInStorage) {
+          isHydratedRef.current = true;
+        } else {
+          return; // 嚴禁以未水合之空預設值覆蓋雲端！
+        }
+      }
       setJson(`${STORAGE_GAME_KEY}_${userId}`, gameState);
     }
   }, [gameState, userId]);
@@ -94,7 +162,7 @@ export function GameProvider({ children }) {
     effectiveMultiplier = 2; // 2 倍
   }
 
-  // 答對題目結算加分
+  // 答對題目結算加分 (受測驗暴擊倍率影響)
   const awardQuizCorrectPoints = (correctCount = 1) => {
     const userToAward = currentUser || { id: 'guest_student', displayName: '國中同學' };
     const earned = correctCount * effectiveMultiplier;
@@ -103,6 +171,26 @@ export function GameProvider({ children }) {
       confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
     }
     return earned;
+  };
+
+  // 直接贈予固定點數（用於兌換碼、活動補償，不受測驗倍率重複暴擊放大）
+  const grantDirectPoints = (points) => {
+    if (typeof points !== 'number' || points <= 0 || !Number.isFinite(points)) return;
+    const clampedPoints = Math.min(Math.floor(points), 5000);
+    const userToAward = currentUser || { id: 'guest_student', displayName: '國中同學' };
+    addStudentPoints(userToAward, clampedPoints);
+    confetti({ particleCount: 80, spread: 80, origin: { y: 0.5 } });
+  };
+
+  // 啟用個人限時倍率 Buff (用於幸運抽獎、兌換碼獎勵)
+  const activateUserMultiplier = (durationSec = 900) => {
+    const safeDuration = Math.min(Math.max(60, durationSec), 86400); // 1分鐘至24小時
+    const expires = Date.now() + (safeDuration * 1000);
+    setGameState(prev => ({
+      ...prev,
+      personalMultiplier: 2,
+      multiplierExpiresAt: expires
+    }));
   };
 
   // 幸運抽獎執行函式 (具備 50 抽保底機制與硬核低機率)
@@ -118,21 +206,15 @@ export function GameProvider({ children }) {
     // 1. 檢查是否觸發 50 抽保底大獎
     if (currentPity >= 50) {
       isPityTriggered = true;
-      // 必定抽出金色大獎：100點 或 限時雙倍/四倍
-      const grandPrizes = [
-        { id: 'pts_100', name: '👑 滿級 +100 點數大獎', type: 'points', value: 100 },
-        { id: 'multi_2x', name: '⚡ 限時 2 倍積分 (15分鐘)', type: 'multiplier', durationMins: 15 }
-      ];
-      chosenPrize = grandPrizes[Math.floor(Math.random() * grandPrizes.length)];
+      // 必定抽出保底大獎：最高 5 點
+      chosenPrize = { id: 'pts_5', name: '🎯 保底 +5 點數', type: 'points', value: 5 };
     } else {
       // 2. 常規低機率抽獎池 (未中獎率 88%，小獎 10%，金色大獎極低稀有)
       const prizes = [
         { id: 'miss', name: '💭 銘謝惠顧，再接再厲', type: 'miss', weight: 880 },
-        { id: 'pts_15', name: '+15 點數', type: 'points', value: 15, weight: 70 },
-        { id: 'pts_30', name: '+30 點數', type: 'points', value: 30, weight: 35 },
-        { id: 'pts_60', name: '+60 點數', type: 'points', value: 60, weight: 10 },
-        { id: 'pts_100', name: '👑 +100 點數大獎', type: 'points', value: 100, weight: 2 },
-        { id: 'multi_2x', name: '⚡ 限時 2 倍積分 (15分鐘)', type: 'multiplier', durationMins: 15, weight: 3 }
+        { id: 'pts_1', name: '+1 點數', type: 'points', value: 1, weight: 60 },
+        { id: 'pts_3', name: '+3 點數', type: 'points', value: 3, weight: 45 },
+        { id: 'pts_5', name: '🎯 +5 點數大獎', type: 'points', value: 5, weight: 15 }
       ];
 
       const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
@@ -147,15 +229,22 @@ export function GameProvider({ children }) {
       }
     }
 
-    // 3. 更新保底計數：若抽中金色大獎 (pts_100 或 multi_2x)，保底歸零；否則累積
-    const isGrandPrize = chosenPrize.id === 'pts_100' || chosenPrize.id === 'multi_2x';
-    const nextPity = isGrandPrize ? 0 : currentPity;
+    // 3. 更新保底計數：只有觸發第 50 抽保底時才歸零；常規抽到 pts_5 不重置
+    const nextPity = isPityTriggered ? 0 : currentPity;
+    const isGrandPrize = isPityTriggered || chosenPrize.id === 'pts_5';
 
-    setGameState(prev => ({
-      ...prev,
-      tickets: Math.max(0, prev.tickets - 1),
-      pityCount: nextPity
-    }));
+    const updatedState = {
+      ...gameState,
+      tickets: Math.max(0, (gameState.tickets || 0) - 1),
+      pityCount: nextPity,
+      updatedAt: Date.now()
+    };
+
+    // 同步立即寫入 localStorage 與 state，防止連點抽獎時狀態遺失或被舊快取反彈
+    setGameState(updatedState);
+    if (userId && userId !== 'guest_student') {
+      setJson(`${STORAGE_GAME_KEY}_${userId}`, updatedState);
+    }
 
     let resultNotice = '';
     const userToAward = currentUser || { id: 'guest_student', displayName: '國中同學' };
@@ -169,29 +258,16 @@ export function GameProvider({ children }) {
       } else {
         resultNotice = `🎉 恭喜抽中 ${chosenPrize.name}！已自動加進每週排行榜！`;
       }
-      confetti({ particleCount: isGrandPrize ? 120 : 60, spread: 80, origin: { y: 0.5 } });
-    } else if (chosenPrize.type === 'multiplier') {
-      const expires = Date.now() + (chosenPrize.durationMins * 60 * 1000);
-      setGameState(prev => ({
-        ...prev,
-        personalMultiplier: 2,
-        multiplierExpiresAt: expires
-      }));
-      if (isGlobal2x) {
-        resultNotice = `🔥 管理員全服雙倍中！觸發【限時 4 倍狂暴暴擊 (15分鐘)】！做題點數狂飆！`;
-      } else {
-        resultNotice = isPityTriggered 
-          ? `👑 恭喜觸發【第 50 抽必中保底】！獲得【限時 2 倍積分 (15分鐘)】！保底重置！`
-          : `⚡ 恭喜獲得【限時 2 倍積分 (15分鐘)】！期間答對題目點數雙倍計算！`;
-      }
-      confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+      try {
+        confetti({ particleCount: isGrandPrize ? 120 : 60, spread: 80, origin: { y: 0.5 } });
+      } catch (e) {}
     }
 
     return { 
       success: true, 
       prize: chosenPrize, 
       notice: resultNotice, 
-      isSuper4x: chosenPrize.type === 'multiplier' && isGlobal2x,
+      isSuper4x: false,
       isPityTriggered,
       currentPity: nextPity
     };
@@ -209,6 +285,8 @@ export function GameProvider({ children }) {
         isPersonal2x,
         multiplierRemainingSec,
         awardQuizCorrectPoints,
+        grantDirectPoints,
+        activateUserMultiplier,
         executeLuckyDraw,
         isLuckyDrawOpen,
         setIsLuckyDrawOpen

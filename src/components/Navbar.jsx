@@ -4,7 +4,7 @@ import { useGame } from '../context/GameContext';
 import { useTheme } from '../context/ThemeContext';
 import { useDevice } from '../context/DeviceContext';
 import { getNextMondayCountdown } from '../services/leaderboardService';
-import { SUPER_ADMIN_EMAIL, getRedemptionCodes, getUserRedeemedCodes, subscribeToCloudSync } from '../services/cloudStorage';
+import { SUPER_ADMIN_EMAIL, checkIsAdmin, checkIsSuperAdmin, getRedemptionCodes, getUserRedeemedCodes, subscribeToCloudSync } from '../services/cloudStorage';
 import NotificationBellModal from './NotificationBellModal';
 import { 
   GraduationCap, 
@@ -29,8 +29,7 @@ import {
 export default function Navbar({ 
   activeTab, 
   setActiveTab,
-  onOpenRedemptionModal,
-  onOpenCommunityModal 
+  onOpenRedemptionModal 
 }) {
   const { 
     currentUser, 
@@ -78,7 +77,8 @@ export default function Navbar({
     }
   };
 
-  const isSuperAdmin = currentUser?.role === 'super_admin' || currentUser?.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+  const isSuperAdmin = checkIsSuperAdmin(currentUser);
+  const isAdmin = checkIsAdmin(currentUser);
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#e8ded0] bg-[#f8f3eb]/95 backdrop-blur-xl">
@@ -164,14 +164,6 @@ export default function Navbar({
             歷程錯題
           </button>
 
-          <button 
-            className={`btn ${activeTab === 'chat' ? 'btn-primary' : 'btn-ghost'}`}
-            onClick={() => setActiveTab('chat')}
-            style={{ fontSize: '0.86rem', padding: '7px 12px' }}
-          >
-            <MessageSquare size={15} />
-            諮詢管理員
-          </button>
 
           {/* 兌換碼捷徑 */}
           <button 
@@ -184,19 +176,9 @@ export default function Navbar({
             兌換碼
           </button>
 
-          {/* 社群打氣牆捷徑 */}
-          <button 
-            className="btn btn-ghost"
-            onClick={onOpenCommunityModal}
-            style={{ fontSize: '0.86rem', padding: '7px 12px', color: '#c8643d' }}
-            title="會考同學打氣留言牆"
-          >
-            <MessageSquareHeart size={15} />
-            打氣牆
-          </button>
 
           {/* 一般管理員或總管理員後台 */}
-          {currentUser && (currentUser.role === 'admin' || isSuperAdmin) && (
+          {currentUser && isAdmin && (
             <button 
               className={`btn ${activeTab === 'admin' ? 'btn-secondary' : 'btn-ghost'}`}
               onClick={() => setActiveTab('admin')}
@@ -387,9 +369,9 @@ export default function Navbar({
                       </span>
                       <Edit3 size={13} style={{ cursor: 'pointer', opacity: 0.6 }} onClick={() => { setNewNameInput(currentUser.displayName); setIsEditingName(true); }} />
                     </div>
-                    <div style={{ fontSize: '0.68rem', color: isSuperAdmin ? '#c8643d' : currentUser.role === 'admin' ? '#48717e' : '#78818a', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 700 }}>
+                    <div style={{ fontSize: '0.68rem', color: isSuperAdmin ? '#c8643d' : isAdmin ? '#48717e' : '#78818a', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 700 }}>
                       <UserCheck size={10} />
-                      {isSuperAdmin ? '👑 唯一總管理員' : currentUser.role === 'admin' ? '🛡️ 駐站管理員' : '🎓 Google學生'}
+                      {isSuperAdmin ? '👑 唯一總管理員' : isAdmin ? '🛡️ 駐站管理員' : '🎓 Google學生'}
                     </div>
                   </div>
                 </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
-import { getDailyPracticeStats } from '../services/cloudStorage';
+import { getDailyPracticeStats, subscribeToCloudSync } from '../services/cloudStorage';
 import { 
   Flame, 
   Sparkles, 
@@ -10,7 +10,6 @@ import {
   ChevronRight, 
   Gift, 
   Ticket, 
-  MessageSquareHeart, 
   BookOpen,
   Trophy
 } from 'lucide-react';
@@ -24,8 +23,7 @@ export default function HeroBanner({
   onStartQuizTab, 
   onStartReinforceTab, 
   onStartLeaderboardTab,
-  onOpenRedemptionModal,
-  onOpenCommunityModal 
+  onOpenRedemptionModal 
 }) {
   const { currentUser } = useAuth();
   const { gameState, effectiveMultiplier, setIsLuckyDrawOpen } = useGame();
@@ -54,9 +52,21 @@ export default function HeroBanner({
   }, [selectedExamYear]);
 
   useEffect(() => {
-    if (currentUser?.id) {
-      setDailyStats(getDailyPracticeStats(currentUser.id));
-    }
+    const uId = currentUser?.id || 'guest';
+    setDailyStats(getDailyPracticeStats(uId));
+
+    // 監聽跨裝置雲端同步（手機做題後，電腦端即時接收推播更新今日目標）
+    const unsub = subscribeToCloudSync((event) => {
+      if (
+        !event || 
+        event.key === 'daily_stats' || 
+        event.key === 'practice_history' || 
+        (event.key && (event.key.startsWith('daily_stats_') || event.key.startsWith('practice_history_')))
+      ) {
+        setDailyStats(getDailyPracticeStats(uId));
+      }
+    });
+    return unsub;
   }, [currentUser]);
 
   const progressPercent = Math.min(100, Math.round((dailyStats.count / dailyStats.target) * 100));
@@ -282,29 +292,6 @@ export default function HeroBanner({
           <ChevronRight size={20} color="#17324d" />
         </div>
 
-        <div 
-          onClick={onOpenCommunityModal}
-          className="glass-panel" 
-          style={{ 
-            padding: '18px 22px', 
-            borderRadius: '20px', 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: '#fff0e9', border: '2px solid #17324d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c8643d' }}>
-              <MessageSquareHeart size={22} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '0.98rem', color: '#17324d' }}>打氣留言牆</div>
-              <div style={{ fontSize: '0.78rem', color: '#5b6772', fontWeight: 600 }}>一起讀，穩穩上岸</div>
-            </div>
-          </div>
-          <ChevronRight size={20} color="#17324d" />
-        </div>
 
         <div 
           onClick={onStartLeaderboardTab}

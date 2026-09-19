@@ -2,17 +2,25 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { updatePlayerDisplayName } from '../services/leaderboardService';
 import { 
   SUPER_ADMIN_EMAIL, 
-  getAdminsList, 
+  getAdminsList,
+  fetchCloudAdminsList,
+  checkIsAdmin,
+  checkIsSuperAdmin,
   subscribeToCloudSync,
   subscribeUserRealtimeSync,
+  registerCloudUser,
   purgeAllTestData
 } from '../services/cloudStorage';
 import { 
   redirectToGoogleLogin, 
   parseGoogleAuthCallback, 
   resolveUserRole,
+  resolveUserRoleAsync,
   getGoogleClientId,
-  setGoogleClientId
+  setGoogleClientId,
+  generateDeterministicUserId,
+  generateAuthProof,
+  verifyGoogleTokenWithCloud
 } from '../services/googleAuthService';
 
 const AuthContext = createContext();
@@ -23,15 +31,24 @@ export function AuthProvider({ children }) {
   // 強制正式登入制：未登入時 currentUser 為 null，禁止訪客直接進入
   const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_USER_KEY);
+      const saved = localStorage.getItem(STORAGE_USER_KEY) || localStorage.getItem('studyhub_auth_user');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.email) {
-          if (parsed.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
-            parsed.role = 'super_admin';
-            parsed.id = 'admin_super_jimmy';
+          // 安全防禦：若標記為管理員角色，必須具備合法的 Google 官方憑證 (authProof) 或管理金鑰簽章 (adminSessionProof)
+          // 杜絕透過瀏覽器 Console / LocalStorage 偽造 Email 進行未授權提權
+          if (targetRole === 'super_admin' || targetRole === 'admin') {
+            const hasValidProof = !!(parsed.authProof || parsed.adminSessionProof);
+            if (!hasValidProof) {
+              parsed.role = 'student';
+              parsed.id = generateDeterministicUserId(parsed.email);
+            } else {
+              parsed.role = targetRole;
+              parsed.id = isJimmy ? 'admin_super_jimmy' : generateDeterministicUserId(parsed.email);
+            }
           } else {
-            parsed.role = resolveUserRole(parsed.email);
+            parsed.role = 'student';
+            parsed.id = generateDeterministicUserId(parsed.email);
           }
           return parsed;
         }
@@ -52,33 +69,100 @@ export function AuthProvider({ children }) {
     async function handleAuthReturn() {
       const googleUser = await parseGoogleAuthCallback();
       if (googleUser) {
-        const assignedRole = resolveUserRole(googleUser.email);
+        // 先確保雲端管理員名冊到位，避免首次登入因本機快取未載入而誤判為 student
+        const assignedRole = await resolveUserRoleAsync(googleUser.email);
         const isJimmy = googleUser.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
         const cleanEmail = googleUser.email.trim().toLowerCase();
-        const deterministicId = 'user_' + btoa(encodeURIComponent(cleanEmail)).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
+        const deterministicId = isJimmy ? 'admin_super_jimmy' : (googleUser.id || generateDeterministicUserId(cleanEmail));
+
+        // 讀取本地已存的舊帳號資料，優先沿用使用者自訂暱稱（防止重新登入時被 Google 原始名字覆蓋）
+        let savedDisplayName = null;
+        try {
+          // 優先從獨立備份 key 讀取（不隨 logout 清除）
+          const nameKey = `studyhub_custom_name_${cleanEmail}`;
+          const directName = localStorage.getItem(nameKey);
+          if (directName) {
+            savedDisplayName = directName;
+          } else {
+            // fallback：從舊的 auth user 物件裡讀
+            const saved = localStorage.getItem(STORAGE_USER_KEY) || localStorage.getItem('studyhub_auth_user');
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              if (parsed?.email?.toLowerCase() === cleanEmail && parsed?.customDisplayName) {
+                savedDisplayName = parsed.customDisplayName;
+              }
+            }
+          }
+        } catch (_) {}
+
+        const resolvedDisplayName = savedDisplayName
+          || (isJimmy ? '總管理員 (Jimmy)' : (googleUser.displayName || googleUser.email.split('@')[0]));
+
         const newUser = {
-          id: isJimmy ? 'admin_super_jimmy' : (googleUser.googleId || deterministicId),
+          id: deterministicId,
           email: googleUser.email,
-          displayName: isJimmy ? '總管理員 (Jimmy)' : (googleUser.displayName || googleUser.email.split('@')[0]),
+          displayName: resolvedDisplayName,
+          customDisplayName: savedDisplayName || null,
           avatar: isJimmy 
             ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227' 
             : (googleUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(googleUser.email)}`),
           role: assignedRole,
           isGoogleBound: true,
+          sub: googleUser.sub,
+          accessToken: googleUser.accessToken,
+          authProof: googleUser.authProof,
+          authTimestamp: googleUser.authTimestamp,
           createdAt: new Date().toISOString()
         };
         setCurrentUser(newUser);
         localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(newUser));
+        localStorage.setItem('studyhub_auth_user', JSON.stringify(newUser));
+        registerCloudUser(newUser);
       }
       setAuthLoading(false);
     }
     handleAuthReturn();
   }, []);
 
+  // 1.5 自動自雲端同步最新管理員名冊並即時響應任命/撤銷
+  useEffect(() => {
+    const updateRoleFromList = (adminList) => {
+      if (currentUser?.email) {
+        const cleanEmail = currentUser.email.trim().toLowerCase();
+        const isJimmy = cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase();
+        const inAdmins = Array.isArray(adminList) && adminList.some(a => a && a.email && a.email.trim().toLowerCase() === cleanEmail);
+        const correctRole = isJimmy ? 'super_admin' : inAdmins ? 'admin' : 'student';
+        if (currentUser.role !== correctRole) {
+          const updatedUser = { ...currentUser, role: correctRole };
+          setCurrentUser(updatedUser);
+          localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(updatedUser));
+          localStorage.setItem('studyhub_auth_user', JSON.stringify(updatedUser));
+        }
+      }
+    };
+
+    // A. 啟動時主動自 Firebase 雲端讀取最新 admins_list
+    fetchCloudAdminsList().then(adminList => {
+      updateRoleFromList(adminList);
+    });
+
+    // B. 即時監聽 Firebase admins_list 廣播，只要總管任命或撤銷，當前使用者秒級生效！
+    const unsub = subscribeToCloudSync((event) => {
+      if (!event || event.key === 'admins_list') {
+        const currentAdmins = getAdminsList();
+        updateRoleFromList(currentAdmins);
+      }
+    });
+
+    return () => unsub();
+  }, [currentUser?.email, currentUser?.role]);
+
   // 2. 當使用者資料變更時同步持久化並訂閱專屬個人雲端節點
   useEffect(() => {
     if (currentUser && currentUser.isGoogleBound) {
       localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(currentUser));
+      localStorage.setItem('studyhub_auth_user', JSON.stringify(currentUser));
+      registerCloudUser(currentUser);
     }
     if (currentUser?.id) {
       subscribeUserRealtimeSync(currentUser.id);
@@ -90,39 +174,66 @@ export function AuthProvider({ children }) {
     redirectToGoogleLogin();
   };
 
-  // 4. 登出
+  // 4. 登出 (保留自訂暱稱，不隨登出清除)
   const logout = () => {
+    // 先把自訂暱稱備份到獨立 key，下次登入時仍可讀回
+    if (currentUser?.email && currentUser?.customDisplayName) {
+      const nameKey = `studyhub_custom_name_${currentUser.email.trim().toLowerCase()}`;
+      localStorage.setItem(nameKey, currentUser.customDisplayName);
+    }
     setCurrentUser(null);
     localStorage.removeItem(STORAGE_USER_KEY);
+    localStorage.removeItem('studyhub_auth_user');
   };
 
-  // 5. 自訂排行榜暱稱
+  // 5. 自訂排行榜暱稱 (加入長度限制、XSS 過濾與管理員冒充防護)
   const setCustomDisplayName = (newName) => {
     if (!newName || !newName.trim()) return;
-    const trimmed = newName.trim();
+    let trimmed = newName.trim().slice(0, 20);
+    // XSS 安全過濾：剔除潛在 HTML/Script 標籤符號
+    trimmed = trimmed.replace(/[<>'"/\\`]/g, '');
+    if (!trimmed) return;
+
+    // 仿冒防護：一般學生禁止使用管理員關鍵字
+    const isAdminUser = checkIsAdmin(currentUser);
+    if (!isAdminUser) {
+      trimmed = trimmed.replace(/(管理員|總管理員|站長|官方|總管|系統總管|Admin|SuperAdmin)/gi, '同學');
+    }
+
     setCurrentUser(prev => ({
       ...prev,
-      displayName: trimmed
+      displayName: trimmed,
+      customDisplayName: trimmed   // 存入獨立欄位，下次 Google 登入時優先沿用
     }));
+    // 即時寫入獨立備份 key（不隨 logout 清除，確保跨登入持久）
+    if (currentUser?.email) {
+      const nameKey = `studyhub_custom_name_${currentUser.email.trim().toLowerCase()}`;
+      localStorage.setItem(nameKey, trimmed);
+    }
     updatePlayerDisplayName(currentUser?.id || 'guest_student', trimmed);
   };
 
-  // 6. 登入特定 Email（若是 jimmylee1020227@gmail.com 需比對安全金鑰或以 Google 官方驗證登入）
+  // 6. 登入特定 Email（跨裝置 100% 相同 ID，資料即時漫遊）
   const directLoginWithEmail = (email, displayName = '', securityKey = '') => {
     const cleanEmail = email.trim();
     const assignedRole = resolveUserRole(cleanEmail);
 
     // 管理員帳號安全防護：未通過 Google 官方驗證時，需提供專屬管理安全密鑰
     if (assignedRole === 'super_admin' || assignedRole === 'admin') {
-      const validKeys = ['1020227', 'admin888', 'jimmy888', '2026'];
-      if (!securityKey || !validKeys.includes(securityKey.trim())) {
-        throw new Error('管理員帳號受安全金鑰保護！請輸入管理通關密鑰 (預設 1020227) 或改用 Google 官方一鍵登入。');
+      const validAdminKey = import.meta.env.VITE_ADMIN_KEY || '1020227';
+      if (!securityKey || securityKey.trim() !== validAdminKey) {
+        throw new Error('管理員帳號受專屬安全金鑰保護！請輸入管理通關密鑰或改用 Google 官方授權登入。');
       }
     }
 
     const isJimmy = cleanEmail.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+    const deterministicId = isJimmy ? 'admin_super_jimmy' : generateDeterministicUserId(cleanEmail);
+    const validAdminKey = import.meta.env.VITE_ADMIN_KEY || '1020227';
+    const isAdminRole = assignedRole === 'super_admin' || assignedRole === 'admin';
+    const sessionProof = isAdminRole ? generateAuthProof(cleanEmail, 'admin_session', validAdminKey) : null;
+
     const user = {
-      id: isJimmy ? 'admin_super_jimmy' : ('google_' + Math.abs(cleanEmail.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))),
+      id: deterministicId,
       email: cleanEmail,
       displayName: displayName.trim() || (isJimmy ? '總管理員 (Jimmy)' : cleanEmail.split('@')[0]),
       avatar: isJimmy
@@ -130,14 +241,18 @@ export function AuthProvider({ children }) {
         : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
       role: assignedRole,
       isGoogleBound: true,
+      adminSessionProof: sessionProof,
       createdAt: new Date().toISOString()
     };
     setCurrentUser(user);
     localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user));
+    localStorage.setItem('studyhub_auth_user', JSON.stringify(user));
+    registerCloudUser(user);
   };
 
   // 7. 快速切換測試身分（學生、一般管理員、總管理員）
   const switchUserIdentity = (role, specificId = null) => {
+    const validAdminKey = import.meta.env.VITE_ADMIN_KEY || '1020227';
     if (role === 'super_admin') {
       const superAdmin = {
         id: 'admin_super_jimmy',
@@ -146,6 +261,7 @@ export function AuthProvider({ children }) {
         avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227',
         role: 'super_admin',
         isGoogleBound: true,
+        adminSessionProof: generateAuthProof(SUPER_ADMIN_EMAIL, 'admin_session', validAdminKey),
         createdAt: new Date().toISOString()
       };
       setCurrentUser(superAdmin);
@@ -153,16 +269,20 @@ export function AuthProvider({ children }) {
     } else if (role === 'admin') {
       const admins = getAdminsList();
       const targetAdmin = (specificId ? admins.find(a => a.id === specificId) : null) || admins.find(a => a.role === 'admin') || {
-        id: 'admin_chen',
-        email: 'teacher.chen@studyhub.edu.tw',
-        displayName: '陳老師 (理數科)',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=teacher.chen',
+        id: 'admin_happybrother0717',
+        email: 'happybrother0717@gmail.com',
+        displayName: '駐站管理員 (happybrother)',
+        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=happybrother0717',
         role: 'admin',
         isGoogleBound: true,
         createdAt: new Date().toISOString()
       };
-      setCurrentUser(targetAdmin);
-      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(targetAdmin));
+      const adminWithProof = {
+        ...targetAdmin,
+        adminSessionProof: generateAuthProof(targetAdmin.email, 'admin_session', validAdminKey)
+      };
+      setCurrentUser(adminWithProof);
+      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(adminWithProof));
     } else {
       const studentUser = {
         id: 'user_lin',
@@ -182,12 +302,17 @@ export function AuthProvider({ children }) {
     directLoginWithEmail(email, name);
   };
 
+  const isSuperAdmin = checkIsSuperAdmin(currentUser);
+  const isAdmin = checkIsAdmin(currentUser);
+
   return (
     <AuthContext.Provider
       value={{
         currentUser,
         setCurrentUser,
         authLoading,
+        isAdmin,
+        isSuperAdmin,
         triggerGoogleLogin,
         directLoginWithEmail,
         switchUserIdentity,

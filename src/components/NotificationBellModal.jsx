@@ -25,7 +25,7 @@ import {
 
 export default function NotificationBellModal({ isOpen, onClose }) {
   const { currentUser } = useAuth();
-  const { awardQuizCorrectPoints, setGameState } = useGame();
+  const { grantDirectPoints, setGameState, activateUserMultiplier } = useGame();
 
   const [activeTab, setActiveTab] = useState('codes'); // 'codes' | 'notices'
   const [notifications, setNotifications] = useState([]);
@@ -74,7 +74,7 @@ export default function NotificationBellModal({ isOpen, onClose }) {
 
       // 發放獎勵
       if (res.type === 'points') {
-        awardQuizCorrectPoints(res.rewardValue);
+        grantDirectPoints(res.rewardValue);
         setClaimSuccessMsg(`🎉 成功兌換【${res.code}】！獲得 ${res.rewardValue} 點排行榜積分！`);
       } else if (res.type === 'lottery_ticket') {
         setGameState(prev => ({
@@ -83,10 +83,7 @@ export default function NotificationBellModal({ isOpen, onClose }) {
         }));
         setClaimSuccessMsg(`🎉 成功兌換【${res.code}】！獲得 ${res.rewardValue} 張幸運抽獎券！`);
       } else if (res.type === 'multiplier') {
-        setGameState(prev => ({
-          ...prev,
-          multiplierBuffUntil: Date.now() + res.rewardValue * 60 * 1000
-        }));
+        activateUserMultiplier(res.rewardValue * 60);
         setClaimSuccessMsg(`🔥 成功兌換【${res.code}】！獲得 ${res.rewardValue} 分鐘 2x/4x 雙倍暴擊！`);
       }
 

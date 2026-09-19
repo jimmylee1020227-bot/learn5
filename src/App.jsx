@@ -11,13 +11,11 @@ import QuizResult from './components/QuizResult';
 import MistakeReinforceView from './components/MistakeReinforceView';
 import LeaderboardView from './components/LeaderboardView';
 import UserHistoryModal from './components/UserHistoryModal';
-import AdminSupportChat from './components/AdminSupportChat';
 import AdminDashboard from './components/AdminDashboard';
 import SuperAdminConsole from './components/SuperAdminConsole';
 import LuckyDrawModal from './components/LuckyDrawModal';
 import GoogleLoginModal from './components/GoogleLoginModal';
 import RedemptionModal from './components/RedemptionModal';
-import CommunityWallModal from './components/CommunityWallModal';
 import { DeviceProvider, useDevice } from './context/DeviceContext';
 import MobileBottomNav from './components/MobileBottomNav';
 import LoginGateway from './components/LoginGateway';
@@ -27,6 +25,8 @@ import {
   recordPracticeLog, 
   updateMistakeRecord, 
   SUPER_ADMIN_EMAIL, 
+  checkIsAdmin,
+  checkIsSuperAdmin,
   incrementDailyPracticeStats 
 } from './services/cloudStorage';
 
@@ -40,9 +40,8 @@ function MainAppContent() {
   const { awardQuizCorrectPoints, setIsLuckyDrawOpen } = useGame();
   const { isMobile, deviceType } = useDevice();
 
-  const [activeTab, setActiveTab] = useState('quiz'); // 'quiz' | 'reinforce' | 'leaderboard' | 'history' | 'chat' | 'admin' | 'super_admin'
+  const [activeTab, setActiveTab] = useState('quiz'); // 'quiz' | 'reinforce' | 'leaderboard' | 'history' | 'admin' | 'super_admin'
   const [isRedemptionOpen, setIsRedemptionOpen] = useState(false);
-  const [isCommunityOpen, setIsCommunityOpen] = useState(false);
   
   // 測驗流程狀態管理: 'idle' | 'in_quiz' | 'result'
   const [quizState, setQuizState] = useState('idle');
@@ -62,8 +61,8 @@ function MainAppContent() {
 
   // 啟動錯題加強模式測驗
   const handleStartReinforceQuiz = (reinforceQuestions) => {
+    if (!reinforceQuestions || reinforceQuestions.length === 0) return;
     setCurrentQuestions(reinforceQuestions);
-    setActiveTab('quiz');
     setQuizState('in_quiz');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -126,7 +125,6 @@ function MainAppContent() {
           if (tab === 'quiz') setQuizState('idle');
         }}
         onOpenRedemptionModal={() => setIsRedemptionOpen(true)}
-        onOpenCommunityModal={() => setIsCommunityOpen(true)}
       />
 
       {/* 主工作區塊 */}
@@ -143,7 +141,6 @@ function MainAppContent() {
                   onStartReinforceTab={() => setActiveTab('reinforce')}
                   onStartLeaderboardTab={() => setActiveTab('leaderboard')}
                   onOpenRedemptionModal={() => setIsRedemptionOpen(true)}
-                  onOpenCommunityModal={() => setIsCommunityOpen(true)}
                 />
                 <div id="scope-selector-section">
                   <ScopeSelector onStartQuiz={handleStartQuiz} />
@@ -183,16 +180,26 @@ function MainAppContent() {
           <UserHistoryModal onLaunchRetryQuiz={handleStartReinforceQuiz} />
         )}
 
-        {activeTab === 'chat' && (
-          <AdminSupportChat />
-        )}
-
         {activeTab === 'admin' && (
-          <AdminDashboard />
+          checkIsAdmin(currentUser) ? (
+            <AdminDashboard />
+          ) : (
+            <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', maxWidth: '500px', margin: '40px auto' }}>
+              <h3 style={{ color: '#ef4444', fontWeight: 800 }}>403 拒絕存取</h3>
+              <p style={{ color: '#78818a', fontSize: '0.9rem', marginTop: '6px' }}>此區域僅限通過 Google 驗證之站務管理員存取。</p>
+            </div>
+          )
         )}
 
         {activeTab === 'super_admin' && (
-          <SuperAdminConsole />
+          checkIsSuperAdmin(currentUser) ? (
+            <SuperAdminConsole />
+          ) : (
+            <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', maxWidth: '500px', margin: '40px auto' }}>
+              <h3 style={{ color: '#ef4444', fontWeight: 800 }}>403 拒絕存取</h3>
+              <p style={{ color: '#78818a', fontSize: '0.9rem', marginTop: '6px' }}>此區域僅限系統唯一總管理員存取。</p>
+            </div>
+          )
         )}
       </main>
 
@@ -204,7 +211,6 @@ function MainAppContent() {
             setActiveTab(tab);
             if (tab === 'quiz') setQuizState('idle');
           }}
-          onOpenCommunity={() => setIsCommunityOpen(true)}
           onOpenLuckyDraw={() => setIsLuckyDrawOpen(true)}
         />
       )}
@@ -215,10 +221,6 @@ function MainAppContent() {
       <RedemptionModal 
         isOpen={isRedemptionOpen}
         onClose={() => setIsRedemptionOpen(false)}
-      />
-      <CommunityWallModal 
-        isOpen={isCommunityOpen}
-        onClose={() => setIsCommunityOpen(false)}
       />
     </div>
   );

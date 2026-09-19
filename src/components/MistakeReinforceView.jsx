@@ -28,7 +28,7 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
     refresh();
 
     const unsub = subscribeToCloudSync((ev) => {
-      if (!ev.key || ev.key === 'mistake_notebook' || ev.key === 'practice_history' || ev.key === 'question_overrides') {
+      if (!ev.key || ev.key.startsWith('mistake_notebook') || ev.key.startsWith('practice_history') || ev.key === 'question_overrides') {
         refresh();
       }
     });

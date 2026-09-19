@@ -272,22 +272,30 @@ export default function LuckyDrawModal() {
 
   const handleSpin = () => {
     if (gameState.tickets <= 0) {
-      setErrorMessage('今日抽獎券已用完！系統每日 00:00 自動贈送 1 張，或請管理員空投！');
+      setErrorMessage('今日抽獎券已用完！系統每日 00:00 自動贈送 1 張，或等待管理員發放！');
       return;
     }
     setErrorMessage('');
     setIsSpinning(true);
     setPrizeResult(null);
 
+    // 立即結算抽獎並扣除票券，避免非同步 Race Condition
+    let drawRes = null;
+    try {
+      drawRes = executeLuckyDraw();
+    } catch (err) {
+      console.error('[LuckyDraw Error]', err);
+    }
+
+    // 播放 700ms 轉盤動畫後展示結果
     setTimeout(() => {
-      const res = executeLuckyDraw();
       setIsSpinning(false);
-      if (res.success) {
-        setPrizeResult(res);
+      if (drawRes && drawRes.success) {
+        setPrizeResult(drawRes);
       } else {
-        setErrorMessage(res.message);
+        setErrorMessage(drawRes?.message || '抽獎失敗，請稍後再試！');
       }
-    }, 1000);
+    }, 700);
   };
 
   const pityCount = gameState?.pityCount ?? 0;
@@ -320,7 +328,7 @@ export default function LuckyDrawModal() {
           {isGlobal2x && (
             <div style={S.doubleBanner}>
               <Flame size={16} />
-              <span>全服雙倍活動中！抽中 2 倍將升級為【4 倍狂暴暴擊 (15分鐘)】！</span>
+              <span>🔥 全服雙倍積分狂歡中！做題獲得積分 2 倍計算！</span>
             </div>
           )}
 
@@ -343,8 +351,8 @@ export default function LuckyDrawModal() {
               }} />
             </div>
             <div style={S.progressFooter}>
-              <span>未抽中金色大獎進度 +1</span>
-              <span style={{ color: '#ef8354' }}>滿 50 抽 100% 必出金色大獎</span>
+              <span>每抽累積進度 +1</span>
+              <span style={{ color: '#ef8354' }}>滿 50 抽 100% 必出最高 +5 點金色大獎</span>
             </div>
           </div>
 
@@ -365,8 +373,6 @@ export default function LuckyDrawModal() {
               <div style={{ ...S.wheelInner, padding: '10px' }}>
                 {prizeResult.prize?.type === 'miss' ? (
                   <div style={{ fontSize: '36px' }}>🍀</div>
-                ) : prizeResult.isSuper4x ? (
-                  <Flame size={36} style={{ color: '#ef8354' }} />
                 ) : (
                   <Coins size={36} style={{ color: '#9a741e' }} />
                 )}
@@ -377,7 +383,7 @@ export default function LuckyDrawModal() {
               <div style={S.wheelInner}>
                 <Gift size={38} style={{ color: '#ef8354' }} />
                 <span style={{ fontSize: '12px', fontWeight: 900, color: '#17324d' }}>點擊下方按鈕啟動</span>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: '#9aa2a8' }}>50 抽金色保底中</span>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: '#9aa2a8' }}>50 抽必中金色大獎進行中</span>
               </div>
             )}
           </div>
@@ -392,28 +398,30 @@ export default function LuckyDrawModal() {
 
           {/* 抽獎按鈕 */}
           <button
-            onClick={() => {
-              if (gameState.tickets <= 0) {
-                alert('今日抽獎券已用完！可至頂部「兌換碼」輸入 117LUCKY 立即免費領取 5 張抽獎券！');
-                return;
-              }
-              handleSpin();
+            onClick={handleSpin}
+            disabled={isSpinning || (gameState.tickets || 0) <= 0}
+            style={{ 
+              ...S.spinBtn, 
+              ...((isSpinning || (gameState.tickets || 0) <= 0) ? S.spinBtnDisabled : {}) 
             }}
-            disabled={isSpinning}
-            style={{ ...S.spinBtn, ...(isSpinning ? S.spinBtnDisabled : {}) }}
           >
             <Sparkles size={18} />
             <span>
-              {isSpinning ? '轉動抽獎中...' : gameState.tickets > 0 ? '消耗 1 張抽獎券並轉動' : '抽獎券已用完 (點擊兌換新券)'}
+              {isSpinning 
+                ? '轉動抽獎中...' 
+                : (gameState.tickets || 0) > 0 
+                  ? `消耗 1 張抽獎券並轉動 (剩餘 ${gameState.tickets} 張)` 
+                  : '今日抽獎券已用完'}
             </span>
           </button>
 
           {/* 機制說明 */}
           <div style={S.infoBox}>
-            <span style={S.infoTitle}>💡 50 抽保底與機率機制：</span>
+            <span style={S.infoTitle}>💡 抽獎與 50 抽保底機制：</span>
             <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <li><strong>低中獎率設定</strong>：銘謝惠顧 (88%)、小額點數 (10%)、金色大獎 (2%)。</li>
-              <li><strong>50 抽硬保底機制</strong>：累積滿 50 抽若未獲獎，<strong>第 50 抽 100% 必出金色頂級大獎</strong>（+100 點或加倍卡）！抽中金色大獎後重置保底。</li>
+              <li><strong>獎池設定</strong>：銘謝惠顧 (88%)、+1 點 (6%)、+3 點 (4.5%)、🎯 +5 點大獎 (1.5%)。</li>
+              <li><strong>50 抽必中保底</strong>：累積滿 50 抽時，<strong>第 50 抽 100% 必定抽出最高 🎯 +5 點金色大獎</strong>，並重置保底進度！</li>
+              <li><strong>抽獎券獲取</strong>：系統每日 00:00 自動贈送 1 張，或由管理員空投發放！</li>
             </ul>
           </div>
 

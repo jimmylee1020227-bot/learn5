@@ -4,8 +4,6 @@
   "deleted_redemption_codes": [],
   "deleted_notifications": [],
   "question_overrides": {},
-  "practice_history": [],
-  "mistake_notebook": {},
   "community_reports": [],
   "question_reports": [],
   "audit_logs": [],
@@ -224,18 +222,24 @@
   ],
   "admins_list": [
     {
-      "id": "admin_super_jimmy",
-      "email": "jimmylee1020227@gmail.com",
       "displayName": "總管理員 (Jimmy)",
-      "role": "super_admin",
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
+      "email": "jimmylee1020227@gmail.com",
+      "id": "admin_super_jimmy",
+      "role": "super_admin"
+    },
+    {
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=happybrother0717",
+      "createdAt": "2026-09-19T09:49:17.021Z",
+      "displayName": "駐站管理員 (happybrother)",
+      "email": "happybrother0717@gmail.com",
+      "id": "admin_happybrother0717",
+      "role": "admin",
       "specialties": [
-        "最高管理全權",
-        "審計日誌查閱",
-        "管理員任免",
-        "題庫主控"
-      ],
-      "createdAt": "2026-09-19T00:00:00.000Z"
+        "課綱答疑",
+        "題庫審核",
+        "錯題處理",
+        "全站巡查"
+      ]
     }
   ],
   "chat_111725425020973278798_admin_super_jimmy": [
@@ -436,19 +440,5 @@
       "timestamp": "2026-09-18T23:39:23.516Z",
       "isRead": true
     }
-  ],
-  "studyhub_game_state_111725425020973278798": {
-    "tickets": 1,
-    "lastDailyClaimDate": "",
-    "personalMultiplier": 1,
-    "multiplierExpiresAt": 0,
-    "unlockedBadges": []
-  },
-  "studyhub_game_state_admin_super_jimmy": {
-    "tickets": 1,
-    "lastDailyClaimDate": "",
-    "personalMultiplier": 1,
-    "multiplierExpiresAt": 0,
-    "unlockedBadges": []
-  }
+  ]
 }

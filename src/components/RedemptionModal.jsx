@@ -6,7 +6,7 @@ import { Ticket, Sparkles, CheckCircle2, AlertCircle, X, ArrowRight, Gift } from
 
 export default function RedemptionModal({ isOpen, onClose }) {
   const { currentUser } = useAuth();
-  const { awardQuizCorrectPoints, setGameState, activateUserMultiplier } = useGame();
+  const { grantDirectPoints, setGameState, activateUserMultiplier } = useGame();
 
   const [inputCode, setInputCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -28,7 +28,7 @@ export default function RedemptionModal({ isOpen, onClose }) {
       
       // 套用獎勵
       if (reward.type === 'points') {
-        awardQuizCorrectPoints(reward.rewardValue);
+        grantDirectPoints(reward.rewardValue);
       } else if (reward.type === 'lottery_ticket') {
         setGameState(prev => ({
           ...prev,

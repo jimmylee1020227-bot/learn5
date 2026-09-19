@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
+import { checkIsAdmin, checkIsSuperAdmin } from '../services/cloudStorage';
 import { 
   BookOpen, 
   Target, 
@@ -14,13 +15,12 @@ import {
 export default function MobileBottomNav({ 
   activeTab, 
   setActiveTab, 
-  onOpenCommunity, 
   onOpenLuckyDraw 
 }) {
   const { currentUser } = useAuth();
   const { gameState } = useGame();
-  const isSuperAdmin = currentUser?.role === 'super_admin';
-  const isAdmin = isSuperAdmin || currentUser?.role === 'admin';
+  const isSuperAdmin = checkIsSuperAdmin(currentUser);
+  const isAdmin = checkIsAdmin(currentUser);
 
   return (
     <nav
@@ -115,30 +115,6 @@ export default function MobileBottomNav({
         </span>
       </button>
 
-      {/* 4. 打氣牆 */}
-      <button
-        onClick={onOpenCommunity}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'transparent',
-          border: 'none',
-          borderRadius: '10px',
-          padding: '5px 8px',
-          cursor: 'pointer',
-          color: '#5b6772',
-          flex: 1,
-          maxWidth: '68px',
-          transition: 'all 0.15s ease'
-        }}
-      >
-        <MessageSquare size={20} />
-        <span style={{ fontSize: '0.68rem', fontWeight: 600, marginTop: '2px' }}>
-          打氣牆
-        </span>
-      </button>
 
       {/* 5. 抽獎 */}
       <button

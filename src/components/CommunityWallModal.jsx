@@ -7,7 +7,8 @@ import {
   deleteCommunityPost,
   getCommunityReports,
   reportCommunityPost,
-  subscribeToCloudSync 
+  subscribeToCloudSync,
+  checkIsAdmin 
 } from '../services/cloudStorage';
 import { MessageSquareHeart, Heart, Send, Sparkles, X, User, Trash2, Flag, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
@@ -73,6 +74,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
     setIsSubmitting(true);
     try {
       addCommunityPost({
+        authorId: currentUser?.id || 'guest',
         userName: currentUser?.displayName || '匿名同學',
         userSchool: currentUser?.role === 'super_admin' ? '系統總管理員' : '會考戰友',
         message: inputMsg.trim()
@@ -86,20 +88,25 @@ export default function CommunityWallModal({ isOpen, onClose }) {
     }
   };
 
-  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
+  const isAdmin = checkIsAdmin(currentUser);
 
   const handleDeletePost = (postId) => {
-    if (!window.confirm('確定要刪除這則打氣留言嗎？（此操作會同步記錄至管理員審計日誌）')) return;
+    if (!window.confirm('確定要刪除這則打氣留言嗎？')) return;
     try {
       const updated = deleteCommunityPost(postId, currentUser);
       setPosts([...updated]);
     } catch (err) {
-      console.error('Delete post error', err);
+      alert(err.message || '刪除失敗');
       setPosts(getCommunityPosts());
     }
   };
 
+  const lastLikeRef = React.useRef(new Map());
   const handleLike = (postId) => {
+    const now = Date.now();
+    const last = lastLikeRef.current.get(postId) || 0;
+    if (now - last < 800) return;
+    lastLikeRef.current.set(postId, now);
     const updated = likeCommunityPost(postId);
     setPosts([...updated]);
   };
@@ -331,6 +338,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
             <div style={{ display: 'flex', gap: '8px' }}>
               <input 
                 type="text" 
+                maxLength={200}
                 value={inputMsg} 
                 onChange={e => setInputMsg(e.target.value)}
                 placeholder="例如：今天完成 10 題數學，錯題已加強掌握！大家一起上岸！"
@@ -433,10 +441,10 @@ export default function CommunityWallModal({ isOpen, onClose }) {
                   </span>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {isAdmin && (
+                    {(isAdmin || (currentUser?.id && post.authorId === currentUser.id)) && (
                       <button 
                         onClick={() => handleDeletePost(post.id)}
-                        title="管理員刪除此留言"
+                        title={isAdmin ? "管理員刪除此留言" : "刪除我的打氣留言"}
                         style={{ 
                           background: '#fee2e2', 
                           border: '1.5px solid #ef4444', 

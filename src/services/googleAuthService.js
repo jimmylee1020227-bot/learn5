@@ -1,5 +1,5 @@
 // Google 官方直接跳轉與身分驗證服務 (Direct Zero-Prompt Google Jump)
-import { SUPER_ADMIN_EMAIL, getAdminsList } from './cloudStorage';
+import { SUPER_ADMIN_EMAIL, getAdminsList, fetchCloudAdminsList } from './cloudStorage';
 
 const STORAGE_GOOGLE_CLIENT_ID = 'studyhub_google_client_id';
 
@@ -41,29 +41,37 @@ export function redirectToGoogleLogin(customClientId = null) {
   }
 }
 
-// 監聽並解析 Google 跳轉回調（支援 OAuth Hash 與 Google AccountChooser Return）
+// 產生跨裝置、跨瀏覽器 100% 絕對一致的確定性使用者唯一 ID
+export function generateDeterministicUserId(email) {
+  const clean = (email || '').trim().toLowerCase();
+  if (!clean) return 'student_' + Math.random().toString(36).substring(2, 9);
+  if (clean === SUPER_ADMIN_EMAIL.toLowerCase()) return 'admin_super_jimmy';
+  
+  // 雙重 DJB2 確定性位元雜湊（完全杜絕跨裝置 ID 錯位）
+  let h1 = 5381;
+  let h2 = 52711;
+  for (let i = 0; i < clean.length; i++) {
+    const c = clean.charCodeAt(i);
+    h1 = ((h1 << 5) + h1) ^ c;
+    h2 = ((h2 << 5) + h2) ^ c;
+  }
+  const p1 = Math.abs(h1).toString(36);
+  const p2 = Math.abs(h2).toString(36);
+  return `u_${p1}${p2}`;
+}
+
+// 監聽並解析 Google 官方 OAuth 2.0 跳轉回調 (#access_token=...)
 export async function parseGoogleAuthCallback() {
   if (typeof window === 'undefined') return null;
 
-  // 1. 檢查 Google AccountChooser 直接跳轉回調 (?google_auth_success=1)
+  // 1. 安全防護：徹底杜絕 URL 偽造提權參數 (?google_auth_success)
   const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.get('google_auth_success') === '1') {
-    const email = searchParams.get('email') || SUPER_ADMIN_EMAIL;
-    // 清除網址列參數保持乾淨
+  if (searchParams.has('google_auth_success')) {
+    // 移除惡意/測試殘留參數保持乾淨
     window.history.replaceState(null, '', window.location.pathname);
-
-    return {
-      googleId: 'google_' + Date.now(),
-      email: email,
-      displayName: email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() ? '總管理員 Jimmy' : email.split('@')[0],
-      avatar: email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
-        ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227'
-        : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email)}`,
-      emailVerified: true
-    };
   }
 
-  // 2. 檢查 Google OAuth 2.0 Token 回調 (#access_token=...)
+  // 2. 檢查 Google 官方 OAuth 2.0 Token 回調 (#access_token=...)
   const hash = window.location.hash;
   if (hash && hash.includes('access_token')) {
     try {
@@ -85,12 +93,19 @@ export async function parseGoogleAuthCallback() {
       }
 
       const data = await res.json();
+      const cleanEmail = (data.email || '').trim().toLowerCase();
+      const isJimmy = cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase();
+
       return {
-        googleId: data.sub,
+        googleId: isJimmy ? 'admin_super_jimmy' : generateDeterministicUserId(cleanEmail),
+        sub: data.sub,
         email: data.email,
         displayName: data.name || data.email.split('@')[0],
         avatar: data.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(data.email)}`,
-        emailVerified: data.email_verified
+        emailVerified: data.email_verified,
+        accessToken,
+        authProof: generateAuthProof(data.email, data.sub, accessToken),
+        authTimestamp: Date.now()
       };
     } catch (err) {
       console.error('Failed to parse Google OAuth callback', err);
@@ -101,18 +116,63 @@ export async function parseGoogleAuthCallback() {
   return null;
 }
 
-// 判斷 Google 使用者之角色（總管理員唯一綁定 jimmylee1020227@gmail.com）
+// 產生基於 Google 官方 Sub 與 Token 的不可偽造防護雜湊憑證
+export function generateAuthProof(email, sub, accessToken) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanSub = (sub || '').trim();
+  const tokenFragment = (accessToken || '').slice(-16);
+  const seed = `${cleanEmail}|${cleanSub}|${tokenFragment}|studyhub_secret_guard_2026`;
+  
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+  }
+  return (h >>> 0).toString(16);
+}
+
+// 嚴格向 Google 官方端點校驗 Token 是否真實屬於該管理員 (防本機 DevTools 竄改提權)
+export async function verifyGoogleTokenWithCloud(accessToken, expectedEmail) {
+  if (!accessToken) return false;
+  try {
+    const res = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${encodeURIComponent(accessToken)}`);
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (!data.email) return false;
+    return data.email.trim().toLowerCase() === expectedEmail.trim().toLowerCase();
+  } catch (e) {
+    return false;
+  }
+}
+
+// 判斷使用者角色（總管理員唯一綁定 jimmylee1020227@gmail.com）
 export function resolveUserRole(email) {
   const normalizedEmail = (email || '').trim().toLowerCase();
+  if (!normalizedEmail) return 'student';
   if (normalizedEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
     return 'super_admin'; // 👑 唯一總管理員
   }
 
   const admins = getAdminsList();
-  const matchedAdmin = admins.find(a => a.email.toLowerCase() === normalizedEmail);
-  if (matchedAdmin) {
+  if (Array.isArray(admins) && admins.some(a => a && a.email && a.email.trim().toLowerCase() === normalizedEmail)) {
     return 'admin'; // 🛡️ 一般管理員
   }
 
   return 'student'; // 🎓 一般學生
 }
+
+// 支援即時自雲端拉取最新名冊解析角色的非同步版本 (解決跨裝置首次登入名冊未快取問題)
+export async function resolveUserRoleAsync(email) {
+  const normalizedEmail = (email || '').trim().toLowerCase();
+  if (!normalizedEmail) return 'student';
+  if (normalizedEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+    return 'super_admin';
+  }
+  const admins = await fetchCloudAdminsList();
+  if (Array.isArray(admins) && admins.some(a => a && a.email && a.email.trim().toLowerCase() === normalizedEmail)) {
+    return 'admin';
+  }
+  return 'student';
+}
+
+

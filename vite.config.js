@@ -49,15 +49,39 @@ function cloudSyncPlugin() {
   }
 
   function mergeStateKey(state, key, value) {
-    if (key === 'practice_history' && Array.isArray(value)) {
-      const existing = Array.isArray(state.practice_history) ? state.practice_history : []
+    if ((key === 'practice_history' || key.startsWith('practice_history_')) && Array.isArray(value)) {
+      const existing = Array.isArray(state[key]) ? state[key] : []
       const map = new Map()
       // 先放新記錄，再補充舊記錄
       value.forEach(item => { if (item?.id) map.set(item.id, item) })
       existing.forEach(item => { if (item?.id && !map.has(item.id)) map.set(item.id, item) })
       const merged = Array.from(map.values()).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))
-      state.practice_history = merged.slice(0, 5000)
-      return state.practice_history
+      state[key] = merged.slice(0, 5000)
+      return state[key]
+    }
+    if (key.startsWith('daily_stats_') && typeof value === 'object' && value !== null) {
+      const existing = state[key] || {}
+      state[key] = {
+        ...existing,
+        ...value,
+        count: Math.max(existing.count || 0, value.count || 0),
+        correctCount: Math.max(existing.correctCount || 0, value.correctCount || 0)
+      }
+      return state[key]
+    }
+    if (key.startsWith('studyhub_game_state_') && typeof value === 'object' && value !== null) {
+      const existing = state[key] || {}
+      const incomingTime = value.updatedAt || 0
+      const existingTime = existing.updatedAt || 0
+      if (incomingTime >= existingTime || (value.tickets || 0) > (existing.tickets || 0)) {
+        state[key] = {
+          ...existing,
+          ...value,
+          tickets: value.tickets ?? existing.tickets ?? 0,
+          pityCount: value.pityCount ?? existing.pityCount ?? 0
+        }
+      }
+      return state[key]
     }
     if (key === 'mistake_notebook' && typeof value === 'object' && value !== null) {
       if (!state.mistake_notebook || typeof state.mistake_notebook !== 'object') {

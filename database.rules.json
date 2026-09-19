@@ -1,6 +1,105 @@
 {
   "rules": {
-    ".read": true,
-    ".write": true
+    ".read": false,
+    ".write": false,
+    "studyhub": {
+      ".read": true,
+      ".write": false,
+      "global_settings": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "admins_list": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "audit_logs": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "studyhub_weekly_leaderboard": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "leaderboard_players": {
+        ".read": true,
+        "$userId": {
+          ".read": true,
+          ".write": "newData.exists()"
+        }
+      },
+      "ticket_grants": {
+        ".read": true,
+        "$userId": {
+          ".read": true,
+          "$grantId": {
+            ".read": true,
+            ".write": "newData.exists()"
+          }
+        }
+      },
+      "studyhub_hall_of_fame": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "recent_practice_stream": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "user_registry": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "admin_notifications": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "redemption_codes": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "question_overrides": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "question_reports": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "site_issue_reports": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "community_posts": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "deleted_community_post_ids": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "support_chats": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+      "quiz_papers": {
+        ".read": true,
+        "$paperId": {
+          ".read": true,
+          ".write": "newData.exists()"
+        }
+      },
+      "redeemed_ledger": {
+        ".read": true,
+        "$redeemId": {
+          ".read": true,
+          ".write": "!data.exists() && newData.exists()"
+        }
+      },
+      "$userScopedKey": {
+        ".read": true,
+        ".write": "newData.exists()"
+      }
+    }
   }
 }

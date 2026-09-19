@@ -8,21 +8,28 @@ import {
   getQuestionOverrides,
   updateGlobalSettings,
   getUserPracticeHistory,
+  fetchCloudUserPracticeHistory,
+  fetchCloudUserMistakeNotebook,
+  fetchAllCloudPracticeLogs,
+  fetchCloudUserAllMistakesAndLogs,
+  fetchAllCloudQuizPapers,
+  getRecentPracticeStream,
+  getRegisteredStudents,
   getRedemptionCodes,
   addRedemptionCode,
   deleteRedemptionCode,
-  getCommunityPosts,
-  deleteCommunityPost,
-  getCommunityReports,
-  resolveCommunityReport,
   getAdminNotifications,
   deleteAdminNotification,
-  subscribeToCloudSync
+  subscribeToCloudSync,
+  SUPER_ADMIN_EMAIL,
+  getAdminsList,
+  checkIsAdmin
 } from '../services/cloudStorage';
 import { 
   adminGrantPoints, 
   adminGrantTickets, 
-  getLeaderboard 
+  getLeaderboard,
+  fetchCloudLeaderboard 
 } from '../services/leaderboardService';
 import { generateQuestion } from '../data/questionGenerator';
 import { 
@@ -39,31 +46,42 @@ import {
   BookOpen, 
   Ticket, 
   Plus, 
-  MessageSquareHeart, 
   ChevronDown, 
   ChevronUp, 
   RotateCcw, 
   Bell, 
-  Flag,
-  X 
+  X,
+  RefreshCw,
+  Zap,
+  Clock,
+  FileText
 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { currentUser } = useAuth();
   const { globalSettings } = useGame();
 
-  const [activeSubTab, setActiveSubTab] = useState('reports'); // 'reports' | 'rewards' | 'codes' | 'broadcast' | 'students' | 'questions' | 'community'
+  const isAuthorized = checkIsAdmin(currentUser);
+
+
+
+  const [activeSubTab, setActiveSubTab] = useState('reports'); // 'reports' | 'rewards' | 'codes' | 'broadcast' | 'students' | 'questions'
   const [reports, setReports] = useState(getQuestionReports());
   const [players, setPlayers] = useState(getLeaderboard());
   const [allHistory, setAllHistory] = useState(getUserPracticeHistory());
+  const [quizPapers, setQuizPapers] = useState([]);
+  const [inspectionViewMode, setInspectionViewMode] = useState('papers'); // 'papers' | 'logs'
+  const [expandedPaperIds, setExpandedPaperIds] = useState({});
+  const [registeredStudents, setRegisteredStudents] = useState(getRegisteredStudents());
+  const [recentStream, setRecentStream] = useState(getRecentPracticeStream());
+  const [isLoadingStudentHistory, setIsLoadingStudentHistory] = useState(false);
+  const [isRefreshingCloud, setIsRefreshingCloud] = useState(false);
   const [redemptionCodes, setRedemptionCodes] = useState(getRedemptionCodes());
-  const [communityPosts, setCommunityPosts] = useState(getCommunityPosts());
-  const [communityReports, setCommunityReports] = useState(getCommunityReports());
-  const [communitySubView, setCommunitySubView] = useState('pending'); // 'pending' | 'all_posts' | 'resolved'
   const [adminNotifications, setAdminNotifications] = useState(getAdminNotifications());
 
   // 學生歷程調閱與搜尋狀態
   const [selectedStudent, setSelectedStudent] = useState('ALL');
+  const [selectedStudentId, setSelectedStudentId] = useState('ALL');
   const [studentSearchKeyword, setStudentSearchKeyword] = useState('');
   const [questionSearchKeyword, setQuestionSearchKeyword] = useState('');
   const [onlyMistakes, setOnlyMistakes] = useState(false);
@@ -99,37 +117,87 @@ export default function AdminDashboard() {
       setReports(getQuestionReports());
       setPlayers(getLeaderboard());
       setAllHistory(getUserPracticeHistory());
+      setRegisteredStudents(getRegisteredStudents());
+      setRecentStream(getRecentPracticeStream());
       setRedemptionCodes(getRedemptionCodes());
-      setCommunityPosts(getCommunityPosts());
-      setCommunityReports(getCommunityReports());
       setAdminNotifications(getAdminNotifications());
     };
     refreshAll();
 
-    const unsub = subscribeToCloudSync(() => {
+    // 初次載入主動調閱 Firebase 雲端最新排行榜、全體學生做題錯題歷史與所有完整試卷
+    fetchCloudLeaderboard().then(latest => {
+      if (latest) setPlayers(latest);
+    });
+    fetchAllCloudPracticeLogs().then(logs => {
+      if (logs && logs.length > 0) setAllHistory(logs);
+    });
+    fetchAllCloudQuizPapers().then(papers => {
+      if (papers && papers.length > 0) setQuizPapers(papers);
+    });
+
+    const unsub = subscribeToCloudSync((ev) => {
       refreshAll();
+      if (!ev?.key || ev.key === 'quiz_papers' || ev.key === 'user_quiz_papers') {
+        fetchAllCloudQuizPapers().then(papers => {
+          if (papers && papers.length > 0) setQuizPapers(papers);
+        });
+      }
     });
     return () => unsub();
   }, []);
 
-  // 刪除打氣留言
-  const handleDeleteCommunityPost = (postId) => {
-    if (!window.confirm('確定要刪除這則打氣留言嗎？將同步寫入總管審計日誌。')) return;
-    deleteCommunityPost(postId, currentUser);
-    setCommunityPosts(getCommunityPosts());
+  // 手動強制自 Firebase 雲端重新整理名冊、即時做題串流、全服錯題紀錄與所有試卷
+  const handleForceCloudRefresh = async () => {
+    setIsRefreshingCloud(true);
+    try {
+      setRegisteredStudents(getRegisteredStudents());
+      setRecentStream(getRecentPracticeStream());
+      const [latestBoard, cloudLogs, papers] = await Promise.all([
+        fetchCloudLeaderboard(),
+        fetchAllCloudPracticeLogs(),
+        fetchAllCloudQuizPapers()
+      ]);
+      if (latestBoard) setPlayers(latestBoard);
+      if (cloudLogs && cloudLogs.length > 0) setAllHistory(cloudLogs);
+      if (papers && papers.length > 0) setQuizPapers(papers);
+    } catch (e) {
+      console.warn('Cloud refresh exception', e);
+    } finally {
+      setTimeout(() => setIsRefreshingCloud(false), 500);
+    }
   };
 
-  // 審核學生檢舉之打氣留言 (下架刪除或駁回保留)
-  const handleResolveCommunityReport = (reportId, decision) => {
-    const isDel = decision === 'delete';
-    const confirmMsg = isDel
-      ? '確定判定此留言違規屬實並自全站下架刪除嗎？（將同步自打氣牆移除並記錄於審計日誌）'
-      : '確定判定此留言未違規，駁回檢舉並予以保留嗎？';
-    if (!window.confirm(confirmMsg)) return;
+  // 點擊學生名字按鈕：從 Firebase 雲端即時調閱該學生的所有做題與錯題紀錄
+  const handleSelectStudentForInspection = async (student) => {
+    const sId = student.id || student.userId;
+    const sName = student.name || student.userName;
+    
+    if (selectedStudent === sName && onlyMistakes) {
+      setOnlyMistakes(false);
+      return;
+    }
 
-    resolveCommunityReport(reportId, decision, currentUser);
-    setCommunityReports(getCommunityReports());
-    setCommunityPosts(getCommunityPosts());
+    setSelectedStudent(sName);
+    setSelectedStudentId(sId || 'ALL');
+    setOnlyMistakes(true); // 預設聚焦顯示該生錯題
+    
+    // 向 Firebase 雲端發起精確調閱該生所有做題與錯題本
+    if (sId) {
+      setIsLoadingStudentHistory(true);
+      try {
+        const studentLogs = await fetchCloudUserAllMistakesAndLogs(sId, sName, student.school);
+        if (studentLogs && studentLogs.length > 0) {
+          setAllHistory(prev => {
+            const others = prev.filter(p => p.userId !== sId && p.userName !== sName);
+            return [...studentLogs, ...others];
+          });
+        }
+      } catch (err) {
+        console.warn('Error fetching cloud logs for student', err);
+      } finally {
+        setIsLoadingStudentHistory(false);
+      }
+    }
   };
 
   // 刪除系統公告與通知
@@ -139,11 +207,28 @@ export default function AdminDashboard() {
     setAdminNotifications(getAdminNotifications());
   };
 
-  // 統計所有學生的對錯題類型分析
+  // 統計所有學生的對錯題類型分析 (支援千萬人併發與全服註冊名冊聚合)
   const studentAnalytics = React.useMemo(() => {
     const studentMap = {};
     const conceptMap = {};
 
+    // 1. 先用 registeredStudents 初始化名冊，保證即便本地尚未載入題目細節的學生也會顯示在名冊中
+    registeredStudents.forEach(st => {
+      const sName = st.name || '匿名同學';
+      studentMap[sName] = {
+        name: sName,
+        school: st.school || '會考戰友',
+        total: st.totalQuestions || 0,
+        correct: st.totalCorrect || 0,
+        wrong: Math.max(0, (st.totalQuestions || 0) - (st.totalCorrect || 0)),
+        userId: st.id,
+        email: st.email || '',
+        lastActive: st.lastActive || '',
+        accuracy: st.accuracy !== undefined ? st.accuracy : 0
+      };
+    });
+
+    // 2. 用已載入的 allHistory 補充精確細節
     allHistory.forEach(log => {
       const sName = log.userName || '匿名同學';
       if (!studentMap[sName]) {
@@ -153,14 +238,20 @@ export default function AdminDashboard() {
           total: 0,
           correct: 0,
           wrong: 0,
-          userId: log.userId
+          userId: log.userId,
+          email: '',
+          lastActive: log.timestamp || '',
+          accuracy: 0
         };
       }
-      studentMap[sName].total += 1;
+      studentMap[sName].total = Math.max(studentMap[sName].total, (studentMap[sName].total || 0) + 1);
       if (log.isCorrect) {
         studentMap[sName].correct += 1;
       } else {
         studentMap[sName].wrong += 1;
+      }
+      if (studentMap[sName].total > 0) {
+        studentMap[sName].accuracy = Math.round((studentMap[sName].correct / studentMap[sName].total) * 100);
       }
 
       const tag = log.conceptTag || log.unitName || '基礎核心綜合';
@@ -203,23 +294,29 @@ export default function AdminDashboard() {
       .sort((a, b) => b.correct - a.correct || b.accuracy - a.accuracy)
       .slice(0, 5);
 
+    const totalCount = studentsList.reduce((acc, cur) => acc + (cur.total || 0), 0) || allHistory.length;
+    const totalCorrect = studentsList.reduce((acc, cur) => acc + (cur.correct || 0), 0) || allHistory.filter(h => h.isCorrect).length;
+    const totalWrong = studentsList.reduce((acc, cur) => acc + (cur.wrong || 0), 0) || allHistory.filter(h => !h.isCorrect).length;
+
     return {
       studentsList,
       topMistakeTypes,
       topMasteryTypes,
-      totalCount: allHistory.length,
-      totalCorrect: allHistory.filter(h => h.isCorrect).length,
-      totalWrong: allHistory.filter(h => !h.isCorrect).length
+      totalCount,
+      totalCorrect,
+      totalWrong
     };
-  }, [allHistory]);
+  }, [allHistory, registeredStudents]);
 
   // 篩選做題紀錄列表
   const filteredPracticeLogs = React.useMemo(() => {
     return allHistory.filter(log => {
-      // 學生姓名快篩按鈕
+      // 學生姓名與 ID 快篩按鈕 (支援姓名與 userId 雙向精準匹配，杜絕任何過濾遺漏)
       if (selectedStudent !== 'ALL') {
         const sName = log.userName || '匿名同學';
-        if (sName !== selectedStudent && log.userId !== selectedStudent) {
+        const matchName = sName === selectedStudent || sName.toLowerCase() === selectedStudent.toLowerCase();
+        const matchId = log.userId && (log.userId === selectedStudent || (selectedStudentId !== 'ALL' && log.userId === selectedStudentId));
+        if (!matchName && !matchId) {
           return false;
         }
       }
@@ -249,16 +346,68 @@ export default function AdminDashboard() {
       }
       return true;
     });
-  }, [allHistory, selectedStudent, studentSearchKeyword, onlyMistakes, questionSearchKeyword]);
+  }, [allHistory, selectedStudent, selectedStudentId, studentSearchKeyword, onlyMistakes, questionSearchKeyword]);
 
-  // 點擊學生名字按鈕：按下去後立即顯示該學生的所有錯題
-  const handleStudentChipClick = (studentName) => {
-    if (selectedStudent === studentName && onlyMistakes) {
-      setOnlyMistakes(false);
-    } else {
-      setSelectedStudent(studentName);
-      setOnlyMistakes(true);
-    }
+  // 篩選完整試卷列表 (支援學生姓名、學校、題目關鍵字與科目快篩)
+  const filteredQuizPapers = React.useMemo(() => {
+    return quizPapers.filter(paper => {
+      if (selectedStudent !== 'ALL') {
+        const sName = paper.userName || '匿名同學';
+        const matchName = sName === selectedStudent || sName.toLowerCase() === selectedStudent.toLowerCase();
+        const matchId = paper.userId && (paper.userId === selectedStudent || (selectedStudentId !== 'ALL' && paper.userId === selectedStudentId));
+        if (!matchName && !matchId) {
+          return false;
+        }
+      }
+      if (studentSearchKeyword.trim()) {
+        const kw = studentSearchKeyword.trim().toLowerCase();
+        const sName = (paper.userName || '').toLowerCase();
+        const sSchool = (paper.userSchool || '').toLowerCase();
+        if (!sName.includes(kw) && !sSchool.includes(kw)) {
+          return false;
+        }
+      }
+      if (questionSearchKeyword.trim()) {
+        const kw = questionSearchKeyword.trim().toLowerCase();
+        const title = (paper.paperTitle || '').toLowerCase();
+        const unit = (paper.unitName || '').toLowerCase();
+        const hasMatchingQ = paper.questions?.some(q => 
+          (q.questionId || '').toLowerCase().includes(kw) ||
+          (q.conceptTag || '').toLowerCase().includes(kw) ||
+          (q.question || '').toLowerCase().includes(kw)
+        );
+        if (!title.includes(kw) && !unit.includes(kw) && !hasMatchingQ) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [quizPapers, selectedStudent, selectedStudentId, studentSearchKeyword, questionSearchKeyword]);
+
+  if (!isAuthorized) {
+    return (
+      <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', maxWidth: '560px', margin: '40px auto' }}>
+        <Shield size={60} color="#ef4444" style={{ margin: '0 auto 16px' }} />
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ef4444', marginBottom: '8px' }}>
+          403 權限不足：禁止存取管理員控制台
+        </h2>
+        <p style={{ color: '#78818a', fontSize: '0.92rem', lineHeight: 1.6 }}>
+          此區域受嚴格安全防護，僅限通過 Google 官方身分驗證之站務管理員與系統總管存取。
+        </p>
+      </div>
+    );
+  }
+
+  // 點擊學生名字按鈕：按下去後立即顯示該學生的所有錯題與試卷
+  const handleStudentChipClick = (student) => {
+    handleSelectStudentForInspection(student);
+  };
+
+  const toggleExpandPaper = (paperId) => {
+    setExpandedPaperIds(prev => ({
+      ...prev,
+      [paperId]: !prev[paperId]
+    }));
   };
 
   const toggleExpandLog = (logId) => {
@@ -478,19 +627,6 @@ export default function AdminDashboard() {
             style={{ padding: '8px 14px' }}
           >
             <BookOpen size={15} /> 題庫改題與刪除
-          </button>
-          <button
-            onClick={() => setActiveSubTab('community')}
-            className={`btn ${activeSubTab === 'community' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            <MessageSquareHeart size={15} /> 
-            打氣留言與檢舉審核
-            {communityReports.filter(r => r.status === 'pending').length > 0 && (
-              <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.72rem', padding: '1px 6px', borderRadius: '10px', fontWeight: 800 }}>
-                {communityReports.filter(r => r.status === 'pending').length} 待審
-              </span>
-            )}
           </button>
         </div>
 
@@ -893,7 +1029,7 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
-              {/* 統計四項指標 */}
+              {/* 統計四項指標與雲端強制刷新按鈕 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span className="badge badge-navy" style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
                   📊 總作答：{studentAnalytics.totalCount} 題
@@ -905,9 +1041,97 @@ export default function AdminDashboard() {
                   ⚠️ 總錯題：{studentAnalytics.totalWrong} 題
                 </span>
                 <span className="badge badge-gold" style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
-                  👤 活躍學生：{studentAnalytics.studentsList.length} 位
+                  👤 註冊/活躍學生：{studentAnalytics.studentsList.length} 位
+                </span>
+                <button
+                  onClick={handleForceCloudRefresh}
+                  disabled={isRefreshingCloud}
+                  className="btn btn-secondary"
+                  style={{ padding: '6px 12px', fontSize: '0.8rem', fontWeight: 800, gap: '6px' }}
+                  title="向 Firebase 雲端資料庫重新同步全體名冊與即時做題紀錄"
+                >
+                  <RefreshCw size={14} className={isRefreshingCloud ? 'animate-spin' : ''} />
+                  {isRefreshingCloud ? '雲端同步中...' : '重新整理雲端'}
+                </button>
+              </div>
+            </div>
+
+            {/* A-2. 全服即時做題動態串流 (Live Feed) */}
+            <div style={{ marginBottom: '20px', background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Zap size={18} color="#eab308" />
+                  <span style={{ fontWeight: 800, fontSize: '0.92rem', color: '#17324d' }}>
+                    ⚡ 全服做題即時動態串流 (Live Stream) - 即時交卷脈搏
+                  </span>
+                  <span className="badge badge-navy" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+                    最新 {recentStream.length} 筆
+                  </span>
+                </div>
+                <span style={{ fontSize: '0.75rem', color: '#78818a' }}>
+                  任何學生交卷即秒級推播
                 </span>
               </div>
+
+              {recentStream.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '14px', fontSize: '0.82rem', color: '#78818a' }}>
+                  目前尚未有即時交卷串流，當學生完成任一測驗交卷時，此處將自動即時跳出交卷通知與得分詳情。
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
+                  {recentStream.slice(0, 15).map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        minWidth: '260px',
+                        background: '#fffdf9',
+                        border: '1.5px solid #ded3c5',
+                        borderRadius: '12px',
+                        padding: '12px 14px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px',
+                        boxShadow: '2px 2px 0 #ded3c5',
+                        flexShrink: 0
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                        <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#17324d' }}>
+                          👤 {item.userName || '會考同學'}
+                        </span>
+                        <span 
+                          style={{ 
+                            fontSize: '0.72rem', 
+                            fontWeight: 800, 
+                            padding: '2px 6px', 
+                            borderRadius: '6px',
+                            background: item.accuracy >= 80 ? '#e8f6ed' : item.accuracy >= 60 ? '#fff7d9' : '#fff0e9',
+                            color: item.accuracy >= 80 ? '#15803d' : item.accuracy >= 60 ? '#806523' : '#c8643d'
+                          }}
+                        >
+                          {item.correctCount} / {item.totalQuestions} 題 ({item.accuracy}%)
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.74rem', color: '#78818a' }}>
+                        {item.userSchool || '會考戰友'} • 【{item.unitName}】
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
+                        <span style={{ fontSize: '0.7rem', color: '#9aa2a8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Clock size={11} /> {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • 耗時 {item.timeSpentSec}s
+                        </span>
+                        <button
+                          onClick={() => handleSelectStudentForInspection(item)}
+                          className="btn btn-ghost"
+                          style={{ padding: '2px 6px', fontSize: '0.72rem', color: '#ef8354', fontWeight: 800 }}
+                          title="調閱此學生詳細做題與錯題紀錄"
+                        >
+                          調閱詳解 →
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* B. 高頻對錯題類型雙診斷卡片 */}
@@ -1080,6 +1304,7 @@ export default function AdminDashboard() {
               <button
                 onClick={() => {
                   setSelectedStudent('ALL');
+                  setSelectedStudentId('ALL');
                   setOnlyMistakes(false);
                 }}
                 style={{
@@ -1108,7 +1333,7 @@ export default function AdminDashboard() {
                   return (
                     <button
                       key={student.name}
-                      onClick={() => handleStudentChipClick(student.name)}
+                      onClick={() => handleStudentChipClick(student)}
                       style={{
                         background: isSelected ? '#17324d' : '#fffdf9',
                         color: isSelected ? '#f7cf68' : '#17324d',
@@ -1123,7 +1348,7 @@ export default function AdminDashboard() {
                         alignItems: 'center',
                         gap: '6px'
                       }}
-                      title={`點擊查看【${student.name}】的所有錯題`}
+                      title={`點擊調閱【${student.name}】的雲端做題與錯題紀錄`}
                     >
                       <span>👤 {student.name}</span>
                       <span 
@@ -1160,6 +1385,7 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => {
                       setSelectedStudent('ALL');
+                      setSelectedStudentId('ALL');
                       setOnlyMistakes(false);
                     }}
                     className="btn btn-ghost"
@@ -1168,6 +1394,14 @@ export default function AdminDashboard() {
                     清除學生篩選
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* 雲端調閱載入提示 */}
+            {isLoadingStudentHistory && (
+              <div style={{ marginTop: '10px', padding: '10px 14px', background: '#eff6ff', border: '1.5px solid #3b82f6', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.84rem', color: '#1d4ed8', fontWeight: 700 }}>
+                <RefreshCw size={15} className="animate-spin" />
+                正在自 Firebase 雲端調閱【{selectedStudent}】之實名做題歷程與錯題本...
               </div>
             )}
           </div>
@@ -1202,50 +1436,338 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
-                onClick={() => setOnlyMistakes(false)}
-                style={{
-                  background: !onlyMistakes ? '#17324d' : '#f8f3eb',
-                  color: !onlyMistakes ? '#fff' : '#17324d',
-                  border: '1.5px solid #17324d',
-                  borderRadius: '10px',
-                  padding: '7px 14px',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  cursor: 'pointer'
-                }}
-              >
-                全部作答 ({filteredPracticeLogs.length})
-              </button>
-              <button
-                onClick={() => setOnlyMistakes(true)}
-                style={{
-                  background: onlyMistakes ? '#c8643d' : '#f8f3eb',
-                  color: onlyMistakes ? '#fff' : '#c8643d',
-                  border: '1.5px solid #c8643d',
-                  borderRadius: '10px',
-                  padding: '7px 14px',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  cursor: 'pointer'
-                }}
-              >
-                ⚠️ 僅看錯題 ({filteredPracticeLogs.filter(h => !h.isCorrect).length})
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {/* 視圖切換按鈕：完整試卷 vs 單題明細 */}
+              <div style={{ display: 'flex', background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '3px', gap: '4px' }}>
+                <button
+                  onClick={() => setInspectionViewMode('papers')}
+                  style={{
+                    background: inspectionViewMode === 'papers' ? '#17324d' : 'transparent',
+                    color: inspectionViewMode === 'papers' ? '#fff' : '#17324d',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '6px 12px',
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <FileText size={14} /> 📄 歷次完整試卷 ({filteredQuizPapers.length} 份)
+                </button>
+                <button
+                  onClick={() => setInspectionViewMode('logs')}
+                  style={{
+                    background: inspectionViewMode === 'logs' ? '#17324d' : 'transparent',
+                    color: inspectionViewMode === 'logs' ? '#fff' : '#17324d',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '6px 12px',
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <BookOpen size={14} /> 📝 單題題目明細 ({filteredPracticeLogs.length} 題)
+                </button>
+              </div>
+
+              {inspectionViewMode === 'logs' && (
+                <>
+                  <button
+                    onClick={() => setOnlyMistakes(false)}
+                    style={{
+                      background: !onlyMistakes ? '#17324d' : '#f8f3eb',
+                      color: !onlyMistakes ? '#fff' : '#17324d',
+                      border: '1.5px solid #17324d',
+                      borderRadius: '10px',
+                      padding: '7px 12px',
+                      fontSize: '0.78rem',
+                      fontWeight: 800,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    全部作答 ({filteredPracticeLogs.length})
+                  </button>
+                  <button
+                    onClick={() => setOnlyMistakes(true)}
+                    style={{
+                      background: onlyMistakes ? '#c8643d' : '#f8f3eb',
+                      color: onlyMistakes ? '#fff' : '#c8643d',
+                      border: '1.5px solid #c8643d',
+                      borderRadius: '10px',
+                      padding: '7px 12px',
+                      fontSize: '0.78rem',
+                      fontWeight: 800,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ⚠️ 僅看錯題 ({filteredPracticeLogs.filter(h => !h.isCorrect).length})
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
-          {/* E. 做題清冊：顯示題目與詳解 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {filteredPracticeLogs.length === 0 ? (
-              <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#78818a' }}>
-                <Search size={32} style={{ margin: '0 auto 10px', opacity: 0.5 }} />
-                <div style={{ fontWeight: 800, fontSize: '1rem', color: '#17324d' }}>沒有符合條件的作答紀錄</div>
-                <div style={{ fontSize: '0.82rem', marginTop: '4px' }}>請嘗試調整搜尋關鍵字、更換學生或切換篩選條件</div>
-              </div>
-            ) : (
-              filteredPracticeLogs.map((log) => {
+          {/* E. 依「歷次完整試卷調閱」或「單題明細」展示 */}
+          {inspectionViewMode === 'papers' ? (
+            /* 完整試卷列表呈現 */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              {isLoadingStudentHistory ? (
+                <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#17324d' }}>
+                  <RefreshCw size={32} className="animate-spin" style={{ margin: '0 auto 12px', color: '#ef8354' }} />
+                  <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>正在自雲端調閱【{selectedStudent}】之完整試卷與各題作答...</div>
+                </div>
+              ) : filteredQuizPapers.length === 0 ? (
+                <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#78818a' }}>
+                  <FileText size={36} style={{ margin: '0 auto 10px', opacity: 0.5, color: '#ef8354' }} />
+                  <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#17324d' }}>目前尚未調閱到符合條件的試卷</div>
+                  <div style={{ fontSize: '0.82rem', marginTop: '4px' }}>
+                    學生完成測驗並交卷後，整份考卷將自動即時封存並同步至雲端供管理員調閱。
+                  </div>
+                  <button
+                    onClick={handleForceCloudRefresh}
+                    className="btn btn-secondary"
+                    style={{ marginTop: '14px', padding: '8px 16px' }}
+                  >
+                    <RefreshCw size={14} /> 重新整理雲端試卷庫
+                  </button>
+                </div>
+              ) : (
+                filteredQuizPapers.map((paper, paperIndex) => {
+                  const isExpanded = expandedPaperIds[paper.id] !== false; // 預設展開顯示試卷內容
+                  return (
+                    <div
+                      key={paper.id || paperIndex}
+                      style={{
+                        background: '#fffdf9',
+                        border: '2.5px solid #17324d',
+                        borderRadius: '20px',
+                        padding: '24px',
+                        boxShadow: '5px 5px 0px #17324d',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '16px'
+                      }}
+                    >
+                      {/* 試卷卡片頂部 Header */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '2px solid #ded3c5', paddingBottom: '16px' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                            <span className="badge badge-navy" style={{ fontSize: '0.76rem', padding: '3px 8px' }}>
+                              試卷編號：{paper.id}
+                            </span>
+                            <span className="badge badge-indigo" style={{ fontSize: '0.76rem', padding: '3px 8px' }}>
+                              【{paper.unitName || '單元綜合評量'}】
+                            </span>
+                            <span style={{ fontSize: '0.74rem', color: '#78818a', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Clock size={12} /> 交卷時間：{new Date(paper.timestamp).toLocaleString()} • 作答耗時：{paper.timeSpentSec || 15} 秒
+                            </span>
+                          </div>
+
+                          <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#17324d', margin: 0 }}>
+                            📄 {paper.paperTitle || '國中實戰測驗評量卷'}
+                          </h3>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                            <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#17324d' }}>
+                              👤 考生：{paper.userName || '匿名同學'}
+                            </span>
+                            <span style={{ fontSize: '0.76rem', color: '#78818a' }}>
+                              ({paper.userSchool || '會考戰友'})
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 得分成績與操作按鈕 */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                          <div style={{ textAlign: 'right', background: '#f8f3eb', border: '1.5px solid #ded3c5', padding: '8px 16px', borderRadius: '14px' }}>
+                            <div style={{ fontSize: '1.35rem', fontWeight: 900, color: paper.score >= 80 ? '#15803d' : paper.score >= 60 ? '#d97706' : '#b91c1c' }}>
+                              {paper.score} <span style={{ fontSize: '0.8rem', color: '#78818a' }}>分</span>
+                            </div>
+                            <div style={{ fontSize: '0.72rem', color: '#5b6772', fontWeight: 700 }}>
+                              ✓ 答對 {paper.correctCount} 題 / ✗ 答錯 {paper.wrongCount} 題
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => toggleExpandPaper(paper.id)}
+                            className="btn btn-primary"
+                            style={{ padding: '8px 16px', fontSize: '0.84rem', fontWeight: 800, gap: '6px' }}
+                          >
+                            <BookOpen size={16} />
+                            {isExpanded ? '收合整份試卷' : '調閱整份試卷詳解'}
+                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 試卷完整題目逐題展開 (全考卷原樣詳解展示) */}
+                      {isExpanded && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', paddingTop: '4px' }}>
+                          <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#17324d', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <CheckCircle2 size={16} color="#15803d" />
+                            整卷題目批改與推導詳解清單（共 {paper.questions?.length || 0} 題）：
+                          </div>
+
+                          {(paper.questions || []).map((q, qIndex) => {
+                            const isUserPick = q.userChoice;
+                            const isRight = q.isCorrect;
+
+                            return (
+                              <div
+                                key={q.id || qIndex}
+                                style={{
+                                  background: '#f8f3eb',
+                                  border: isRight ? '2px solid #86efac' : '2px solid #fca5a5',
+                                  borderRadius: '14px',
+                                  padding: '16px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '10px'
+                                }}
+                              >
+                                {/* 題目抬頭 */}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ 
+                                      width: '24px', 
+                                      height: '24px', 
+                                      borderRadius: '50%', 
+                                      background: isRight ? '#15803d' : '#b91c1c', 
+                                      color: '#fff', 
+                                      display: 'flex', 
+                                      alignItems: 'center', 
+                                      justifyContent: 'center', 
+                                      fontSize: '0.76rem', 
+                                      fontWeight: 900 
+                                    }}>
+                                      {qIndex + 1}
+                                    </span>
+                                    <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#17324d' }}>
+                                      題號：{q.questionId || q.id}
+                                    </span>
+                                    <span style={{ fontSize: '0.74rem', color: '#78818a' }}>
+                                      #{q.conceptTag || '重點考點'}
+                                    </span>
+                                  </div>
+
+                                  <span
+                                    style={{
+                                      fontSize: '0.74rem',
+                                      fontWeight: 900,
+                                      padding: '2px 8px',
+                                      borderRadius: '12px',
+                                      background: isRight ? '#e8f6ed' : '#fff0e9',
+                                      color: isRight ? '#15803d' : '#b91c1c',
+                                      border: `1px solid ${isRight ? '#86efac' : '#fca5a5'}`
+                                    }}
+                                  >
+                                    {isRight ? '✓ 答對' : '✗ 答錯'}
+                                  </span>
+                                </div>
+
+                                {/* 題幹文字 */}
+                                <div style={{ fontSize: '0.94rem', fontWeight: 700, color: '#17324d', lineHeight: 1.7, background: '#fffdf9', padding: '12px 14px', borderRadius: '10px', border: '1px solid #ded3c5' }}>
+                                  {q.question || `【題目代碼 ${q.id}】：某題庫標準觀念評量題。`}
+                                </div>
+
+                                {/* 四大選項呈現 */}
+                                {q.options && q.options.length > 0 && (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    {q.options.map((opt, optIdx) => {
+                                      const letter = String.fromCharCode(65 + optIdx);
+                                      const isChosen = isUserPick === optIdx;
+                                      const isCorrectOpt = (q.answer !== undefined ? q.answer : 0) === optIdx;
+
+                                      let bg = '#fffdf9';
+                                      let border = '1px solid #ded3c5';
+                                      let textColor = '#2d3748';
+                                      let badge = null;
+
+                                      if (isCorrectOpt && isChosen) {
+                                        bg = '#e8f6ed';
+                                        border = '2px solid #15803d';
+                                        textColor = '#15803d';
+                                        badge = <span style={{ marginLeft: 'auto', background: '#15803d', color: '#fff', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 800 }}>學生作答（正確答案 ✓）</span>;
+                                      } else if (isChosen && !isCorrectOpt) {
+                                        bg = '#fff0e9';
+                                        border = '2px solid #b91c1c';
+                                        textColor = '#b91c1c';
+                                        badge = <span style={{ marginLeft: 'auto', background: '#b91c1c', color: '#fff', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 800 }}>學生作答 ✗ (選此項)</span>;
+                                      } else if (isCorrectOpt) {
+                                        bg = '#e8f6ed';
+                                        border = '2px solid #15803d';
+                                        textColor = '#15803d';
+                                        badge = <span style={{ marginLeft: 'auto', background: '#15803d', color: '#fff', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 800 }}>標準正解 ✓</span>;
+                                      }
+
+                                      return (
+                                        <div
+                                          key={optIdx}
+                                          style={{
+                                            background: bg,
+                                            border,
+                                            borderRadius: '8px',
+                                            padding: '8px 12px',
+                                            fontSize: '0.84rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            fontWeight: (isChosen || isCorrectOpt) ? 800 : 600,
+                                            color: textColor
+                                          }}
+                                        >
+                                          <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: isCorrectOpt ? '#15803d' : isChosen ? '#b91c1c' : '#f8f3eb', color: (isCorrectOpt || isChosen) ? '#fff' : '#17324d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 900 }}>
+                                            {letter}
+                                          </span>
+                                          <span>{opt}</span>
+                                          {badge}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+
+                                {/* 名師推導詳解 */}
+                                <div style={{ background: '#fffdf9', border: '1px solid #ded3c5', borderRadius: '10px', padding: '10px 14px', fontSize: '0.82rem', color: '#2d3748', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+                                  <span style={{ fontWeight: 900, color: '#17324d', display: 'block', marginBottom: '2px' }}>
+                                    📖 題目詳解與觀念解讀：
+                                  </span>
+                                  {q.explanation || '依據 108 課綱核心考點設計，按標準公式與定義運算即可得出解答。'}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          ) : (
+            /* 單題題目流水帳呈現 */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {isLoadingStudentHistory ? (
+                <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#17324d' }}>
+                  <RefreshCw size={32} className="animate-spin" style={{ margin: '0 auto 12px', color: '#ef8354' }} />
+                  <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>正在自雲端即時載入【{selectedStudent}】之做題詳解...</div>
+                  <div style={{ fontSize: '0.82rem', color: '#78818a', marginTop: '6px' }}>透過 Mulberry32 演算法秒級還原題幹、選項、學生答案與考點分析</div>
+                </div>
+              ) : filteredPracticeLogs.length === 0 ? (
+                <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#78818a' }}>
+                  <Search size={32} style={{ margin: '0 auto 10px', opacity: 0.5 }} />
+                  <div style={{ fontWeight: 800, fontSize: '1rem', color: '#17324d' }}>沒有符合條件的作答紀錄</div>
+                  <div style={{ fontSize: '0.82rem', marginTop: '4px' }}>請嘗試調整搜尋關鍵字、更換學生或切換篩選條件</div>
+                </div>
+              ) : (
+                filteredPracticeLogs.map((log) => {
                 const isExpanded = expandedLogIds[log.id] !== false; // 依需求：預設展開顯示題目和詳解
 
                 return (
@@ -1299,6 +1821,12 @@ export default function AdminDashboard() {
                         >
                           {log.isCorrect ? '✓ 答對' : '✗ 答錯'}
                         </span>
+
+                        {!log.isCorrect && log.wrongCount && log.wrongCount > 1 && (
+                          <span className="badge badge-coral" style={{ fontSize: '0.74rem', padding: '3px 8px' }}>
+                            ⚠️ 累計答錯 {log.wrongCount} 次
+                          </span>
+                        )}
 
                         <button
                           onClick={() => toggleExpandLog(log.id)}
@@ -1414,6 +1942,7 @@ export default function AdminDashboard() {
               })
             )}
           </div>
+        )}
 
         </div>
       )}
@@ -1511,299 +2040,6 @@ export default function AdminDashboard() {
 
         </div>
       )}
-
-      {/* 7. 打氣牆留言審查、檢舉審核與刪除 */}
-      {activeSubTab === 'community' && (() => {
-        const pendingReports = communityReports.filter(r => r.status === 'pending');
-        const resolvedReports = communityReports.filter(r => r.status !== 'pending');
-
-        return (
-          <div className="glass-panel" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-              <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#17324d', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <MessageSquareHeart size={20} color="#ef8354" />
-                  打氣留言審查與檢舉處理中心
-                </h3>
-                <p style={{ color: '#78818a', fontSize: '0.85rem', marginTop: '4px' }}>
-                  管理員可即時審核同學提出的留言檢舉，判定違規屬實者可一鍵下架刪除，查無違規者可駁回保留；亦可直接管理所有公開打氣心語。
-                </p>
-              </div>
-              
-              {/* 子導航切換按鈕 */}
-              <div style={{ display: 'flex', gap: '8px', background: '#f8f3eb', padding: '4px', borderRadius: '12px', border: '1.5px solid #ded3c5' }}>
-                <button
-                  onClick={() => setCommunitySubView('pending')}
-                  className="btn"
-                  style={{
-                    background: communitySubView === 'pending' ? '#ef4444' : 'transparent',
-                    color: communitySubView === 'pending' ? '#fff' : '#17324d',
-                    padding: '6px 14px',
-                    fontSize: '0.82rem',
-                    fontWeight: 800,
-                    borderRadius: '8px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <AlertTriangle size={14} />
-                  待審核檢舉 ({pendingReports.length})
-                </button>
-                <button
-                  onClick={() => setCommunitySubView('all_posts')}
-                  className="btn"
-                  style={{
-                    background: communitySubView === 'all_posts' ? '#17324d' : 'transparent',
-                    color: communitySubView === 'all_posts' ? '#fff' : '#17324d',
-                    padding: '6px 14px',
-                    fontSize: '0.82rem',
-                    fontWeight: 800,
-                    borderRadius: '8px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <MessageSquareHeart size={14} />
-                  全部公開留言 ({communityPosts.length})
-                </button>
-                <button
-                  onClick={() => setCommunitySubView('resolved')}
-                  className="btn"
-                  style={{
-                    background: communitySubView === 'resolved' ? '#17324d' : 'transparent',
-                    color: communitySubView === 'resolved' ? '#fff' : '#17324d',
-                    padding: '6px 14px',
-                    fontSize: '0.82rem',
-                    fontWeight: 800,
-                    borderRadius: '8px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <CheckCircle2 size={14} />
-                  審核紀錄 ({resolvedReports.length})
-                </button>
-              </div>
-            </div>
-
-            {/* A. 待審核檢舉視圖 */}
-            {communitySubView === 'pending' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {pendingReports.length === 0 ? (
-                  <div style={{ padding: '40px 20px', textAlign: 'center', color: '#15803d', background: '#ecfdf5', borderRadius: '16px', border: '1.5px dashed #10b981' }}>
-                    <div style={{ fontSize: '1.5rem', marginBottom: '6px' }}>🎉</div>
-                    <div style={{ fontWeight: 800, fontSize: '1rem' }}>目前沒有任何待審核的檢舉！</div>
-                    <div style={{ fontSize: '0.82rem', color: '#047857', marginTop: '4px' }}>同學們的打氣留言秩序良好，感謝維護溫馨讀書環境。</div>
-                  </div>
-                ) : (
-                  pendingReports.map(report => (
-                    <div
-                      key={report.id}
-                      style={{
-                        background: '#fffdf9',
-                        border: '2px solid #ef4444',
-                        borderRadius: '16px',
-                        padding: '18px 20px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '12px',
-                        boxShadow: '3px 3px 0px #ef4444'
-                      }}
-                    >
-                      {/* 檢舉資訊列 */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ background: '#fee2e2', color: '#b91c1c', border: '1px solid #ef4444', borderRadius: '6px', padding: '2px 8px', fontSize: '0.76rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Flag size={12} /> 檢舉原因：{report.reason}
-                          </span>
-                          <span style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 600 }}>
-                            由【{report.reporterName}】於 {new Date(report.createdAt).toLocaleString()} 提出
-                          </span>
-                        </div>
-                        <span style={{ fontSize: '0.74rem', color: '#dc2626', fontWeight: 800 }}>
-                          🚨 待審核中
-                        </span>
-                      </div>
-
-                      {/* 被檢舉留言原貌 */}
-                      <div style={{ background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '12px 16px' }}>
-                        <div style={{ fontSize: '0.76rem', color: '#78818a', fontWeight: 700, marginBottom: '4px' }}>
-                          被檢舉之留言內容（作者：{report.authorName} • {report.authorSchool}）：
-                        </div>
-                        <p style={{ margin: 0, fontSize: '0.94rem', color: '#17324d', fontWeight: 700, lineHeight: 1.6 }}>
-                          「{report.postMessage}」
-                        </p>
-                        {report.note && (
-                          <div style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px dashed #ded3c5', fontSize: '0.78rem', color: '#806523' }}>
-                            💬 檢舉者補充說明：{report.note}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* 審核決策按鈕列 */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px', paddingTop: '4px' }}>
-                        <button
-                          onClick={() => handleResolveCommunityReport(report.id, 'dismiss')}
-                          className="btn btn-secondary"
-                          style={{ padding: '8px 16px', fontSize: '0.82rem', fontWeight: 800, gap: '6px' }}
-                        >
-                          <CheckCircle2 size={15} color="#15803d" />
-                          查無違規：駁回檢舉並保留
-                        </button>
-                        <button
-                          onClick={() => handleResolveCommunityReport(report.id, 'delete')}
-                          className="btn btn-fire"
-                          style={{ padding: '8px 18px', fontSize: '0.82rem', fontWeight: 800, gap: '6px' }}
-                        >
-                          <Trash2 size={15} />
-                          違規屬實：立即下架刪除留言
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-
-            {/* B. 所有公開打氣留言列表 */}
-            {communitySubView === 'all_posts' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {communityPosts.length === 0 ? (
-                  <div style={{ padding: '32px', textAlign: 'center', color: '#78818a', background: '#f8f3eb', borderRadius: '16px', border: '1.5px dashed #ded3c5' }}>
-                    目前沒有任何打氣留言
-                  </div>
-                ) : (
-                  communityPosts.map(post => (
-                    <div 
-                      key={post.id}
-                      style={{
-                        background: '#fffdf9',
-                        border: '1.5px solid #ded3c5',
-                        borderRadius: '16px',
-                        padding: '16px 20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '16px',
-                        flexWrap: 'wrap',
-                        boxShadow: '2px 2px 0px #17324d'
-                      }}
-                    >
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, minWidth: '240px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#17324d' }}>
-                            {post.userName}
-                          </span>
-                          <span style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 600 }}>
-                            • {post.userSchool}
-                          </span>
-                          <span style={{ fontSize: '0.75rem', color: '#9aa2a8', marginLeft: 'auto' }}>
-                            {new Date(post.timestamp).toLocaleString()}
-                          </span>
-                        </div>
-
-                        <p style={{ margin: 0, fontSize: '0.9rem', color: '#2d3748', lineHeight: 1.6, fontWeight: 600 }}>
-                          {post.message}
-                        </p>
-
-                        <div style={{ fontSize: '0.75rem', color: '#ef8354', fontWeight: 700 }}>
-                          ❤️ 已獲打氣數：{post.likes || 1} 次
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => handleDeleteCommunityPost(post.id)}
-                        className="btn btn-fire"
-                        style={{
-                          borderRadius: '10px',
-                          padding: '8px 14px',
-                          fontSize: '0.82rem',
-                          fontWeight: 800,
-                          gap: '6px',
-                          whiteSpace: 'nowrap'
-                        }}
-                      >
-                        <Trash2 size={14} />
-                        刪除此留言
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-
-            {/* C. 歷史審核紀錄視圖 */}
-            {communitySubView === 'resolved' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {resolvedReports.length === 0 ? (
-                  <div style={{ padding: '32px', textAlign: 'center', color: '#78818a', background: '#f8f3eb', borderRadius: '16px', border: '1.5px dashed #ded3c5' }}>
-                    尚無任何審核歷史紀錄
-                  </div>
-                ) : (
-                  resolvedReports.map(report => (
-                    <div
-                      key={report.id}
-                      style={{
-                        background: '#fffdf9',
-                        border: '1.5px solid #ded3c5',
-                        borderRadius: '16px',
-                        padding: '14px 18px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span
-                            style={{
-                              padding: '2px 8px',
-                              borderRadius: '6px',
-                              fontSize: '0.74rem',
-                              fontWeight: 800,
-                              background: report.decision === 'deleted' ? '#fee2e2' : '#ecfdf5',
-                              color: report.decision === 'deleted' ? '#b91c1c' : '#047857',
-                              border: report.decision === 'deleted' ? '1px solid #ef4444' : '1px solid #10b981'
-                            }}
-                          >
-                            {report.decision === 'deleted' ? '🗑️ 違規屬實・已下架刪除' : '🛡️ 查無違規・已駁回保留'}
-                          </span>
-                          <span style={{ fontSize: '0.78rem', color: '#78818a' }}>
-                            檢舉原因：{report.reason}
-                          </span>
-                        </div>
-                        <span style={{ fontSize: '0.74rem', color: '#9aa2a8' }}>
-                          審核時間：{new Date(report.resolvedAt || report.createdAt).toLocaleString()}（處理者：{report.resolvedBy || '管理員'}）
-                        </span>
-                      </div>
-
-                      <div style={{ fontSize: '0.85rem', color: '#5b6772', background: '#f8f3eb', padding: '8px 12px', borderRadius: '8px', fontStyle: 'italic' }}>
-                        「{report.postMessage}」
-                      </div>
-                      
-                      {report.reviewNote && (
-                        <div style={{ fontSize: '0.76rem', color: '#78818a' }}>
-                          備註：{report.reviewNote}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-
-          </div>
-        );
-      })()}
 
     </div>
   );

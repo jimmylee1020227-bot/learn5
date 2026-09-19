@@ -497,3 +497,189 @@ body.theme-night .navbar-wrapper {
   background: rgba(15, 23, 42, 0.95);
   border-bottom-color: #6366f1;
 }
+
+/* ==========================================================================
+   全服跑馬燈公告橫幅 (Global Broadcast Marquee Banner)
+   ========================================================================== */
+.marquee-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  height: 38px;
+  min-height: 38px;
+  background: linear-gradient(90deg, #17324d 0%, #1f4268 50%, #17324d 100%);
+  color: #fffdf9;
+  border-bottom: 2px solid #ef8354;
+  box-shadow: 0 2px 10px rgba(23, 50, 77, 0.25);
+  z-index: 60;
+  padding: 0 12px;
+  font-size: 0.85rem;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.marquee-bar.marquee-fire {
+  background: linear-gradient(90deg, #7f1d1d 0%, #c2410c 45%, #ea580c 55%, #7f1d1d 100%);
+  border-bottom: 2px solid #facc15;
+  box-shadow: 0 3px 14px rgba(239, 68, 68, 0.35);
+}
+
+.marquee-badge-pill {
+  position: relative;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ef8354;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.marquee-badge-pill.fire {
+  background: #facc15;
+  color: #7f1d1d;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+}
+
+/* 左側文字遮罩，產生漸隱銜接感 */
+.marquee-fade-left {
+  position: absolute;
+  left: 110px;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  background: linear-gradient(to right, #17324d, transparent);
+  z-index: 2;
+  pointer-events: none;
+}
+.marquee-bar.marquee-fire .marquee-fade-left {
+  background: linear-gradient(to right, #7f1d1d, transparent);
+}
+
+/* 右側文字遮罩 */
+.marquee-fade-right {
+  position: absolute;
+  right: 70px;
+  top: 0;
+  bottom: 0;
+  width: 32px;
+  background: linear-gradient(to left, #17324d, transparent);
+  z-index: 2;
+  pointer-events: none;
+}
+.marquee-bar.marquee-fire .marquee-fade-right {
+  background: linear-gradient(to left, #7f1d1d, transparent);
+}
+
+/* 跑馬燈視窗容器 */
+.marquee-track-container {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin: 0 8px;
+  cursor: pointer;
+}
+
+/* 無縫輪播長條 */
+.marquee-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+  animation: marqueeRoll 32s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marqueeRoll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 28px;
+  color: #fef08a;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.marquee-item-normal {
+  color: #f8fafc;
+}
+
+.marquee-right-actions {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.marquee-time-tag {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.25);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.marquee-close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.marquee-close-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 640px) {
+  .marquee-bar {
+    height: 34px;
+    min-height: 34px;
+    padding: 0 8px;
+    font-size: 0.8rem;
+  }
+  .marquee-fade-left {
+    left: 88px;
+    width: 16px;
+  }
+  .marquee-fade-right {
+    right: 48px;
+    width: 16px;
+  }
+  .marquee-time-tag {
+    display: none;
+  }
+}
+
