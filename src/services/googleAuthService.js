@@ -3,7 +3,7 @@ import { SUPER_ADMIN_EMAIL, getAdminsList } from './cloudStorage';
 
 const STORAGE_GOOGLE_CLIENT_ID = 'studyhub_google_client_id';
 
-const HARDCODED_GOOGLE_CLIENT_ID = '1033868027938-fs2oo12bn3aqdf5dkb287bg7qb15vpma.apps.googleusercontent.com';
+const HARDCODED_GOOGLE_CLIENT_ID = '1033868027938-tudq6nuvo7onc3rc7i7b4lr8pgohv6oa.apps.googleusercontent.com';
 
 export function getGoogleClientId() {
   return localStorage.getItem(STORAGE_GOOGLE_CLIENT_ID) || 
@@ -24,7 +24,7 @@ export function redirectToGoogleLogin(customClientId = null) {
 
   if (clientId) {
     // 直連 Google 官方 OAuth 2.0 授權端點（自動支援 localhost 與 GitHub Pages 專案子目錄）
-    const redirectUri = window.location.origin + window.location.pathname;
+    const redirectUri = window.location.origin + '/';
     const scope = encodeURIComponent('email profile openid');
     const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}&prompt=select_account&include_granted_scopes=true&state=studyhub_google_auth`;
     window.location.href = oauthUrl;
