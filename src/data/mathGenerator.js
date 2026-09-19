@@ -3,9 +3,9 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
   const a = Math.floor(rand() * 10 * diffMultiplier) + 2;
   const b = Math.floor(rand() * 8 * diffMultiplier) + 3;
   const c = Math.floor(rand() * 6 * diffMultiplier) + 1;
-  const variant = Math.floor(rand() * 10);
 
   if (gradeId === 'g7') {
+    const variant = index % 6;
     if (variant === 0) {
       // 票價表 (二元一次聯立方程式應用)
       const adultPrice = 150 + (index % 5) * 10;
@@ -83,6 +83,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
       };
     }
   } else if (gradeId === 'g8') {
+    const variant = index % 4;
     if (variant === 0) {
       // 幾何圖形題 (直角三角形 SVG)
       const base = 3 * a;
@@ -136,6 +137,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
       };
     }
   } else if (gradeId === 'g9') {
+    const variant = index % 2;
     if (variant === 0) {
       // 統計表
       const scores = [60, 70, 70, 80, 90].map(s => s + (index % 5) * 2);
