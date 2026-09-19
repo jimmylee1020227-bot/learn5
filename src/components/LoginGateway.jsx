@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useDevice } from '../context/DeviceContext';
-import { GraduationCap, Shield } from 'lucide-react';
+import { GraduationCap, Shield, Users } from 'lucide-react';
 
 export default function LoginGateway() {
   const { triggerGoogleLogin } = useAuth();
@@ -119,6 +119,34 @@ export default function LoginGateway() {
             </svg>
             <span>使用 Google 帳號授權登入</span>
           </button>
+
+          {/* 加入群組一起討論 (LINE社群) */}
+          <a
+            href="https://openchat.line.me/tw/cover/qOdlVtQ0IBp7wnGg00kPYDMbjLCp8VkH6WSExq042v3oIIRaPjKtYRPSK0I?utm_source=line-openchat-seo&utm_medium=search_keyword&utm_campaign=default"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn"
+            style={{
+              width: '100%',
+              padding: '14px 20px',
+              background: '#06C755',
+              color: '#ffffff',
+              fontWeight: 800,
+              fontSize: '1rem',
+              borderRadius: '18px',
+              border: '2.5px solid #17324d',
+              boxShadow: '4px 4px 0px #17324d',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              textDecoration: 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Users size={20} />
+            <span>加入群組一起討論</span>
+          </a>
 
           <div style={{ background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '10px 14px', textAlign: 'center' }}>
             <span style={{ fontSize: '0.78rem', color: '#5b6772', fontWeight: 700 }}>
