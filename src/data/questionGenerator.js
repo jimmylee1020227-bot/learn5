@@ -65,11 +65,33 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
       qData = generateFallbackQuestion(subjectId, gradeId, unitId, index, difficulty, rand, conceptTag);
   }
 
-  const optionsWithMeta = qData.options.map((opt, idx) => ({
-    text: String(opt),
-    isCorrect: idx === qData.answer
-  }));
-  const shuffled = shuffleWithRand(optionsWithMeta, rand);
+  const uniqueOptions = [];
+  const seenTexts = new Set();
+  let correctOptFound = false;
+
+  qData.options.forEach((opt, idx) => {
+    const text = String(opt);
+    const isAns = idx === qData.answer;
+    if (!seenTexts.has(text)) {
+      seenTexts.add(text);
+      uniqueOptions.push({ text, isCorrect: isAns });
+      if (isAns) correctOptFound = true;
+    }
+  });
+
+  // 安全網：如果發生重複導致選項少於 4 個，使用備用字串補齊
+  const fallbacks = ['無法判斷', '以上皆非', '資料不足', '條件不足', '以上皆是'];
+  let fIdx = 0;
+  while (uniqueOptions.length < 4 && fIdx < fallbacks.length) {
+    const fText = fallbacks[fIdx];
+    if (!seenTexts.has(fText)) {
+      seenTexts.add(fText);
+      uniqueOptions.push({ text: fText, isCorrect: false });
+    }
+    fIdx++;
+  }
+
+  const shuffled = shuffleWithRand(uniqueOptions, rand);
   const correctIdx = shuffled.findIndex(item => item.isCorrect);
 
   const formattedIndex = String(index).padStart(4, '0');

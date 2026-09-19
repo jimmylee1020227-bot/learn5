@@ -75,19 +75,22 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
       const base = Math.floor(rand() * 5) + 2; // 2~6
       const exp1 = Math.floor(rand() * 4) + 2; // 2~5
       const exp2 = Math.floor(rand() * 3) + 2; // 2~4
-      const ansExp = exp1 + exp2;
+      // Ensure exp1 * exp2 != exp1 + exp2 (so 2+2 != 2*2)
+      const adjustedExp2 = (exp1 === 2 && exp2 === 2) ? 3 : exp2;
+      const ansExp = exp1 + adjustedExp2;
       return {
-        question: `【指數律計算】${preamble}\n請問 \`${base}^${exp1} \\times ${base}^${exp2}\` 的結果可以表示為下列何者？`,
-        options: [`${base}^${ansExp}`, `${base}^${exp1 * exp2}`, `${base * 2}^${ansExp}`, `${base}^${Math.abs(exp1 - exp2)}`],
+        question: `【指數律計算】${preamble}\n請問 \`${base}^${exp1} \\times ${base}^${adjustedExp2}\` 的結果可以表示為下列何者？`,
+        options: [`${base}^${ansExp}`, `${base}^${exp1 * adjustedExp2}`, `${base * 2}^${ansExp}`, `${base}^${Math.abs(exp1 - adjustedExp2)}`],
         answer: 0,
         hint: '💡 提示：底數相同相乘，指數相加。',
         explanation: `📖 詳解：根據指數律 a^m × a^n = a^(m+n)，因此答案為 ${base}^${ansExp}。`
       };
     } else {
-      const num1 = Math.floor(rand() * 30) + 10;
-      const num2 = num1 + Math.floor(rand() * 10) + 1;
+      const num1 = Math.floor(rand() * 30) + 20; // 20~49
+      const num2 = num1 + Math.floor(rand() * 10) + 5; // diff is 5~14
       const sum = num1 + num2;
       const diff = num2 - num1;
+      // Ensure w2 is never equal to num1 (diff+2 is max 16, num1 is min 20)
       const w1 = sum + 2;
       const w2 = diff + 2;
       return {
@@ -146,8 +149,8 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
     } else {
       const sq = a * a;
       const w1 = sq + 1;
-      const w2 = a * 2;
-      const w3 = a;
+      const w2 = a * 3; // a >= 5, so a*3 != a and a*3 != sq
+      const w3 = a + 5;
       return {
         question: `【平方根運算】${preamble}\n請問 \`√(${sq})\` 的值為何？`,
         options: [`${a}`, `±${a}`, `${sq}`, `${w2}`],
@@ -179,7 +182,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
       const area = (radius * radius * fraction).toFixed(1) + 'π';
       const w1 = (radius * 2 * fraction).toFixed(1) + 'π';
       const w2 = (radius * radius).toFixed(1) + 'π';
-      const w3 = (radius * radius * fraction * 2).toFixed(1) + 'π';
+      const w3 = (radius * radius * fraction * 1.5).toFixed(1) + 'π'; // Avoid *2 when angle=180
       
       return {
         question: `【圓與扇形】${preamble}\n在半徑為 ${radius} 的圓中，圓心角為 ${angle}° 的扇形面積為多少？`,
