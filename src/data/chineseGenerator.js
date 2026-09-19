@@ -1,77 +1,104 @@
 export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
-  const globalVariant = index % 4; // Expanded to 4
+  const globalVariant = Math.floor(rand() * 4); 
+
+  function getRandItems(arr, count) {
+    const res = [];
+    const pool = [...arr];
+    for(let i=0; i<count; i++) {
+      if(pool.length === 0) break;
+      const idx = Math.floor(rand() * pool.length);
+      res.push(pool.splice(idx, 1)[0]);
+    }
+    return res;
+  }
 
   // 通用錯別字與字音字形 (適用全科)
   if (globalVariant === 0) {
     const typos = [
-      { text: '「莘莘」學子', correct: 'ㄕㄣ', wrong: ['ㄒㄧㄣ', 'ㄒㄧㄥ', 'ㄕㄥ'] },
-      { text: '「垂涎」三尺', correct: 'ㄒㄧㄢˊ', wrong: ['ㄧㄢˊ', 'ㄉㄧㄢˋ', 'ㄔㄨㄟˊ'] },
-      { text: '「塑」膠', correct: 'ㄙㄨˋ', wrong: ['ㄕㄨㄛˋ', 'ㄙㄨㄛˋ', 'ㄕㄨˋ'] },
-      { text: '「尷尬」', correct: 'ㄍㄢ ㄍㄚˋ', wrong: ['ㄐㄧㄢ ㄐㄧㄝˋ', 'ㄍㄢ ㄐㄧㄝˋ', 'ㄐㄧㄢ ㄍㄚˋ'] },
-      { text: '「罹」難', correct: 'ㄌㄧˊ', wrong: ['ㄌㄨㄛˊ', 'ㄌㄨㄛˋ', 'ㄌㄧˋ'] },
-      { text: '「齟齬」', correct: 'ㄐㄩˇ ㄩˇ', wrong: ['ㄗㄨˇ ㄨˇ', 'ㄐㄧㄠ ㄨˇ', 'ㄐㄩˇ ㄨˇ'] },
-      { text: '「緋」聞', correct: 'ㄈㄟ', wrong: ['ㄈㄟˇ', 'ㄆㄟˊ', 'ㄈㄟˋ'] },
-      { text: '「痙攣」', correct: 'ㄐㄧㄥˋ ㄌㄨㄢˊ', wrong: ['ㄐㄧㄥ ㄌㄨㄢˊ', 'ㄐㄧㄥˋ ㄌㄨㄢ', 'ㄐㄧㄥ ㄌㄨㄢ'] },
-      { text: '「邂逅」', correct: 'ㄒㄧㄝˋ ㄏㄡˋ', wrong: ['ㄒㄧㄝˋ ㄍㄡˋ', 'ㄐㄧㄝˇ ㄏㄡˋ', 'ㄒㄧㄝ ㄏㄡˋ'] },
-      { text: '「稗」官野史', correct: 'ㄅㄞˋ', wrong: ['ㄅㄟ', 'ㄅㄧˋ', 'ㄅㄞ'] },
-      { text: '「潸」然淚下', correct: 'ㄕㄢ', wrong: ['ㄙㄢ', 'ㄕㄢˇ', 'ㄙㄢˇ'] },
-      { text: '「鍥」而不捨', correct: 'ㄑㄧㄝˋ', wrong: ['ㄑㄧˋ', 'ㄑㄧㄝ', 'ㄑㄧ'] },
-      { text: '「否」極泰來', correct: 'ㄆㄧˇ', wrong: ['ㄈㄡˇ', 'ㄆㄧ', 'ㄈㄡˋ'] },
-      { text: '「暴虎馮」河', correct: 'ㄆㄧㄥˊ', wrong: ['ㄈㄥˊ', 'ㄈㄥˇ', 'ㄆㄧㄥ'] },
-      { text: '「造詣」', correct: 'ㄧˋ', wrong: ['ㄓˇ', 'ㄧ', 'ㄓˋ'] }
+      { text: '「莘莘」學子', correct: 'ㄕㄣ', wrong: 'ㄒㄧㄣ' },
+      { text: '「垂涎」三尺', correct: 'ㄒㄧㄢˊ', wrong: 'ㄧㄢˊ' },
+      { text: '「塑」膠', correct: 'ㄙㄨˋ', wrong: 'ㄕㄨㄛˋ' },
+      { text: '「尷尬」', correct: 'ㄍㄢ ㄍㄚˋ', wrong: 'ㄐㄧㄢ ㄐㄧㄝˋ' },
+      { text: '「罹」難', correct: 'ㄌㄧˊ', wrong: 'ㄌㄨㄛˊ' },
+      { text: '「齟齬」', correct: 'ㄐㄩˇ ㄩˇ', wrong: 'ㄗㄨˇ ㄨˇ' },
+      { text: '「緋」聞', correct: 'ㄈㄟ', wrong: 'ㄈㄟˇ' },
+      { text: '「痙攣」', correct: 'ㄐㄧㄥˋ ㄌㄨㄢˊ', wrong: 'ㄐㄧㄥ ㄌㄨㄢˊ' },
+      { text: '「邂逅」', correct: 'ㄒㄧㄝˋ ㄏㄡˋ', wrong: 'ㄒㄧㄝˋ ㄍㄡˋ' },
+      { text: '「稗」官野史', correct: 'ㄅㄞˋ', wrong: 'ㄅㄟ' },
+      { text: '「潸」然淚下', correct: 'ㄕㄢ', wrong: 'ㄙㄢ' },
+      { text: '「鍥」而不捨', correct: 'ㄑㄧㄝˋ', wrong: 'ㄑㄧˋ' },
+      { text: '「否」極泰來', correct: 'ㄆㄧˇ', wrong: 'ㄈㄡˇ' },
+      { text: '「暴虎馮」河', correct: 'ㄆㄧㄥˊ', wrong: 'ㄈㄥˊ' },
+      { text: '「造詣」', correct: 'ㄧˋ', wrong: 'ㄓˇ' }
     ];
-    const t = typos[index % typos.length];
+    // Pick 1 target, and 3 random wrong options from other targets to mix it up
+    const target = typos[Math.floor(rand() * typos.length)];
+    const otherWrongs = getRandItems(typos.filter(t => t !== target), 3).map(t => t.wrong);
+    
     return {
-      question: `【字音字形測驗】請選出下列詞語「」中文字的正確讀音：\n${t.text}`,
-      options: [t.correct, t.wrong[0], t.wrong[1], t.wrong[2]],
+      question: `【字音字形測驗】請選出下列詞語「」中文字的正確讀音：\n${target.text}`,
+      options: [target.correct, target.wrong, ...otherWrongs].slice(0, 4),
       answer: 0,
       hint: '💡 提示：請注意部首與偏旁的發音差異。',
-      explanation: `📖 詳解：「${t.text}」正確讀音為 ${t.correct}。`
+      explanation: `📖 詳解：「${target.text}」正確讀音為 ${target.correct}。`
     };
   } else if (globalVariant === 1) {
-    const wrongWords = [
-      { q: '何者「沒有」錯別字？', options: ['走投無路', '破斧沉舟', '病入膏盲', '名烈前茅'], ans: 0, exp: '破釜沉舟、病入膏肓、名列前茅' },
-      { q: '何者「有」錯別字？', options: ['按步就班', '鋌而走險', '趨之若鶩', '按圖索驥'], ans: 0, exp: '按部就班' },
-      { q: '用字完全正確的是？', options: ['發憤圖強', '防微度漸', '無精打彩', '一愁莫展'], ans: 0, exp: '防微杜漸、無精打采、一籌莫展' },
-      { q: '何者「沒有」錯別字？', options: ['莫名其妙', '不可名狀', '名符其實', '名不虛傳'], ans: 0, exp: '名副其實' },
-      { q: '何者「有」錯別字？', options: ['出奇不意', '出其不意', '心不在焉', '無微不至'], ans: 0, exp: '出其不意' },
-      { q: '何者「有」錯別字？', options: ['草管人命', '草菅人命', '不遺餘力', '不可思議'], ans: 0, exp: '草菅人命' },
-      { q: '何者「沒有」錯別字？', options: ['甘拜下風', '甘敗下風', '不辨菽麥', '不辯菽麥'], ans: 0, exp: '甘拜下風' }
-    ];
-    const w = wrongWords[index % wrongWords.length];
-    return {
-      question: `【錯別字陷阱】下列四個選項中，${w.q}`,
-      options: w.options,
-      answer: w.ans,
-      hint: '💡 提示：仔細辨認字形。',
-      explanation: `📖 詳解：${w.exp}`
-    };
+    const correctWords = ['破釜沉舟', '名列前茅', '按部就班', '防微杜漸', '無精打采', '一籌莫展', '名副其實', '甘拜下風', '出其不意', '草菅人命', '不辨菽麥', '趨之若鶩', '鋌而走險', '按圖索驥', '發憤圖強'];
+    const wrongWords = ['破斧沉舟', '名烈前茅', '按步就班', '防微度漸', '無精打彩', '一愁莫展', '名符其實', '甘敗下風', '出奇不意', '草管人命', '不辯菽麥', '趨之若騖', '挺而走險', '按圖索記', '發奮圖強'];
+    
+    const isAskCorrect = rand() > 0.5;
+    if (isAskCorrect) {
+      const ans = getRandItems(correctWords, 1)[0];
+      const wrongs = getRandItems(wrongWords, 3);
+      return {
+        question: `【錯別字陷阱】下列四個選項中，何者「沒有」錯別字？`,
+        options: [ans, ...wrongs],
+        answer: 0,
+        hint: '💡 提示：仔細辨認字形，找出唯一正確的。',
+        explanation: `📖 詳解：正確用字為「${ans}」。`
+      };
+    } else {
+      const ans = getRandItems(wrongWords, 1)[0];
+      const rights = getRandItems(correctWords, 3);
+      return {
+        question: `【錯別字陷阱】下列四個選項中，何者「有」錯別字？`,
+        options: [ans, ...rights],
+        answer: 0,
+        hint: '💡 提示：找出含有錯別字的選項。',
+        explanation: `📖 詳解：含有錯別字的是「${ans}」。`
+      };
+    }
   } else if (globalVariant === 2) {
-    const idioms = [
-      { q: '比喻「處境極為危險」的成語是？', options: ['盲人瞎馬', '老馬識途', '走馬看花', '指鹿為馬'], exp: '盲人瞎馬' },
-      { q: '形容「罪狀極多」的成語是？', options: ['罄竹難書', '汗牛充棟', '學富五車', '浩如煙海'], exp: '罄竹難書' },
-      { q: '帶有「貶義」的成語是？', options: ['推波助瀾', '見義勇為', '雪中送炭', '錦上添花'], exp: '推波助瀾' },
-      { q: '比喻「做事沒有條理」的成語是？', options: ['雜亂無章', '井井有條', '一絲不苟', '按部就班'], exp: '雜亂無章' },
-      { q: '比喻「目光短淺」的成語是？', options: ['井底之蛙', '高瞻遠矚', '真知灼見', '洞若觀火'], exp: '井底之蛙' },
-      { q: '比喻「做事有始無終」的成語是？', options: ['半途而廢', '持之以恆', '堅持不懈', '始終如一'], exp: '半途而廢' },
-      { q: '比喻「力量微小，無濟於事」的成語是？', options: ['杯水車薪', '九牛一毛', '微不足道', '滄海一粟'], exp: '杯水車薪' }
+    const idiomData = [
+      { q: '處境極為危險', ans: '盲人瞎馬', wrongs: ['老馬識途', '走馬看花', '指鹿為馬', '馬到成功', '千軍萬馬'] },
+      { q: '罪狀極多', ans: '罄竹難書', wrongs: ['汗牛充棟', '學富五車', '浩如煙海', '博古通今'] },
+      { q: '帶有「貶義」的行為', ans: '推波助瀾', wrongs: ['見義勇為', '雪中送炭', '錦上添花', '成人之美'] },
+      { q: '做事沒有條理', ans: '雜亂無章', wrongs: ['井井有條', '一絲不苟', '按部就班', '有條不紊'] },
+      { q: '目光短淺', ans: '井底之蛙', wrongs: ['高瞻遠矚', '真知灼見', '洞若觀火', '明察秋毫'] },
+      { q: '做事有始無終', ans: '半途而廢', wrongs: ['持之以恆', '堅持不懈', '始終如一', '鍥而不捨'] },
+      { q: '力量微小，無濟於事', ans: '杯水車薪', wrongs: ['九牛一毛', '微不足道', '滄海一粟', '蚍蜉撼樹'] }
     ];
-    const i = idioms[index % idioms.length];
+    const item = idiomData[Math.floor(rand() * idiomData.length)];
+    const w = getRandItems(item.wrongs, 3);
     return {
-      question: `【成語應用測驗】\n${i.q}`,
-      options: i.options,
+      question: `【成語應用測驗】\n用來比喻或形容「${item.q}」的成語是下列何者？`,
+      options: [item.ans, ...w],
       answer: 0,
       hint: '💡 提示：思考成語背後的典故。',
-      explanation: `📖 詳解：答案是 ${i.exp}。`
+      explanation: `📖 詳解：答案是「${item.ans}」。`
     };
   } else {
-    const chars = ['江', '河', '湖', '海', '松', '柏', '梅', '櫻'];
-    const ch = chars[index % chars.length];
+    const chars = ['江', '河', '湖', '海', '松', '柏', '梅', '櫻', '桐', '楓'];
+    const ch = chars[Math.floor(rand() * chars.length)];
+    const names = ['小明', '小華', '阿建', '美美'];
+    const n1 = names[Math.floor(rand() * names.length)];
+    const n2 = names[(Math.floor(rand() * names.length) + 1) % names.length];
+    
     return {
       isChat: true,
       chatMessages: [
-        { sender: '小明', text: `請問「${ch}」這個字是什麼造字法則啊？` },
-        { sender: '小華', text: '有部首表示意思，旁邊的字表示聲音，這很明顯是________。' }
+        { sender: n1, text: `請問「${ch}」這個字是什麼造字法則啊？` },
+        { sender: n2, text: '有一半表示意思，另一半表示聲音，這很明顯是________。' }
       ],
       question: `【六書討論】根據上述對話，空格中應該填入哪一種六書造字法則？`,
       options: ['形聲', '象形', '會意', '指事'],
@@ -83,41 +110,42 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
 
   // 根據年級區分國學常識
   if (gradeId === 'g7') {
-    const variant = index % 2;
+    const variant = Math.floor(rand() * 2);
     if (variant === 0) {
       const qs = [
-        { q: '絕句的格律', opts: ['不要求必須對仗', '必須對仗', '每首八句', '不押韻'] },
-        { q: '律詩的格律', opts: ['頷聯與頸聯必須對仗', '不要求對仗', '每首四句', '一韻到底不可押韻'] },
-        { q: '古體詩的格律', opts: ['字數句數不限，不嚴格要求平仄', '必須嚴格平仄', '必須對仗', '每首四句'] },
-        { q: '宋詞的格律', opts: ['須依詞牌填寫，句式長短不一', '每句字數必須相同', '不押韻', '不需要詞牌'] }
+        { q: '絕句的格律', opts: ['不要求必須對仗', '必須對仗', '每首八句', '一韻到底不可押韻', '字數沒有限制'] },
+        { q: '律詩的格律', opts: ['頷聯與頸聯必須對仗', '不要求對仗', '每首四句', '可以隨意換韻', '首聯必須對仗'] },
+        { q: '古體詩的格律', opts: ['字數句數不限，不嚴格平仄', '必須嚴格平仄', '必須對仗', '每首固定四句', '一定要押平聲韻'] },
+        { q: '宋詞的格律', opts: ['須依詞牌填寫，句式長短不一', '每句字數必須相同', '完全不押韻', '不需要詞牌', '只能寫國家大事'] }
       ];
-      const q = qs[index % qs.length];
+      const q = qs[Math.floor(rand() * qs.length)];
       return {
         question: `【韻文常識】關於「${q.q}」，下列敘述何者正確？`,
-        options: q.opts,
+        options: [q.opts[0], ...getRandItems(q.opts.slice(1), 3)],
         answer: 0,
         hint: '💡 提示：回想唐詩宋詞的基本格律規定。',
         explanation: `📖 詳解：正確特徵為：${q.opts[0]}。`
       };
     } else {
       const writers = [
-        { name: '李白', style: '浪漫主義，號青蓮居士', alias: '詩仙' },
-        { name: '杜甫', style: '社會寫實，憂國憂民', alias: '詩聖' },
-        { name: '白居易', style: '老嫗能解，平易近人', alias: '詩魔' },
-        { name: '王維', style: '詩中有畫，畫中有詩', alias: '詩佛' },
-        { name: '蘇軾', style: '豪放派詞人，唐宋八大家', alias: '東坡居士' }
+        { name: '李白', style: '浪漫主義', alias: '詩仙' },
+        { name: '杜甫', style: '社會寫實', alias: '詩聖' },
+        { name: '白居易', style: '平易近人', alias: '詩魔' },
+        { name: '王維', style: '詩中有畫', alias: '詩佛' },
+        { name: '蘇軾', style: '豪放派詞人', alias: '東坡居士' }
       ];
-      const w = writers[index % writers.length];
+      const w = writers[Math.floor(rand() * writers.length)];
+      const wrongs = writers.filter(x => x !== w).map(x => x.style + '，被稱為' + x.alias);
       return {
         question: `【國學常識】下列關於「${w.name}」的敘述，何者正確？`,
-        options: [w.style + '，被稱為' + w.alias, '婉約派代表人物', '先秦儒家代表人物', '明代小說家'],
+        options: [w.style + '，被稱為' + w.alias, ...getRandItems(wrongs, 3)],
         answer: 0,
         hint: '💡 提示：回憶作者的稱號與寫作風格。',
         explanation: `📖 詳解：${w.name}的特色為${w.style}，被稱為${w.alias}。`
       };
     }
   } else if (gradeId === 'g8') {
-    const variant = index % 2;
+    const variant = Math.floor(rand() * 2);
     if (variant === 0) {
       const s = [
         { t: '判斷句', ex: '蓮，花之君子者也。' },
@@ -127,10 +155,11 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
         { t: '判斷句', ex: '交友是一件有益的事。' },
         { t: '敘事句', ex: '微風吹過水面。' }
       ];
-      const q = s[index % s.length];
+      const q = s[Math.floor(rand() * s.length)];
+      const otherTypes = ['判斷句', '敘事句', '有無句', '表態句'].filter(x => x !== q.t);
       return {
         question: `【中文四大句型】文句：「${q.ex}」在語法上屬於下列哪一種句型？`,
-        options: [q.t, '判斷句', '敘事句', '有無句', '表態句'].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4),
+        options: [q.t, ...getRandItems(otherTypes, 3)],
         answer: 0,
         hint: `💡 提示：分析句中核心謂語。`,
         explanation: `📖 詳解：這是一句典型的「${q.t}」。`
@@ -144,17 +173,18 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
         { r: '映襯', ex: '不在乎天長地久，只在乎曾經擁有。' },
         { r: '譬喻', ex: '時間像流水一樣逝去。' }
       ];
-      const q = r[index % r.length];
+      const q = r[Math.floor(rand() * r.length)];
+      const otherRhetorics = ['轉化', '排比', '誇飾', '頂真', '映襯', '譬喻'].filter(x => x !== q.r);
       return {
         question: `【語文修辭技巧判讀】\n文句：「${q.ex}」主要運用了何種修辭技巧？`,
-        options: [q.r, '轉化', '排比', '誇飾', '頂真', '映襯', '譬喻'].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4),
+        options: [q.r, ...getRandItems(otherRhetorics, 3)],
         answer: 0,
         hint: `💡 提示：觀察句子的結構與意象。`,
         explanation: `📖 詳解：運用了「${q.r}」。`
       };
     }
   } else if (gradeId === 'g9') {
-    const variant = index % 2;
+    const variant = Math.floor(rand() * 2);
     if (variant === 0) {
       const quotes = [
         { text: '學而不思則罔，思而不學則殆。', ans: '強調學習與思考必須並重。' },
@@ -162,29 +192,31 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
         { text: '己所不欲，勿施於人。', ans: '強調同理心與推己及人。' },
         { text: '任重而道遠。', ans: '形容責任重大，路途遙遠。' }
       ];
-      const q = quotes[index % quotes.length];
+      const wrongs = ['要多讀書', '要孝順父母', '要忠心為國', '要愛護動物', '要節約用水', '要尊敬師長'];
+      const q = quotes[Math.floor(rand() * quotes.length)];
       return {
         isReading: true,
         readingText: `【文言語譯與理解】\n子曰：「${q.text}」`,
         question: `【文意推敲】孔子這段話最主要的涵義是強調什麼？`,
-        options: [q.ans, '要多讀書', '要孝順父母', '要忠心為國'],
+        options: [q.ans, ...getRandItems(wrongs, 3)],
         answer: 0,
         hint: '💡 提示：仔細閱讀文言文的字面意思。',
         explanation: `📖 詳解：${q.ans}`
       };
     } else {
       const cards = [
-        { occ: '結婚', ans: '琴瑟和鳴' },
-        { occ: '生女', ans: '弄瓦之喜' },
-        { occ: '生男', ans: '弄璋之喜' },
-        { occ: '高壽', ans: '松柏長青' },
-        { occ: '醫院開業', ans: '華佗再世' },
-        { occ: '搬家', ans: '喬木鶯遷' }
+        { occ: '結婚', ans: '琴瑟和鳴', w: ['弄瓦之喜', '松柏長青', '華佗再世', '喬木鶯遷'] },
+        { occ: '生女', ans: '弄瓦之喜', w: ['弄璋之喜', '琴瑟和鳴', '高山流水', '百年好合'] },
+        { occ: '生男', ans: '弄璋之喜', w: ['弄瓦之喜', '琴瑟和鳴', '松柏長青', '之子于歸'] },
+        { occ: '高壽', ans: '松柏長青', w: ['百年好合', '華佗再世', '弄瓦之喜', '琴瑟和鳴'] },
+        { occ: '醫院開業', ans: '華佗再世', w: ['松柏長青', '喬木鶯遷', '百年好合', '弄瓦之喜'] },
+        { occ: '搬家', ans: '喬木鶯遷', w: ['松柏長青', '華佗再世', '琴瑟和鳴', '弄璋之喜'] }
       ];
-      const q = cards[index % cards.length];
+      const q = cards[Math.floor(rand() * cards.length)];
+      const occName = ['小華', '大明', '志明', '春嬌', '阿建'][Math.floor(rand() * 5)];
       return {
-        question: `【應用文題辭】小華的朋友遇到「${q.occ}」的喜事，他想送個禮物，卡片上寫哪一個題辭最合適？`,
-        options: [q.ans, '琴瑟和鳴', '弄瓦之喜', '松柏長青', '高山流水'].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4),
+        question: `【應用文題辭】${occName}的朋友遇到「${q.occ}」的喜事，想送個禮物，卡片上寫哪一個題辭最合適？`,
+        options: [q.ans, ...getRandItems(q.w, 3)],
         answer: 0,
         hint: '💡 提示：針對場合選擇適合的題辭。',
         explanation: `📖 詳解：【${q.occ}】最適合使用「${q.ans}」。`
