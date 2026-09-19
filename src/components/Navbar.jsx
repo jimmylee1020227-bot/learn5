@@ -203,6 +203,32 @@ export default function Navbar({
             加入群組一起討論
           </a>
 
+          {/* 聯絡管理員 (LINE) */}
+          <a
+            href="https://line.me/R/ti/p/@418yswmd"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn"
+            style={{ 
+              fontSize: '0.84rem', 
+              padding: '6px 12px', 
+              background: '#fffdf9',
+              color: '#06C755',
+              border: '1.5px solid #06C755',
+              borderRadius: '10px',
+              fontWeight: 800,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              textDecoration: 'none',
+              boxShadow: '2px 2px 0px #06C755'
+            }}
+            title="聯絡管理員"
+          >
+            <MessageSquareHeart size={14} />
+            聯絡管理員
+          </a>
+
 
           {/* 一般管理員或總管理員後台 */}
           {currentUser && isAdmin && (

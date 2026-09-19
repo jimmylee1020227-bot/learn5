@@ -19,6 +19,7 @@ import RedemptionModal from './components/RedemptionModal';
 import { DeviceProvider, useDevice } from './context/DeviceContext';
 import MobileBottomNav from './components/MobileBottomNav';
 import LoginGateway from './components/LoginGateway';
+import PrivacyPolicyModal from './components/PrivacyPolicyModal';
 import { generateQuizSet } from './data/questionGenerator';
 import { 
   recordPracticeBatch,
@@ -27,12 +28,16 @@ import {
   SUPER_ADMIN_EMAIL, 
   checkIsAdmin,
   checkIsSuperAdmin,
-  incrementDailyPracticeStats 
+  incrementDailyPracticeStats,
+  getPrivacyConsent,
+  savePrivacyConsent,
+  subscribeToCloudSync
 } from './services/cloudStorage';
 
 function MainAppContent() {
   const { 
     currentUser, 
+    logout,
     triggerGoogleLogin, 
     isGoogleConfigModalOpen,
     setIsGoogleConfigModalOpen 
@@ -49,6 +54,34 @@ function MainAppContent() {
   const [lastResults, setLastResults] = useState([]);
   const [lastTimeSpent, setLastTimeSpent] = useState(0);
   const [lastQuizConfig, setLastQuizConfig] = useState(null);
+
+  // 隱私權政策與服務條款同意狀態管理
+  const [privacyConsent, setPrivacyConsent] = useState(() => {
+    return currentUser?.id ? getPrivacyConsent(currentUser.id) : null;
+  });
+
+  React.useEffect(() => {
+    if (currentUser?.id) {
+      setPrivacyConsent(getPrivacyConsent(currentUser.id));
+      const unsub = subscribeToCloudSync((event) => {
+        if (event.key === `privacy_consent_${currentUser.id}`) {
+          setPrivacyConsent(getPrivacyConsent(currentUser.id));
+        }
+      });
+      return unsub;
+    }
+  }, [currentUser]);
+
+  const handleAcceptPrivacy = () => {
+    if (currentUser?.id) {
+      const saved = savePrivacyConsent(currentUser.id, currentUser);
+      setPrivacyConsent(saved);
+    }
+  };
+
+  const handleDeclinePrivacy = () => {
+    logout();
+  };
 
   // 啟動自選題庫測驗
   const handleStartQuiz = (config) => {
@@ -102,12 +135,26 @@ function MainAppContent() {
     }
   };
 
-  // 嚴格強制登入機制：未登入時全螢幕鎖定為登入閘道，禁止任何訪客操作
+  // 1. 嚴格強制登入機制：未登入時全螢幕鎖定為登入閘道，禁止任何訪客操作
   if (!currentUser) {
     return (
       <div className="app-container">
         <LoginGateway />
         <GoogleLoginModal />
+      </div>
+    );
+  }
+
+  // 2. 嚴格隱私權條款強制同意門禁：首次登入未同意前，強制鎖定在條款確認畫面，不可使用此網頁
+  if (!privacyConsent || !privacyConsent.consented) {
+    return (
+      <div className="app-container">
+        <PrivacyPolicyModal 
+          isOpen={true}
+          user={currentUser}
+          onAccept={handleAcceptPrivacy}
+          onDecline={handleDeclinePrivacy}
+        />
       </div>
     );
   }

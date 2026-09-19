@@ -254,7 +254,8 @@ export function subscribeUserRealtimeSync(userId) {
     `user_quiz_papers_${userId}`,
     `studyhub_game_state_${userId}`,
     `redeemed_history_${userId}`,
-    `daily_stats_${userId}_${todayStr}`
+    `daily_stats_${userId}_${todayStr}`,
+    `privacy_consent_${userId}`
   ];
 
   const unsubs = userScopedKeys.map((key) => {
@@ -2205,5 +2206,25 @@ if (typeof window !== 'undefined') {
 
   // 3. 心跳定時拉取 (每 2 秒)，確保手機休眠換頁或斷線重連也絕對 100% 準確同步
   setInterval(syncFromServer, 2000);
+}
+
+// --- 13. 使用者服務條款與個人資料保護政策同意管理 (Privacy Consent Management) ---
+export function getPrivacyConsent(userId) {
+  if (!userId || userId === 'guest') return null;
+  return getJson(`privacy_consent_${userId}`, null);
+}
+
+export function savePrivacyConsent(userId, userInfo = {}) {
+  if (!userId || userId === 'guest') return null;
+  const consentRecord = {
+    userId,
+    userName: userInfo.displayName || userInfo.name || '同學',
+    userEmail: userInfo.email || '',
+    consented: true,
+    version: '1.0.0',
+    consentedAt: new Date().toISOString()
+  };
+  setJson(`privacy_consent_${userId}`, consentRecord);
+  return consentRecord;
 }
 

@@ -446,7 +446,7 @@
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
       "email": "jimmylee1020227@gmail.com",
       "id": "admin_super_jimmy",
-      "lastActive": "2026-09-19T12:07:12.328Z",
+      "lastActive": "2026-09-19T12:51:09.751Z",
       "name": "總管理員",
       "role": "super_admin",
       "school": "系統總管理員"
@@ -472,5 +472,48 @@
     "multiplierExpiresAt": 0,
     "unlockedBadges": [],
     "updatedAt": 0
-  }
+  },
+  "privacy_consent_admin_super_jimmy": {
+    "userId": "admin_super_jimmy",
+    "userName": "總管理員",
+    "userEmail": "jimmylee1020227@gmail.com",
+    "consented": true,
+    "version": "1.0.0",
+    "consentedAt": "2026-09-19T12:48:57.329Z"
+  },
+  "studyhub_weekly_leaderboard": [
+    {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
+      "displayName": "Milk 斯",
+      "email": "happybrother0717@gmail.com",
+      "tickets": 2039,
+      "totalPoints": 15,
+      "updatedAt": 1789819895273,
+      "userId": "u_knbo67cox0xp",
+      "weekId": "2026-W38",
+      "weeklyPoints": 15
+    },
+    {
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
+      "displayName": "總管理員",
+      "email": "jimmylee1020227@gmail.com",
+      "tickets": 7069,
+      "totalPoints": 6,
+      "updatedAt": 1789815554080,
+      "userId": "admin_super_jimmy",
+      "weekId": "2026-W38",
+      "weeklyPoints": 6
+    },
+    {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIuAKgTrC1GMaG-daRUu6iNO1FoZtyexmZAjKR6KdDnFX9jjA=s96-c",
+      "displayName": "李京諺",
+      "email": "lijingyan1020227@gmail.com",
+      "tickets": 2066,
+      "totalPoints": 1,
+      "updatedAt": 1789815285131,
+      "userId": "u_bqwcrtljrwp7",
+      "weekId": "2026-W38",
+      "weeklyPoints": 1
+    }
+  ]
 }

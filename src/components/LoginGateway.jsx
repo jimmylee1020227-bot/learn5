@@ -2,10 +2,12 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useDevice } from '../context/DeviceContext';
 import { GraduationCap, Shield, Users } from 'lucide-react';
+import PrivacyPolicyModal from './PrivacyPolicyModal';
 
 export default function LoginGateway() {
   const { triggerGoogleLogin } = useAuth();
   const { isMobile } = useDevice();
+  const [showPrivacy, setShowPrivacy] = React.useState(false);
 
   return (
     <div 
@@ -148,13 +150,67 @@ export default function LoginGateway() {
             <span>加入群組一起討論</span>
           </a>
 
+          <a
+            href="https://line.me/R/ti/p/@418yswmd"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn"
+            style={{
+              width: '100%',
+              padding: '14px 20px',
+              background: '#fffdf9',
+              color: '#06C755',
+              fontWeight: 800,
+              fontSize: '1rem',
+              borderRadius: '18px',
+              border: '2.5px solid #06C755',
+              boxShadow: '4px 4px 0px #06C755',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              textDecoration: 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Users size={20} />
+            <span>聯絡管理員</span>
+          </a>
+
           <div style={{ background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '10px 14px', textAlign: 'center' }}>
             <span style={{ fontSize: '0.78rem', color: '#5b6772', fontWeight: 700 }}>
               💡 系統唯一登入驗證管道：使用 Google 官方授權登入，跨手機與電腦 100% 永久雲端備份做題歷程與點數。
             </span>
           </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setShowPrivacy(true)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#78818a',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                textDecoration: 'underline',
+                cursor: 'pointer'
+              }}
+            >
+              📜 查看《使用者服務條款與隱私權保護政策》
+            </button>
+          </div>
         </div>
       </div>
+
+      {showPrivacy && (
+        <PrivacyPolicyModal 
+          isOpen={true}
+          user={null}
+          onAccept={() => setShowPrivacy(false)}
+          onDecline={() => setShowPrivacy(false)}
+        />
+      )}
     </div>
   );
 }

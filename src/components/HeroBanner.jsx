@@ -12,7 +12,8 @@ import {
   Ticket, 
   BookOpen,
   Trophy,
-  Users
+  Users,
+  MessageCircle
 } from 'lucide-react';
 
 const EXAM_TARGETS = [
@@ -171,6 +172,39 @@ export default function HeroBanner({
               >
                 <Users size={18} />
                 加入群組一起討論
+              </a>
+
+              <a 
+                href="https://line.me/R/ti/p/@418yswmd"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn"
+                style={{ 
+                  padding: '14px 22px', 
+                  fontSize: '0.98rem',
+                  fontWeight: 800,
+                  background: '#fffdf9',
+                  color: '#06C755',
+                  border: '2.5px solid #06C755',
+                  borderRadius: '16px',
+                  boxShadow: '4px 4px 0px #06C755',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  textDecoration: 'none',
+                  transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translate(-2px, -2px)';
+                  e.currentTarget.style.boxShadow = '6px 6px 0px #06C755';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'none';
+                  e.currentTarget.style.boxShadow = '4px 4px 0px #06C755';
+                }}
+              >
+                <MessageCircle size={18} />
+                聯絡管理員
               </a>
             </div>
           </div>
