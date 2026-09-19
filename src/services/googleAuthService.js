@@ -6,9 +6,8 @@ const STORAGE_GOOGLE_CLIENT_ID = 'studyhub_google_client_id';
 const HARDCODED_GOOGLE_CLIENT_ID = '1033868027938-tudq6nuvo7onc3rc7i7b4lr8pgohv6oa.apps.googleusercontent.com';
 
 export function getGoogleClientId() {
-  return localStorage.getItem(STORAGE_GOOGLE_CLIENT_ID) || 
-    import.meta.env.VITE_GOOGLE_CLIENT_ID || 
-    HARDCODED_GOOGLE_CLIENT_ID;
+  // 優先用 .env，再用 hardcode；不從 localStorage 讀取（避免舊快取造成 mismatch）
+  return import.meta.env.VITE_GOOGLE_CLIENT_ID || HARDCODED_GOOGLE_CLIENT_ID;
 }
 
 export function setGoogleClientId(clientId) {
