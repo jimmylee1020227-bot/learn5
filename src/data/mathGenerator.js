@@ -3,14 +3,43 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
   const a = Math.floor(rand() * 10 * diffMultiplier) + 2;
   const b = Math.floor(rand() * 8 * diffMultiplier) + 3;
   const c = Math.floor(rand() * 6 * diffMultiplier) + 1;
-  const variant = Math.floor(rand() * 4); // Added more variants for reading comprehension
+  const variant = Math.floor(rand() * 10);
 
   if (gradeId === 'g7') {
     if (unitId.includes('u1')) {
       if (variant === 0) {
-        // 長篇情境題 (Reading Comprehension Math)
+        // 陷阱題: 負負得正陷阱
+        const val = a + 3;
+        return {
+          question: `【常見計算陷阱】計算式子：-(${val}) - (-${val}) 的值為何？`,
+          options: [0, -val * 2, val * 2, -val],
+          answer: 0,
+          hint: '💡 提示：注意括號前的負號，「負負得正」。',
+          explanation: `📖 詳解：-(${val}) - (-${val}) = -${val} + ${val} = 0。常見錯誤是忘記負負得正而算出 -${val * 2}。`
+        };
+      } else if (variant === 1) {
+        // 絕對值陷阱
+        const val1 = a + 2;
+        const val2 = b + 1;
+        return {
+          question: `【絕對值陷阱】已知 |x| = ${val1}，|y| = ${val2}，且 x < 0，y > 0，求 x + y 的值為何？`,
+          options: [val2 - val1, val1 + val2, -(val1 + val2), val1 - val2],
+          answer: 0,
+          hint: '💡 提示：絕對值拆開有正負兩解，必須根據題意 x < 0 判斷 x 的實際數值。',
+          explanation: `📖 詳解：由 |x| = ${val1} 且 x < 0 可知 x = -${val1}。由 |y| = ${val2} 且 y > 0 可知 y = ${val2}。故 x + y = -${val1} + ${val2} = ${val2 - val1}。`
+        };
+      } else if (variant === 2) {
+        // 先乘除後加減陷阱
+        return {
+          question: `【四則運算陷阱】計算式子：${a} + ${b} × 0 - ${c} 的值為何？`,
+          options: [a - c, (a + b) * 0 - c, a + b - c, 0],
+          answer: 0,
+          hint: '💡 提示：四則運算規則為「先乘除後加減」。',
+          explanation: `📖 詳解：先算乘法 ${b} × 0 = 0，式子變成 ${a} + 0 - ${c} = ${a - c}。常見錯誤是從左算到右。`
+        };
+      } else if (variant === 3) {
         const price = a * 100;
-        const discount = b % 5 + 5; // 5~9 折
+        const discount = b % 5 + 5; 
         const paid = price * (discount / 10) + c * 50; 
         const change = paid - price * (discount / 10);
         return {
@@ -20,33 +49,29 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
           hint: `💡 提示：先計算打折後的價格（原價 × 0.${discount}），再用付出的錢減去打折後的價格。`,
           explanation: `📖 詳解：\n1. 便當原價 ${price} 元，大於 100 元，符合 ${discount} 折優惠。\n2. 折扣後價格：${price} × 0.${discount} = ${price * (discount / 10)} 元。\n3. 找零：付了 ${paid} 元 - ${price * (discount / 10)} 元 = ${change} 元。`
         };
-      } else if (variant === 1) {
-        const n1 = -a; const n2 = b; const n3 = -(c + 2);
-        const isAdd = rand() > 0.5;
-        const inside = isAdd ? n1 + n2 : n1 - n2;
-        const ansVal = inside * n3;
-        return {
-          question: `【整數四則與負數運算】計算式子：[(${n1}) ${isAdd ? '+' : '-'} (${n2})] × (${n3}) 之值為何？`,
-          options: [ansVal, ansVal + a, ansVal - b, -ansVal],
-          answer: 0,
-          hint: '💡 提示：先算括號內的加減，再進行乘法（負負得正）。',
-          explanation: `📖 詳解：[(${n1}) ${isAdd ? '+' : '-'} (${n2})] = ${inside}。\n${inside} × (${n3}) = ${ansVal}。`
-        };
       } else {
-        const v1 = a * 2 - b * 3;
-        const v2 = c * 4 - a * 2;
-        const ansVal = Math.abs(v1) - Math.abs(v2);
+        const d1 = a + 3; const d2 = b + 2;
+        const total = d1 + d2; const diff = Math.abs(d1 - d2);
         return {
-          question: `【絕對值與四則混合運算】計算：|${a * 2} - ${b * 3}| - |${c * 4} - ${a * 2}| 的值為何？`,
-          options: [ansVal, ansVal + a, Math.abs(v1) + Math.abs(v2), -ansVal],
+          question: `【數線與距離】在數線上，點 A 坐標為 -${d1}，點 B 坐標為 ${d2}，求 A、B 兩點的距離為多少？`,
+          options: [total, diff, -total, -diff],
           answer: 0,
-          hint: '💡 提示：先分別計算絕對值內的數值，取正數後再相減。',
-          explanation: `📖 詳解：|${a * 2} - ${b * 3}| = |${v1}| = ${Math.abs(v1)}。\n|${c * 4} - ${a * 2}| = |${v2}| = ${Math.abs(v2)}。\n兩者相減：${Math.abs(v1)} - ${Math.abs(v2)} = ${ansVal}。`
+          hint: '💡 提示：數線上兩點距離為大數減小數，或利用絕對值 |a - b| 計算。',
+          explanation: `📖 詳解：A、B 兩點距離為 |${d2} - (-${d1})| = ${d2} + ${d1} = ${total}。`
         };
       }
     } else {
-      // 一元一次方程式情境
+      // 方程式陷阱
       if (variant === 0) {
+        const val = a + 2;
+        return {
+          question: `【方程式陷阱】解方程式：${val}x = 0，請問 x 的值為何？`,
+          options: [0, val, -val, '無解'],
+          answer: 0,
+          hint: '💡 提示：任何數乘以 0 都等於 0。',
+          explanation: `📖 詳解：等號兩邊同除以 ${val}，得 x = 0 / ${val} = 0。常見錯誤是以為無解或 x = ${val}。`
+        };
+      } else if (variant === 1) {
         const applePrice = a + 15;
         const total = applePrice * 5 + b * 10;
         return {
@@ -70,10 +95,17 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
       }
     }
   } else if (gradeId === 'g8') {
-    // 乘法公式與畢氏定理
     if (variant === 0) {
-      // 畢氏定理情境閱讀題
-      const pythTriples = [[3, 4, 5], [5, 12, 13], [7, 24, 25], [8, 15, 17]];
+      // 畢氏定理陷阱: 3, 4 不一定是斜邊
+      return {
+        question: `【畢氏定理陷阱】已知一直角三角形的兩邊長分別為 3 和 4，請問第三邊的長度為何？`,
+        options: ['5 或 √7', '5', '7', '√7'],
+        answer: 0,
+        hint: '💡 提示：題目並未指明 3 和 4 是兩股，4 也有可能是斜邊。',
+        explanation: `📖 詳解：\n情況一：若 3 和 4 為兩股，則斜邊為 √(3² + 4²) = 5。\n情況二：若 4 為斜邊、3 為一股，則另一股為 √(4² - 3²) = √7。故第三邊可能為 5 或 √7。`
+      };
+    } else if (variant === 1) {
+      const pythTriples = [[3, 4, 5], [5, 12, 13], [7, 24, 25]];
       const triple = pythTriples[index % pythTriples.length];
       const scale = (c % 3) + 2;
       const height = triple[0] * scale;
@@ -98,7 +130,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
     }
   }
   
-  // Fallback for math general
+  // 圖表題與代數 (Fallback)
   if (variant % 2 === 0) {
     const vA = a * 10 + b;
     const vB = a * 10 + b + c;

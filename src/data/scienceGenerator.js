@@ -1,8 +1,22 @@
 export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
-  const variant = Math.floor(rand() * 4);
+  const variant = Math.floor(rand() * 10);
 
   if (gradeId === 'g7') {
     if (variant === 0) {
+      // 陷阱題: 光合作用
+      return {
+        question: `【生物概念陷阱】關於植物的光合作用，下列敘述何者正確？`,
+        options: [
+          '光合作用的主要目的是製造葡萄糖，而非製造氧氣。',
+          '植物只有在白天進行光合作用，晚上則進行呼吸作用。',
+          '光合作用的暗反應（碳反應）只能在沒有光的時候進行。',
+          '植物只要有水和二氧化碳，不需光照也能進行光合作用。'
+        ],
+        answer: 0,
+        hint: '💡 提示：氧氣只是光合作用的「副產品」，植物自己需要的是養分。',
+        explanation: `📖 詳解：光合作用的主要目的是合成有機物(葡萄糖)供植物自己使用，氧氣只是副產品。常見陷阱：白天植物也會進行呼吸作用；暗反應在白天也能進行（不需光，但非只能在暗處）。`
+      };
+    } else if (variant === 1) {
       // 實驗對照組情境閱讀題
       return {
         isReading: true,
@@ -17,6 +31,20 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
         answer: 0,
         hint: '💡 提示：比較葉片 A 與葉片 B 的處理差異，找出操縱變因；碘液遇澱粉會變藍黑色。',
         explanation: `📖 詳解：\n1. 兩葉片唯一的不同是有沒有被鋁箔紙包覆(是否照光)，故操縱變因為「光照」。\n2. 葉片 B 沒有光照，無法行光合作用產生澱粉，滴加碘液會呈黃褐色。\n3. 熱酒精是為了溶解葉綠素。\n4. 此實驗證明光合作用需要「光」，而非二氧化碳。`
+      };
+    } else if (variant === 2) {
+      // 陷阱題: 細胞
+      return {
+        question: `【細胞構造陷阱】下列關於動植物細胞構造的比較，何者敘述正確？`,
+        options: [
+          '只有植物細胞有細胞壁，動物細胞沒有。',
+          '只有植物細胞有粒線體，動物細胞沒有。',
+          '植物細胞都有葉綠體，動物細胞都沒有。',
+          '只有動物細胞有細胞核，植物細胞沒有。'
+        ],
+        answer: 0,
+        hint: '💡 提示：注意「都有」這個陷阱，有些植物細胞（如表皮細胞、根細胞）並沒有葉綠體。',
+        explanation: `📖 詳解：細胞壁是植物、真菌等才有的構造，動物沒有。常見陷阱：並非「所有」植物細胞都有葉綠體（例如根細胞就沒有）。動植物都有粒線體與細胞核。`
       };
     } else {
       const organelles = [
@@ -37,6 +65,20 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
     }
   } else if (gradeId === 'g8') {
     if (variant === 0) {
+      // 陷阱題: 質量與重量
+      return {
+        question: `【物理觀念陷阱】一名太空人將一塊石頭從地球帶到月球上，請問該石頭的「質量」與「重量」會發生什麼變化？`,
+        options: [
+          '質量不變，重量變小',
+          '質量變小，重量不變',
+          '質量與重量均變小',
+          '質量與重量均不變'
+        ],
+        answer: 0,
+        hint: '💡 提示：質量是物體所含物質的量（到哪都不變）；重量是受引力大小（月球引力較小）。',
+        explanation: `📖 詳解：質量是不隨地點改變的純量；而重量(重力)會因為月球引力只有地球的 1/6 而變小。`
+      };
+    } else if (variant === 1) {
       // 複雜理化計算應用題
       const waterM = ((index * 15) % 100) + 100;
       const initialT = ((index * 5) % 20) + 20;
@@ -59,6 +101,20 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
         answer: 0,
         hint: '💡 提示：利用熱量守恆定律 (放出的熱量 = 吸收的熱量)。水吸熱 = 金屬放熱。',
         explanation: `📖 詳解：\n1. 水吸收的熱量 = ${waterM} × 1.0 × (${finalT} - ${initialT}) = ${heatLost} 卡。\n2. 金屬放出的熱量 = 金屬質量 × 比熱 S × 溫度變化 = ${metalM} × S × (${metalInitT} - ${finalT})。\n3. ${heatLost} = ${metalM} × S × ${metalInitT - finalT} => S = ${heatLost} / ${metalM * (metalInitT - finalT)} ≈ ${metalSpecificHeat} cal/g·°C。`
+      };
+    } else if (variant === 2) {
+      // 密度陷阱題
+      return {
+        question: `【密度觀念陷阱】將一塊鐵塊切成大小不等的兩塊，請問這兩塊鐵塊的「密度」關係為何？`,
+        options: [
+          '兩塊鐵塊的密度一樣大',
+          '大鐵塊的密度比較大',
+          '小鐵塊的密度比較大',
+          '無法比較'
+        ],
+        answer: 0,
+        hint: '💡 提示：密度是物質的特性，與體積大小無關。',
+        explanation: `📖 詳解：密度 (D = M/V) 是物質本身的物理性質。將鐵塊切開，雖然質量與體積等比例縮小，但比值(密度)不變。`
       };
     } else {
       const mass = ((index * 9) % 70) + 30;
@@ -89,12 +145,13 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       explanation: `📖 詳解：由表格可知，每 0.1 秒滑車移動的距離從 ${v1} 增加到 ${v4} cm，距離漸增代表速度漸增，故為漸快運動。`
     };
   } else {
+    // 牛頓第二定律陷阱
     return {
-      question: `【自然科學推論】質量為 ${index % 5 + 2} kg 的物體受到 ${(index % 5 + 2) * 3} N 的力，加速度為多少 m/s²？`,
-      options: ['3', '6', '1.5', '9'],
+      question: `【牛頓定律陷阱】一物體在光滑水平面上作等速度直線運動，請問該物體所受的合力為何？`,
+      options: ['合力為 0', '合力方向與運動方向相同', '合力方向與運動方向相反', '合力不斷增加'],
       answer: 0,
-      hint: '💡 提示：a = F / m',
-      explanation: `📖 詳解：加速度 = 力 / 質量 = 3 m/s²。`
+      hint: '💡 提示：牛頓第一運動定律（慣性定律）。',
+      explanation: `📖 詳解：依據牛頓第一運動定律，若物體作等速度直線運動或靜止，表示其所受「合力為 0」。常見錯誤是以為有速度就一定有受力。`
     };
   }
 }
