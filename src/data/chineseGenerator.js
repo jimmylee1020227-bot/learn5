@@ -1,45 +1,36 @@
 export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
-  const variant = Math.floor(rand() * 10);
+  const globalVariant = index % 3;
 
   // 通用錯別字與字音字形 (適用全科)
-  if (variant < 3) {
-    if (variant === 0) {
-      const typos = [
-        { text: '「莘莘」學子', correct: 'ㄕㄣ', wrong: ['ㄒㄧㄣ', 'ㄒㄧㄥ', 'ㄕㄥ'] },
-        { text: '「垂涎」三尺', correct: 'ㄒㄧㄢˊ', wrong: ['ㄧㄢˊ', 'ㄉㄧㄢˋ', 'ㄔㄨㄟˊ'] },
-        { text: '「塑」膠', correct: 'ㄙㄨˋ', wrong: ['ㄕㄨㄛˋ', 'ㄙㄨㄛˋ', 'ㄕㄨˋ'] },
-        { text: '「尷尬」', correct: 'ㄍㄢ ㄍㄚˋ', wrong: ['ㄐㄧㄢ ㄐㄧㄝˋ', 'ㄍㄢ ㄐㄧㄝˋ', 'ㄐㄧㄢ ㄍㄚˋ'] }
-      ];
-      const t = typos[index % typos.length];
-      return {
-        question: `【字音字形測驗】請選出下列詞語「」中文字的正確讀音：\n${t.text}`,
-        options: [t.correct, t.wrong[0], t.wrong[1], t.wrong[2]],
-        answer: 0,
-        hint: '💡 提示：請注意部首與偏旁的發音差異。',
-        explanation: `📖 詳解：「${t.text}」正確讀音為 ${t.correct}。`
-      };
-    } else if (variant === 1) {
-      return {
-        question: `【國文陷阱題：錯別字判讀】\n下列四個選項中，何者「沒有」錯別字？`,
-        options: ['走投無路', '破斧沉舟', '病入膏盲', '名烈前茅'],
-        answer: 0,
-        hint: '💡 提示：仔細辨認字形。',
-        explanation: `📖 詳解：「破斧沉舟」應為釜；「病入膏盲」應為肓；「名烈前茅」應為列。`
-      };
-    } else {
-      return {
-        question: `【成語應用測驗】\n用來比喻「處境極為危險」的成語是？`,
-        options: ['盲人瞎馬', '老馬識途', '走馬看花', '指鹿為馬'],
-        answer: 0,
-        hint: '💡 提示：思考成語背後的典故。',
-        explanation: `📖 詳解：盲人瞎馬比喻處境極其危險。`
-      };
-    }
+  if (globalVariant === 0) {
+    const typos = [
+      { text: '「莘莘」學子', correct: 'ㄕㄣ', wrong: ['ㄒㄧㄣ', 'ㄒㄧㄥ', 'ㄕㄥ'] },
+      { text: '「垂涎」三尺', correct: 'ㄒㄧㄢˊ', wrong: ['ㄧㄢˊ', 'ㄉㄧㄢˋ', 'ㄔㄨㄟˊ'] },
+      { text: '「塑」膠', correct: 'ㄙㄨˋ', wrong: ['ㄕㄨㄛˋ', 'ㄙㄨㄛˋ', 'ㄕㄨˋ'] },
+      { text: '「尷尬」', correct: 'ㄍㄢ ㄍㄚˋ', wrong: ['ㄐㄧㄢ ㄐㄧㄝˋ', 'ㄍㄢ ㄐㄧㄝˋ', 'ㄐㄧㄢ ㄍㄚˋ'] }
+    ];
+    const t = typos[index % typos.length];
+    return {
+      question: `【字音字形測驗】請選出下列詞語「」中文字的正確讀音：\n${t.text}`,
+      options: [t.correct, t.wrong[0], t.wrong[1], t.wrong[2]],
+      answer: 0,
+      hint: '💡 提示：請注意部首與偏旁的發音差異。',
+      explanation: `📖 詳解：「${t.text}」正確讀音為 ${t.correct}。`
+    };
+  } else if (globalVariant === 1) {
+    return {
+      question: `【國文陷阱題：錯別字判讀】\n下列四個選項中，何者「沒有」錯別字？`,
+      options: ['走投無路', '破斧沉舟', '病入膏盲', '名烈前茅'],
+      answer: 0,
+      hint: '💡 提示：仔細辨認字形。',
+      explanation: `📖 詳解：「破斧沉舟」應為釜；「病入膏盲」應為肓；「名烈前茅」應為列。`
+    };
   }
 
   // 根據年級區分國學常識
   if (gradeId === 'g7') {
-    if (variant < 5) {
+    const variant = index % 2;
+    if (variant === 0) {
       return {
         isChat: true,
         chatMessages: [
@@ -62,7 +53,8 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       };
     }
   } else if (gradeId === 'g8') {
-    if (variant < 5) {
+    const variant = index % 2;
+    if (variant === 0) {
       return {
         question: `【中文四大句型判讀】文句：「蓮，花之君子者也。」在語法句型上屬於下列哪一種？`,
         options: ['判斷句', '敘事句', '有無句', '表態句'],
@@ -80,7 +72,8 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       };
     }
   } else if (gradeId === 'g9') {
-    if (variant < 5) {
+    const variant = index % 2;
+    if (variant === 0) {
       return {
         isReading: true,
         readingText: `【文言語譯與理解】\n子曰：「學而不思則罔，思而不學則殆。」`,
