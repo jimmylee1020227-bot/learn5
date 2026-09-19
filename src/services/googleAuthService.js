@@ -23,7 +23,8 @@ export function redirectToGoogleLogin(customClientId = null) {
 
   if (clientId) {
     // 直連 Google 官方 OAuth 2.0 授權端點（自動支援 localhost 與 GitHub Pages 專案子目錄）
-    const redirectUri = window.location.origin + '/';
+    const pathClean = window.location.pathname.replace(/\/$/, '');
+    const redirectUri = window.location.origin + (pathClean ? pathClean + '/' : '/');
     const scope = encodeURIComponent('email profile openid');
     const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}&prompt=select_account&include_granted_scopes=true&state=studyhub_google_auth`;
     window.location.href = oauthUrl;
