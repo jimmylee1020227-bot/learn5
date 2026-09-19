@@ -7,6 +7,7 @@ import {
   getChatMessages, 
   sendChatMessage, 
   markThreadAsRead,
+  getKnownStudents,
   subscribeToCloudSync 
 } from '../services/cloudStorage';
 import { 
@@ -21,7 +22,10 @@ import {
   Clock,
   MessageCircle,
   Crown,
-  UserCheck
+  UserCheck,
+  ToggleLeft,
+  ToggleRight,
+  Users
 } from 'lucide-react';
 
 export default function AdminSupportChat() {
@@ -32,63 +36,62 @@ export default function AdminSupportChat() {
   const isSuperAdmin = currentUser?.role === 'super_admin';
   const isAdmin = isSuperAdmin || currentUser?.role === 'admin';
 
+  // 模式切換：若為管理員，可自由切換「管理員收件回覆視角」與「學生發問體驗視角」
+  const [activeViewMode, setActiveViewMode] = useState(isAdmin ? 'admin' : 'student');
+
   const [admins, setAdmins] = useState(getAdminsList());
   const [threads, setThreads] = useState(getAllChatThreads());
+  const [knownStudents, setKnownStudents] = useState(getKnownStudents());
   
-  // 學生身分時：選中諮詢哪位管理員
+  // 管理員視角下的左側子分頁: 'active_threads' | 'all_students'
+  const [adminSubTab, setAdminSubTab] = useState('active_threads');
+
+  // 學生視角：選中的管理員 ID
   const [selectedAdminId, setSelectedAdminId] = useState(admins[0]?.id || 'admin_super_jimmy');
   
-  // 管理員身分時：選中哪位學生的進線諮詢
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
-  const [selectedStudentName, setSelectedStudentName] = useState('');
+  // 管理員視角：選中的學生 ID 與 姓名 (預設自動選中第一個，確保輸入框立即可用！)
+  const initialThreads = getAllChatThreads();
+  const [selectedStudentId, setSelectedStudentId] = useState(initialThreads[0]?.studentId || 'student_lin');
+  const [selectedStudentName, setSelectedStudentName] = useState(initialThreads[0]?.studentName || '建中前鋒‧林同學');
 
-  // 行動裝置專屬：是否正在檢視對話內容（手機點選後全螢幕開啟）
+  // 手機版全螢幕聊天檢視狀態
   const [mobileInChat, setMobileInChat] = useState(!isMobile);
 
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
 
-  // 1. 初始化資料與即時多端事件監聽
+  // 1. 即時多端資料監聽
   useEffect(() => {
     const refreshData = () => {
       const currentAdmins = getAdminsList();
       const currentThreads = getAllChatThreads();
+      const currentStudents = getKnownStudents();
       setAdmins(currentAdmins);
       setThreads(currentThreads);
-
-      if (isAdmin) {
-        if (!selectedStudentId && currentThreads.length > 0) {
-          setSelectedStudentId(currentThreads[0].studentId);
-          setSelectedStudentName(currentThreads[0].studentName);
-        }
-      }
+      setKnownStudents(currentStudents);
     };
 
     refreshData();
     const unsub = subscribeToCloudSync(refreshData);
     return () => unsub();
-  }, [isAdmin]);
+  }, []);
 
-  // 2. 當切換諮詢對象時，載入歷史對話
+  // 2. 載入對話訊息
   useEffect(() => {
-    if (isAdmin) {
-      if (selectedStudentId) {
-        const adminId = currentUser?.id || 'admin_super_jimmy';
-        const msgs = getChatMessages(selectedStudentId, adminId);
-        setMessages(msgs);
-        markThreadAsRead(selectedStudentId, adminId);
-      } else {
-        setMessages([]);
-      }
+    if (activeViewMode === 'admin') {
+      const targetStudent = selectedStudentId || 'student_lin';
+      const msgs = getChatMessages(targetStudent, 'admin_super_jimmy');
+      setMessages(msgs);
+      markThreadAsRead(targetStudent, 'admin_super_jimmy');
     } else {
-      if (selectedAdminId && currentUser?.id) {
-        const msgs = getChatMessages(currentUser.id, selectedAdminId);
-        setMessages(msgs);
-      }
+      // 學生視角：載入目前使用者與選中管理員的對話
+      const myStudentId = currentUser?.id || 'student_lin';
+      const msgs = getChatMessages(myStudentId, selectedAdminId);
+      setMessages(msgs);
     }
-  }, [isAdmin, selectedStudentId, selectedAdminId, currentUser?.id]);
+  }, [activeViewMode, selectedStudentId, selectedAdminId, currentUser?.id]);
 
-  // 自動捲動至最新訊息
+  // 3. 自動捲動到底部
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -98,20 +101,19 @@ export default function AdminSupportChat() {
     e?.preventDefault();
     if (!inputText.trim()) return;
 
-    if (isAdmin) {
-      // 管理員回覆學生
-      if (!selectedStudentId) return;
-      const adminId = currentUser?.id || 'admin_super_jimmy';
+    if (activeViewMode === 'admin') {
+      // --- 管理員回覆學生 ---
+      const targetStudentId = selectedStudentId || 'student_lin';
       const adminName = currentUser?.displayName || '總管理員 (Jimmy)';
 
-      const newMsg = sendChatMessage(selectedStudentId, adminId, {
-        studentId: selectedStudentId,
+      const newMsg = sendChatMessage(targetStudentId, 'admin_super_jimmy', {
+        studentId: targetStudentId,
         studentName: selectedStudentName,
-        adminId: adminId,
+        adminId: 'admin_super_jimmy',
         adminName: adminName,
-        senderId: adminId,
+        senderId: 'admin_super_jimmy',
         senderName: adminName,
-        senderRole: currentUser?.role || 'super_admin',
+        senderRole: isSuperAdmin ? 'super_admin' : 'admin',
         text: inputText.trim()
       });
 
@@ -121,18 +123,18 @@ export default function AdminSupportChat() {
         setThreads(getAllChatThreads());
       }
     } else {
-      // 學生向管理員提問
-      const studentId = currentUser?.id || 'guest_student';
-      const studentName = currentUser?.displayName || '會考戰友';
+      // --- 學生向管理員提問 ---
+      const myStudentId = currentUser?.id || 'student_lin';
+      const myStudentName = currentUser?.displayName || '會考戰友';
       const targetAdmin = admins.find(a => a.id === selectedAdminId) || admins[0];
 
-      const newMsg = sendChatMessage(studentId, selectedAdminId, {
-        studentId: studentId,
-        studentName: studentName,
+      const newMsg = sendChatMessage(myStudentId, selectedAdminId, {
+        studentId: myStudentId,
+        studentName: myStudentName,
         adminId: selectedAdminId,
-        adminName: targetAdmin?.displayName || '管理員',
-        senderId: studentId,
-        senderName: studentName,
+        adminName: targetAdmin?.displayName || '總管理員 (Jimmy)',
+        senderId: myStudentId,
+        senderName: myStudentName,
         senderRole: 'student',
         text: inputText.trim()
       });
@@ -142,107 +144,276 @@ export default function AdminSupportChat() {
         setInputText('');
         setThreads(getAllChatThreads());
 
-        // 智慧初次提問自動回覆確認
-        setTimeout(() => {
-          const autoConfirm = sendChatMessage(studentId, selectedAdminId, {
-            studentId: studentId,
-            studentName: studentName,
-            adminId: selectedAdminId,
-            adminName: targetAdmin?.displayName || '管理員',
-            senderId: selectedAdminId,
-            senderName: targetAdmin?.displayName || '管理員',
-            senderRole: 'admin',
-            text: `收到你的訊息囉！我是${targetAdmin?.displayName || '管理員'}，已為你記錄此反饋，後台確認題庫或課綱後會立即為你處理並同步！`
-          });
-          if (autoConfirm) {
-            setMessages(prev => [...prev, autoConfirm]);
-          }
-        }, 1200);
+
       }
     }
-  };
-
-  // 管理員專屬：若目前無學生進線，提供一鍵建立示範諮詢對話供即時驗證
-  const handleCreateTestThread = () => {
-    const testStudentId = 'test_student_' + Math.floor(Math.random() * 899 + 100);
-    const testStudentName = '建中會考模範生';
-    const adminId = currentUser?.id || 'admin_super_jimmy';
-    const adminName = currentUser?.displayName || '總管理員 (Jimmy)';
-
-    sendChatMessage(testStudentId, adminId, {
-      studentId: testStudentId,
-      studentName: testStudentName,
-      adminId: adminId,
-      adminName: adminName,
-      senderId: testStudentId,
-      senderName: testStudentName,
-      senderRole: 'student',
-      text: '老師您好！想請教數學科多項式十字交乘法第 42 題詳解第二步驟是否有更快公式解？'
-    });
-
-    const refreshed = getAllChatThreads();
-    setThreads(refreshed);
-    setSelectedStudentId(testStudentId);
-    setSelectedStudentName(testStudentName);
-    setMobileInChat(true);
   };
 
   const currentAdmin = admins.find(a => a.id === selectedAdminId) || admins[0];
 
   return (
-    <div 
-      style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : '320px 1fr',
-        gap: '20px',
-        minHeight: isMobile ? 'calc(100vh - 180px)' : '620px',
-        maxWidth: '1240px',
-        margin: '0 auto',
-        padding: isMobile ? '8px 0' : '16px 0'
-      }}
-    >
-      {/* ============================================================ */}
-      {/* 左欄：通道切換清單（依身分動態顯示：學生看管理員名冊；管理員看進線學生名冊） */}
-      {/* ============================================================ */}
-      {(!isMobile || !mobileInChat) && (
+    <div style={{ maxWidth: '1240px', margin: '0 auto', padding: isMobile ? '8px 0' : '16px 0' }}>
+      
+      {/* 頂部身分切換與狀態列 (管理員專屬快速切換工具) */}
+      {isAdmin && (
         <div 
-          className="glass-panel" 
           style={{ 
-            padding: '20px', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: '14px',
-            height: 'fit-content',
-            maxHeight: isMobile ? 'none' : '620px',
-            overflowY: 'auto'
+            background: '#fffdf9', 
+            border: '2.5px solid #17324d', 
+            borderRadius: '16px', 
+            boxShadow: '4px 4px 0 #17324d',
+            padding: '10px 16px', 
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '10px'
           }}
         >
-          {/* 標題與說明 */}
-          <div style={{ paddingBottom: '12px', borderBottom: '2px solid #17324d' }}>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 900, color: '#17324d', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-              <Shield size={20} color="#ef8354" />
-              {isAdmin ? '學生進線諮詢清單 (1 對 1 通道)' : '選擇諮詢管理員 (1 對 1 通道)'}
-            </h3>
-            <div style={{ fontSize: '0.74rem', color: '#5b6772', marginTop: '6px', fontWeight: 600, lineHeight: 1.4 }}>
-              {isAdmin 
-                ? '同學發送提問或勘誤時，獨立對話視窗將即時進線供管理員回覆。' 
-                : '有幾位駐站老師就有幾個獨立諮詢室，可針對學科疑問一對一深入諮詢。'}
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Shield size={18} color="#ef8354" />
+            <span style={{ fontWeight: 900, fontSize: '0.88rem', color: '#17324d' }}>
+              1 對 1 諮詢通道主控台 (唯一總管 Jimmy)
+            </span>
           </div>
 
-          {/* 清單項目列表 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {isAdmin ? (
-              // --- 管理員視角：顯示學生提問對話列表 ---
-              threads.length > 0 ? (
-                threads.map(t => {
-                  const isSelected = t.studentId === selectedStudentId;
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => {
+                setActiveViewMode('admin');
+                setMobileInChat(false);
+              }}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '10px',
+                border: activeViewMode === 'admin' ? '2px solid #ef8354' : '1.5px solid #ded3c5',
+                background: activeViewMode === 'admin' ? '#ef8354' : '#fffdf9',
+                color: activeViewMode === 'admin' ? '#ffffff' : '#17324d',
+                fontWeight: 800,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Shield size={14} />
+              <span>🛡️ 管理員收件與回覆視角 ({threads.length} 則)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveViewMode('student');
+                setMobileInChat(false);
+              }}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '10px',
+                border: activeViewMode === 'student' ? '2px solid #ef8354' : '1.5px solid #ded3c5',
+                background: activeViewMode === 'student' ? '#ef8354' : '#fffdf9',
+                color: activeViewMode === 'student' ? '#ffffff' : '#17324d',
+                fontWeight: 800,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Sparkles size={14} />
+              <span>🎓 模擬學生發問視角</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 主聊天介面 (雙欄佈局) */}
+      <div 
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '340px 1fr',
+          gap: '20px',
+          minHeight: isMobile ? 'calc(100vh - 180px)' : '620px'
+        }}
+      >
+        {/* ============================================================ */}
+        {/* 左欄：清單列表 */}
+        {/* ============================================================ */}
+        {(!isMobile || !mobileInChat) && (
+          <div 
+            className="glass-panel" 
+            style={{ 
+              padding: '18px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '12px',
+              borderRadius: '24px',
+              border: '3px solid #17324d',
+              boxShadow: '6px 6px 0 #17324d',
+              background: '#fffdf9',
+              height: 'fit-content',
+              maxHeight: isMobile ? 'none' : '620px',
+              overflowY: 'auto'
+            }}
+          >
+            {/* 左欄頂部標題 */}
+            <div style={{ paddingBottom: '10px', borderBottom: '2px solid #17324d' }}>
+              <h3 style={{ fontSize: '1.02rem', fontWeight: 900, color: '#17324d', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                {activeViewMode === 'admin' ? (
+                  <>
+                    <MessageSquare size={18} color="#ef8354" />
+                    <span>學生進線諮詢清單 (1 對 1 通道)</span>
+                  </>
+                ) : (
+                  <>
+                    <Shield size={18} color="#ef8354" />
+                    <span>選擇諮詢管理員 (1 對 1 通道)</span>
+                  </>
+                )}
+              </h3>
+              <div style={{ fontSize: '0.72rem', color: '#5b6772', marginTop: '4px', fontWeight: 600 }}>
+                {activeViewMode === 'admin' 
+                  ? '點選任一同學即可於右側獨立對話框進行即時解答回覆' 
+                  : '點選管理員即可開啟專屬 1 對 1 諮詢通道'}
+              </div>
+
+              {/* 管理員子分頁切換：進行中提問 vs 所有在線學生 */}
+              {activeViewMode === 'admin' && (
+                <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+                  <button
+                    onClick={() => setAdminSubTab('active_threads')}
+                    style={{
+                      flex: 1,
+                      padding: '5px 8px',
+                      borderRadius: '8px',
+                      border: '1.5px solid #17324d',
+                      background: adminSubTab === 'active_threads' ? '#17324d' : '#f8f3eb',
+                      color: adminSubTab === 'active_threads' ? '#f7cf68' : '#17324d',
+                      fontSize: '0.74rem',
+                      fontWeight: 800,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    進線提問 ({threads.length})
+                  </button>
+                  <button
+                    onClick={() => setAdminSubTab('all_students')}
+                    style={{
+                      flex: 1,
+                      padding: '5px 8px',
+                      borderRadius: '8px',
+                      border: '1.5px solid #17324d',
+                      background: adminSubTab === 'all_students' ? '#17324d' : '#f8f3eb',
+                      color: adminSubTab === 'all_students' ? '#f7cf68' : '#17324d',
+                      fontSize: '0.74rem',
+                      fontWeight: 800,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    所有學生名冊 ({knownStudents.length})
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 清單項目列表 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {activeViewMode === 'admin' ? (
+                // --- 管理員視角列表 ---
+                adminSubTab === 'active_threads' ? (
+                  threads.map(t => {
+                    const isSelected = t.studentId === selectedStudentId;
+                    return (
+                      <div
+                        key={t.threadKey}
+                        onClick={() => {
+                          setSelectedStudentId(t.studentId);
+                          setSelectedStudentName(t.studentName);
+                          if (isMobile) setMobileInChat(true);
+                        }}
+                        style={{
+                          padding: '11px 13px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          cursor: 'pointer',
+                          border: isSelected ? '2.5px solid #ef8354' : '2px solid #ded3c5',
+                          background: isSelected ? '#fff0e9' : '#ffffff',
+                          borderRadius: '14px',
+                          boxShadow: isSelected ? '3px 3px 0 #ef8354' : '2px 2px 0 #17324d',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <img 
+                          src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(t.studentId)}`} 
+                          alt="" 
+                          style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #17324d', background: '#f8f3eb' }} 
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#17324d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {t.studentName}
+                            </span>
+                            {t.unreadCount > 0 && (
+                              <span style={{ background: '#ef8354', color: '#fff', fontSize: '0.62rem', fontWeight: 900, padding: '1px 6px', borderRadius: '999px' }}>
+                                {t.unreadCount} 則新訊息
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: '#5b6772', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {t.latestMsg?.text || '尚未有訊息'}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  // 所有學生名冊
+                  knownStudents.map(s => {
+                    const isSelected = s.id === selectedStudentId;
+                    return (
+                      <div
+                        key={s.id}
+                        onClick={() => {
+                          setSelectedStudentId(s.id);
+                          setSelectedStudentName(s.name);
+                          if (isMobile) setMobileInChat(true);
+                        }}
+                        style={{
+                          padding: '11px 13px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          cursor: 'pointer',
+                          border: isSelected ? '2.5px solid #ef8354' : '2px solid #ded3c5',
+                          background: isSelected ? '#fff0e9' : '#ffffff',
+                          borderRadius: '14px',
+                          boxShadow: isSelected ? '3px 3px 0 #ef8354' : '2px 2px 0 #17324d'
+                        }}
+                      >
+                        <img 
+                          src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(s.id)}`} 
+                          alt="" 
+                          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1.5px solid #17324d' }} 
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.86rem', color: '#17324d' }}>{s.name}</div>
+                          <div style={{ fontSize: '0.68rem', color: '#78818a' }}>{s.school}</div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )
+              ) : (
+                // --- 學生視角：管理員名冊 ---
+                admins.map(admin => {
+                  const isSelected = admin.id === selectedAdminId;
                   return (
                     <div
-                      key={t.threadKey}
+                      key={admin.id}
                       onClick={() => {
-                        setSelectedStudentId(t.studentId);
-                        setSelectedStudentName(t.studentName);
+                        setSelectedAdminId(admin.id);
                         if (isMobile) setMobileInChat(true);
                       }}
                       style={{
@@ -259,287 +430,227 @@ export default function AdminSupportChat() {
                       }}
                     >
                       <img 
-                        src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(t.studentId)}`} 
+                        src={admin.avatar} 
                         alt="" 
-                        style={{ width: '40px', height: '40px', borderRadius: '50%', border: '2px solid #17324d', background: '#f8f3eb' }} 
+                        style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid #17324d', background: '#fff' }} 
                       />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#17324d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {t.studentName}
-                          </span>
-                          {t.unreadCount > 0 && (
-                            <span style={{ background: '#ef8354', color: '#fff', fontSize: '0.65rem', fontWeight: 900, padding: '1px 7px', borderRadius: '999px' }}>
-                              {t.unreadCount} 則未讀
-                            </span>
-                          )}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 800, fontSize: '0.92rem', color: isSelected ? '#c8643d' : '#17324d', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {admin.displayName}
+                          {admin.role === 'super_admin' && <Crown size={14} color="#f59e0b" />}
                         </div>
-                        <div style={{ fontSize: '0.72rem', color: '#5b6772', marginTop: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {t.latestMsg?.text || '尚未有發言記錄'}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                          {admin.specialties?.map((s, i) => (
+                            <span key={i} className="badge badge-coral" style={{ fontSize: '0.62rem', padding: '1px 6px' }}>
+                              {s}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     </div>
                   );
                 })
-              ) : (
-                <div style={{ textAlign: 'center', padding: '24px 12px', background: '#fffdf9', border: '2px dashed #ded3c5', borderRadius: '16px' }}>
-                  <MessageCircle size={32} color="#78818a" style={{ margin: '0 auto 8px auto' }} />
-                  <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#17324d' }}>
-                    目前尚無學生發起諮詢
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: '#78818a', marginTop: '4px', lineHeight: 1.4 }}>
-                    當前線上題庫正常運行中，學生送出學科提問時此處將即時跳出！
-                  </div>
-                  <button
-                    onClick={handleCreateTestThread}
-                    className="btn btn-secondary"
-                    style={{ marginTop: '14px', fontSize: '0.75rem', padding: '6px 12px' }}
-                  >
-                    ✨ 模擬建立 1 則學生諮詢
-                  </button>
-                </div>
-              )
-            ) : (
-              // --- 學生視角：顯示可諮詢的管理員列表 ---
-              admins.map(admin => {
-                const isSelected = admin.id === selectedAdminId;
-                return (
-                  <div
-                    key={admin.id}
-                    onClick={() => {
-                      setSelectedAdminId(admin.id);
-                      if (isMobile) setMobileInChat(true);
-                    }}
-                    style={{
-                      padding: '12px 14px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      cursor: 'pointer',
-                      border: isSelected ? '2.5px solid #ef8354' : '2px solid #ded3c5',
-                      background: isSelected ? '#fff0e9' : '#fffdf9',
-                      borderRadius: '16px',
-                      boxShadow: isSelected ? '3px 3px 0 #ef8354' : '2px 2px 0 #17324d',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    <img 
-                      src={admin.avatar} 
-                      alt="" 
-                      style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid #17324d', background: '#fff' }} 
-                    />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 800, fontSize: '0.92rem', color: isSelected ? '#c8643d' : '#17324d', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        {admin.displayName}
-                        {admin.role === 'super_admin' && <Crown size={14} color="#f59e0b" />}
-                      </div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
-                        {admin.specialties?.map((s, i) => (
-                          <span key={i} className="badge badge-coral" style={{ fontSize: '0.62rem', padding: '1px 6px' }}>
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ============================================================ */}
-      {/* 右欄：1 對 1 獨立對話視窗 */}
-      {/* ============================================================ */}
-      {(!isMobile || mobileInChat) && (
-        <div 
-          className="glass-panel" 
-          style={{ 
-            padding: 0, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            borderRadius: '24px',
-            border: '3px solid #17324d',
-            boxShadow: '6px 6px 0px #17324d',
-            overflow: 'hidden',
-            background: '#fffdf9',
-            height: isMobile ? 'calc(100vh - 200px)' : '620px'
-          }}
-        >
-          {/* 聊天室 Header */}
-          <div 
-            style={{ 
-              padding: '14px 18px', 
-              borderBottom: '2.5px solid #17324d', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between', 
-              background: '#fcf8f2' 
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {isMobile && (
-                <button
-                  onClick={() => setMobileInChat(false)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    padding: '4px 6px',
-                    cursor: 'pointer',
-                    color: '#17324d',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                  title="返回名單"
-                >
-                  <ArrowLeft size={20} />
-                </button>
               )}
-
-              <img 
-                src={isAdmin 
-                  ? `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(selectedStudentId || 'student')}` 
-                  : (currentAdmin?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227`)} 
-                alt="" 
-                style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #17324d', background: '#fff' }} 
-              />
-              <div>
-                <div style={{ fontWeight: 900, fontSize: '0.98rem', color: '#17324d' }}>
-                  {isAdmin 
-                    ? (selectedStudentName ? `與【${selectedStudentName}】的 1 對 1 即時諮詢室` : '請由左側選擇欲回覆的學生')
-                    : `與 ${currentAdmin?.displayName} 的獨立諮詢室`}
-                </div>
-                <div style={{ fontSize: '0.7rem', color: '#15803d', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e' }} />
-                  {isAdmin ? '線上諮詢通道就緒・支援跨端即時互通' : '在線協助審核題庫・每題詳解與課綱爭議解答'}
-                </div>
-              </div>
             </div>
-
-            <span className="badge badge-coral" style={{ fontSize: '0.72rem', fontWeight: 800 }}>
-              專屬 1-on-1 諮詢
-            </span>
           </div>
+        )}
 
-          {/* 訊息串流區域 */}
+        {/* ============================================================ */}
+        {/* 右欄：1 對 1 即時對話視窗 */}
+        {/* ============================================================ */}
+        {(!isMobile || mobileInChat) && (
           <div 
+            className="glass-panel" 
             style={{ 
-              flex: 1, 
-              padding: '18px', 
-              overflowY: 'auto', 
+              padding: 0, 
               display: 'flex', 
               flexDirection: 'column', 
-              gap: '12px',
-              background: '#f8f3eb' 
+              borderRadius: '24px',
+              border: '3px solid #17324d',
+              boxShadow: '6px 6px 0px #17324d',
+              overflow: 'hidden',
+              background: '#fffdf9',
+              height: isMobile ? 'calc(100vh - 180px)' : '620px'
             }}
           >
-            {messages.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 10px', color: '#78818a' }}>
-                <MessageSquare size={36} style={{ margin: '0 auto 8px auto', opacity: 0.6 }} />
-                <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>尚無通訊記錄</div>
-                <div style={{ fontSize: '0.76rem', marginTop: '4px' }}>
-                  {isAdmin ? '選取左側學生對話即可開始回覆' : '輸入你的學科疑問或題目反饋，按下發送立即送達管理員！'}
-                </div>
-              </div>
-            ) : (
-              messages.map((m, idx) => {
-                const isMe = m.senderId === currentUser?.id || (isAdmin && m.senderRole !== 'student');
-                return (
-                  <div
-                    key={m.id || idx}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: isMe ? 'flex-end' : 'flex-start',
-                      maxWidth: '85%',
-                      alignSelf: isMe ? 'flex-end' : 'flex-start'
-                    }}
-                  >
-                    <div style={{ fontSize: '0.72rem', color: '#78818a', fontWeight: 700, marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      {isMe ? '我' : m.senderName}
-                      {m.senderRole === 'super_admin' && <span style={{ color: '#f59e0b', fontSize: '0.62rem' }}>[總管理員]</span>}
-                      {m.senderRole === 'admin' && <span style={{ color: '#0284c7', fontSize: '0.62rem' }}>[駐站教師]</span>}
-                    </div>
-                    <div
-                      style={{
-                        padding: '10px 14px',
-                        borderRadius: isMe ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
-                        background: isMe ? '#ef8354' : '#ffffff',
-                        color: isMe ? '#ffffff' : '#17324d',
-                        fontSize: '0.92rem',
-                        fontWeight: 600,
-                        lineHeight: 1.5,
-                        border: '2px solid #17324d',
-                        boxShadow: isMe ? '3px 3px 0 #17324d' : '3px 3px 0 #17324d',
-                        wordBreak: 'break-word'
-                      }}
-                    >
-                      {m.text}
-                    </div>
-                    <div style={{ fontSize: '0.65rem', color: '#9aa2a8', marginTop: '3px', fontWeight: 600 }}>
-                      {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* 底部輸入區域 */}
-          <form 
-            onSubmit={handleSend} 
-            style={{ 
-              padding: '14px 18px', 
-              borderTop: '2.5px solid #17324d', 
-              display: 'flex', 
-              gap: '10px', 
-              background: '#ffffff' 
-            }}
-          >
-            <input
-              type="text"
-              value={inputText}
-              onChange={e => setInputText(e.target.value)}
-              placeholder={isAdmin 
-                ? (selectedStudentId ? `回覆【${selectedStudentName}】的學科疑問或說明...` : '請先由左側點選要回覆的學生通道') 
-                : `輸入對 ${currentAdmin?.displayName} 的學科疑義、題目勘誤或反饋...`}
-              disabled={isAdmin && !selectedStudentId}
-              style={{
-                flex: 1,
-                background: '#f8f3eb',
-                border: '2px solid #17324d',
-                borderRadius: '12px',
-                padding: '11px 14px',
-                color: '#17324d',
-                fontSize: '0.92rem',
-                fontWeight: 600,
-                outline: 'none'
-              }}
-            />
-            <button 
-              type="submit" 
-              disabled={(isAdmin && !selectedStudentId) || !inputText.trim()}
-              className="btn btn-primary" 
+            {/* 聊天室 Header */}
+            <div 
               style={{ 
-                padding: '0 20px', 
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontSize: '0.92rem',
-                fontWeight: 800
+                padding: '14px 18px', 
+                borderBottom: '2.5px solid #17324d', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                background: '#fcf8f2' 
               }}
             >
-              <Send size={16} /> 
-              <span>{isAdmin ? '回覆學生' : '發送諮詢'}</span>
-            </button>
-          </form>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {isMobile && (
+                  <button
+                    onClick={() => setMobileInChat(false)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      padding: '4px 6px',
+                      cursor: 'pointer',
+                      color: '#17324d',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title="返回名單"
+                  >
+                    <ArrowLeft size={20} />
+                  </button>
+                )}
 
-        </div>
-      )}
+                <img 
+                  src={activeViewMode === 'admin' 
+                    ? `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(selectedStudentId || 'student_lin')}` 
+                    : (currentAdmin?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227`)} 
+                  alt="" 
+                  style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #17324d', background: '#fff' }} 
+                />
+                <div>
+                  <div style={{ fontWeight: 900, fontSize: '0.98rem', color: '#17324d' }}>
+                    {activeViewMode === 'admin' 
+                      ? `與【${selectedStudentName || '學生戰友'}】的 1 對 1 諮詢通道`
+                      : `與 ${currentAdmin?.displayName} 的獨立諮詢室`}
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#15803d', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e' }} />
+                    {activeViewMode === 'admin' 
+                      ? '在線即時審查中・任何回覆將立即同步給該同學' 
+                      : '管理員駐站線上中・歡迎提問學科盲點、題庫勘誤與解題思路'}
+                  </div>
+                </div>
+              </div>
 
+              <span className="badge badge-coral" style={{ fontSize: '0.72rem', fontWeight: 800 }}>
+                1-on-1 專屬頻道
+              </span>
+            </div>
+
+            {/* 訊息流動區域 */}
+            <div 
+              style={{ 
+                flex: 1, 
+                padding: '18px', 
+                overflowY: 'auto', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '12px',
+                background: '#f8f3eb' 
+              }}
+            >
+              {messages.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 10px', color: '#78818a' }}>
+                  <MessageSquare size={36} style={{ margin: '0 auto 8px auto', opacity: 0.6 }} />
+                  <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>尚無通訊記錄</div>
+                  <div style={{ fontSize: '0.76rem', marginTop: '4px' }}>
+                    輸入內容後點擊發送，即可開始 1 對 1 即時對話！
+                  </div>
+                </div>
+              ) : (
+                messages.map((m, idx) => {
+                  const isMe = activeViewMode === 'admin' 
+                    ? (m.senderRole !== 'student') 
+                    : (m.senderRole === 'student' || m.senderId === currentUser?.id);
+                  return (
+                    <div
+                      key={m.id || idx}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: isMe ? 'flex-end' : 'flex-start',
+                        maxWidth: '85%',
+                        alignSelf: isMe ? 'flex-end' : 'flex-start'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.72rem', color: '#78818a', fontWeight: 700, marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {isMe ? '我' : m.senderName}
+                        {m.senderRole === 'super_admin' && <span style={{ color: '#f59e0b', fontSize: '0.62rem' }}>[總管理員]</span>}
+                        {m.senderRole === 'admin' && <span style={{ color: '#0284c7', fontSize: '0.62rem' }}>[駐站教師]</span>}
+                      </div>
+                      <div
+                        style={{
+                          padding: '10px 14px',
+                          borderRadius: isMe ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
+                          background: isMe ? '#ef8354' : '#ffffff',
+                          color: isMe ? '#ffffff' : '#17324d',
+                          fontSize: '0.92rem',
+                          fontWeight: 600,
+                          lineHeight: 1.5,
+                          border: '2px solid #17324d',
+                          boxShadow: isMe ? '3px 3px 0 #17324d' : '3px 3px 0 #17324d',
+                          wordBreak: 'break-word'
+                        }}
+                      >
+                        {m.text}
+                      </div>
+                      <div style={{ fontSize: '0.65rem', color: '#9aa2a8', marginTop: '3px', fontWeight: 600 }}>
+                        {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* 訊息輸入與發送欄 */}
+            <form 
+              onSubmit={handleSend} 
+              style={{ 
+                padding: '14px 18px', 
+                borderTop: '2.5px solid #17324d', 
+                display: 'flex', 
+                gap: '10px', 
+                background: '#ffffff' 
+              }}
+            >
+              <input
+                type="text"
+                value={inputText}
+                onChange={e => setInputText(e.target.value)}
+                placeholder={activeViewMode === 'admin' 
+                  ? `回覆【${selectedStudentName || '學生'}】的學科疑問或說明...` 
+                  : `輸入對 ${currentAdmin?.displayName} 的學科疑義、題目勘誤或反饋...`}
+                style={{
+                  flex: 1,
+                  background: '#f8f3eb',
+                  border: '2px solid #17324d',
+                  borderRadius: '12px',
+                  padding: '11px 14px',
+                  color: '#17324d',
+                  fontSize: '0.92rem',
+                  fontWeight: 600,
+                  outline: 'none'
+                }}
+              />
+              <button 
+                type="submit" 
+                disabled={!inputText.trim()}
+                className="btn btn-primary" 
+                style={{ 
+                  padding: '0 20px', 
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '0.92rem',
+                  fontWeight: 800,
+                  opacity: !inputText.trim() ? 0.6 : 1
+                }}
+              >
+                <Send size={16} /> 
+                <span>{activeViewMode === 'admin' ? '回覆學生' : '發送諮詢'}</span>
+              </button>
+            </form>
+
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

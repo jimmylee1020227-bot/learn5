@@ -35,6 +35,8 @@ jobs:
 
       - name: 編譯打包並執行高強度程式碼混淆加密
         run: npm run build
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
 
       - name: 設定 GitHub Pages
         uses: actions/configure-pages@v5

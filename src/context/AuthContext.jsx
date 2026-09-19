@@ -28,6 +28,7 @@ export function AuthProvider({ children }) {
         if (parsed && parsed.email) {
           if (parsed.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
             parsed.role = 'super_admin';
+            parsed.id = 'admin_super_jimmy';
           } else {
             parsed.role = resolveUserRole(parsed.email);
           }
@@ -51,11 +52,14 @@ export function AuthProvider({ children }) {
       const googleUser = await parseGoogleAuthCallback();
       if (googleUser) {
         const assignedRole = resolveUserRole(googleUser.email);
+        const isJimmy = googleUser.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
         const newUser = {
-          id: googleUser.googleId || ('google_' + Date.now()),
+          id: isJimmy ? 'admin_super_jimmy' : (googleUser.googleId || ('google_' + Date.now())),
           email: googleUser.email,
-          displayName: googleUser.displayName,
-          avatar: googleUser.avatar,
+          displayName: isJimmy ? '總管理員 (Jimmy)' : (googleUser.displayName || googleUser.email.split('@')[0]),
+          avatar: isJimmy 
+            ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227' 
+            : (googleUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(googleUser.email)}`),
           role: assignedRole,
           isGoogleBound: true,
           createdAt: new Date().toISOString()
@@ -110,11 +114,12 @@ export function AuthProvider({ children }) {
       }
     }
 
+    const isJimmy = cleanEmail.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
     const user = {
-      id: 'google_' + Math.abs(cleanEmail.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0)),
+      id: isJimmy ? 'admin_super_jimmy' : ('google_' + Math.abs(cleanEmail.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0))),
       email: cleanEmail,
-      displayName: displayName.trim() || (cleanEmail.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() ? '總管理員 (Jimmy)' : cleanEmail.split('@')[0]),
-      avatar: cleanEmail.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
+      displayName: displayName.trim() || (isJimmy ? '總管理員 (Jimmy)' : cleanEmail.split('@')[0]),
+      avatar: isJimmy
         ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227'
         : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
       role: assignedRole,

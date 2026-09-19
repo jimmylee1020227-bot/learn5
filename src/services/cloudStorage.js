@@ -489,14 +489,47 @@ export function modifyQuestion(qId, patchData, operatorUser) {
 }
 
 // --- 7. 管理員 1 對 1 線上即時諮詢聊天室 (支援跨裝置即時同步) ---
+export function getKnownStudents() {
+  const history = getJson('practice_history', []);
+  const map = new Map();
+
+  history.forEach(h => {
+    if (h.userId && !map.has(h.userId) && h.userId !== 'admin_super_jimmy') {
+      map.set(h.userId, {
+        id: h.userId,
+        name: h.userName || '會考戰友',
+        school: h.userSchool || '國三衝刺組',
+        lastActive: h.timestamp
+      });
+    }
+  });
+
+  if (map.size === 0) {
+    map.set('student_lin', {
+      id: 'student_lin',
+      name: '建中前鋒‧林同學',
+      school: '國三衝刺 5A++',
+      lastActive: new Date().toISOString()
+    });
+    map.set('student_chen', {
+      id: 'student_chen',
+      name: '北一女‧陳同學',
+      school: '北一女中衝刺組',
+      lastActive: new Date().toISOString()
+    });
+  }
+
+  return Array.from(map.values());
+}
+
 export function getAllChatThreads() {
   const allChats = getJson('support_chats', {});
   const threadKeys = Object.keys(allChats);
   
-  return threadKeys.map(key => {
+  const threadList = threadKeys.map(key => {
     const parts = key.split('__');
     const studentId = parts[0] || 'student';
-    const adminId = parts[1] || 'admin';
+    const adminId = parts[1] || 'admin_super_jimmy';
     const msgs = allChats[key] || [];
     const latestMsg = msgs[msgs.length - 1];
     const unreadCount = msgs.filter(m => !m.isRead && m.senderRole === 'student').length;
@@ -512,25 +545,68 @@ export function getAllChatThreads() {
       updatedAt: latestMsg?.timestamp || new Date(0).toISOString()
     };
   }).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+  // 若目前無諮詢紀錄，自動加入初始諮詢範例，確保隨時可測試與點選
+  if (threadList.length === 0) {
+    const defaultStudentId = 'student_lin';
+    const defaultAdminId = 'admin_super_jimmy';
+    const defaultMsgs = [
+      {
+        id: 'msg_init_lin',
+        studentId: defaultStudentId,
+        adminId: defaultAdminId,
+        studentName: '建中前鋒‧林同學',
+        studentSchool: '國三衝刺 5A++',
+        senderId: defaultStudentId,
+        senderName: '建中前鋒‧林同學',
+        senderRole: 'student',
+        text: '老師您好！想請問二次函數配方法如果頂點不在整數上，有哪些技巧可以快速求解？',
+        timestamp: new Date().toISOString(),
+        isRead: false
+      }
+    ];
+    allChats[`${defaultStudentId}__${defaultAdminId}`] = defaultMsgs;
+    setJson('support_chats', allChats);
+
+    threadList.push({
+      threadKey: `${defaultStudentId}__${defaultAdminId}`,
+      studentId: defaultStudentId,
+      adminId: defaultAdminId,
+      studentName: '建中前鋒‧林同學',
+      studentSchool: '國三衝刺 5A++',
+      latestMsg: defaultMsgs[0],
+      unreadCount: 1,
+      updatedAt: defaultMsgs[0].timestamp
+    });
+  }
+
+  return threadList;
 }
 
-export function getChatMessages(studentId, adminId) {
-  if (!studentId || !adminId) return [];
+export function getChatMessages(studentId, adminId = 'admin_super_jimmy') {
+  if (!studentId) return [];
   const allChats = getJson('support_chats', {});
-  const threadKey = `${studentId}__${adminId}`;
+  const finalAdminId = adminId || 'admin_super_jimmy';
+  const threadKey = `${studentId}__${finalAdminId}`;
   
   if (allChats[threadKey] && allChats[threadKey].length > 0) {
     return allChats[threadKey];
   }
 
+  // 彈性匹配：尋找以 studentId 為開頭的任何對話
+  const altKey = Object.keys(allChats).find(k => k.startsWith(`${studentId}__`));
+  if (altKey && allChats[altKey]?.length > 0) {
+    return allChats[altKey];
+  }
+
   // 嘗試相容讀取舊格式
-  const legacy = getJson(`chat_${studentId}_${adminId}`, null);
+  const legacy = getJson(`chat_${studentId}_${finalAdminId}`, null);
   if (legacy && legacy.length > 0) return legacy;
 
   return [
     {
       id: 'welcome_' + threadKey,
-      senderId: adminId,
+      senderId: finalAdminId,
       senderName: '管理員',
       senderRole: 'admin',
       text: '同學你好！我是負責該學科的管理員，有任何題目疑問、詳解爭議或課綱內容都可以直接告訴我！',
@@ -540,16 +616,17 @@ export function getChatMessages(studentId, adminId) {
   ];
 }
 
-export function sendChatMessage(studentId, adminId, message) {
-  if (!studentId || !adminId) return null;
+export function sendChatMessage(studentId, adminId = 'admin_super_jimmy', message = {}) {
+  if (!studentId) return null;
+  const finalAdminId = adminId || 'admin_super_jimmy';
   const allChats = getJson('support_chats', {});
-  const threadKey = `${studentId}__${adminId}`;
+  const threadKey = `${studentId}__${finalAdminId}`;
   const existing = allChats[threadKey] || [];
 
   const newMsg = {
     id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
     studentId,
-    adminId,
+    adminId: finalAdminId,
     studentName: message.studentName || (message.senderRole === 'student' ? message.senderName : '學生戰友'),
     studentSchool: message.studentSchool || '會考戰友',
     senderId: message.senderId || studentId,
@@ -563,20 +640,23 @@ export function sendChatMessage(studentId, adminId, message) {
   const updatedMsgs = [...existing, newMsg];
   allChats[threadKey] = updatedMsgs;
   setJson('support_chats', allChats);
-  setJson(`chat_${studentId}_${adminId}`, updatedMsgs);
+  setJson(`chat_${studentId}_${finalAdminId}`, updatedMsgs);
 
   return newMsg;
 }
 
-export function markThreadAsRead(studentId, adminId) {
-  if (!studentId || !adminId) return;
+export function markThreadAsRead(studentId, adminId = 'admin_super_jimmy') {
+  if (!studentId) return;
   const allChats = getJson('support_chats', {});
-  const threadKey = `${studentId}__${adminId}`;
-  if (!allChats[threadKey]) return;
+  const finalAdminId = adminId || 'admin_super_jimmy';
+  const threadKey = `${studentId}__${finalAdminId}`;
+  
+  const targetKey = allChats[threadKey] ? threadKey : Object.keys(allChats).find(k => k.startsWith(`${studentId}__`));
+  if (!targetKey || !allChats[targetKey]) return;
 
   let changed = false;
-  allChats[threadKey] = allChats[threadKey].map(m => {
-    if (!m.isRead) {
+  allChats[targetKey] = allChats[targetKey].map(m => {
+    if (!m.isRead && m.senderRole === 'student') {
       changed = true;
       return { ...m, isRead: true };
     }
