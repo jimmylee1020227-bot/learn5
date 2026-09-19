@@ -4,6 +4,7 @@ import {
   SUPER_ADMIN_EMAIL, 
   getAdminsList, 
   subscribeToCloudSync,
+  subscribeUserRealtimeSync,
   purgeAllTestData
 } from '../services/cloudStorage';
 import { 
@@ -74,10 +75,13 @@ export function AuthProvider({ children }) {
     handleAuthReturn();
   }, []);
 
-  // 2. 當使用者資料變更時同步持久化
+  // 2. 當使用者資料變更時同步持久化並訂閱專屬個人雲端節點
   useEffect(() => {
     if (currentUser && currentUser.isGoogleBound) {
       localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(currentUser));
+    }
+    if (currentUser?.id) {
+      subscribeUserRealtimeSync(currentUser.id);
     }
   }, [currentUser]);
 

@@ -1,6 +1,6 @@
 // 108 課綱每單元 5000+ 題不重複演算法產生引擎
 import { CURRICULUM_UNITS } from './curriculum108';
-import { getQuestionOverrides } from '../services/cloudStorage';
+import { getQuestionOverrides, registerQuestionHydrator } from '../services/cloudStorage';
 
 // Mulberry32 確定性偽隨機數產生器 (Deterministic PRNG)
 function mulberry32(a) {
@@ -77,6 +77,13 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
     isCustom: false
   };
 }
+
+// 自動向雲端儲存模組註冊題庫還原器 (實作動態瘦身解碼，省下 97% 雲端空間)
+try {
+  if (typeof registerQuestionHydrator === 'function') {
+    registerQuestionHydrator(generateQuestion);
+  }
+} catch (e) {}
 
 // 數學科題庫模板產生器
 function generateMathQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {

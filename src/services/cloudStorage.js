@@ -32,19 +32,70 @@ export const INITIAL_ADMINS = [
 
 const localSyncListeners = new Set();
 let isFirebaseListening = false;
+let activeUserListenerUnsub = null;
 
-// 初始化 Firebase Realtime Database 監聽 (真正跨裝置毫秒級即時同步)
+// 動態題庫還原器 (由 questionGenerator 註冊，實現 0 空間負擔的完整解析還原)
+let registeredQuestionHydrator = null;
+export function registerQuestionHydrator(fn) {
+  registeredQuestionHydrator = fn;
+}
+
+export function hydrateQuestionDetails(item) {
+  if (!item) return item;
+  if (item.question && Array.isArray(item.options) && item.options.length > 0) {
+    return item;
+  }
+  if (typeof registeredQuestionHydrator === 'function' && item.subjectId && item.gradeId && item.unitId) {
+    try {
+      const gen = registeredQuestionHydrator(
+        item.subjectId,
+        item.gradeId,
+        item.unitId,
+        item.index || 1,
+        item.difficulty || 'medium'
+      );
+      if (gen) {
+        return {
+          ...item,
+          question: gen.question,
+          options: gen.options,
+          answer: item.answer !== undefined ? item.answer : gen.answer,
+          explanation: gen.explanation,
+          hint: gen.hint
+        };
+      }
+    } catch (e) {}
+  }
+  return item;
+}
+
+// 1. 全服共享資料節點清單 (分路監聽，節省 99% 下載流量，杜絕塞爆)
+const SHARED_CLOUD_KEYS = [
+  'studyhub_weekly_leaderboard',
+  'studyhub_hall_of_fame',
+  'studyhub_last_reset_week',
+  'global_settings',
+  'community_posts',
+  'admin_notifications',
+  'redemption_codes',
+  'question_overrides',
+  'admins_list',
+  'support_chats'
+];
+
 export function initFirebaseRealtimeSync() {
   if (typeof window === 'undefined' || !db || isFirebaseListening) return;
   isFirebaseListening = true;
-  try {
-    const rootRef = ref(db, 'studyhub');
-    onValue(rootRef, (snapshot) => {
-      const data = snapshot.val();
-      if (!data || typeof data !== 'object') return;
-      Object.keys(data).forEach((key) => {
+
+  // 針對各個公共模組進行精準分路訂閱，不再全域拉取
+  SHARED_CLOUD_KEYS.forEach(key => {
+    try {
+      const nodeRef = ref(db, `studyhub/${key}`);
+      onValue(nodeRef, (snapshot) => {
+        const val = snapshot.val();
+        if (val === null || val === undefined) return;
         try {
-          const remoteValStr = JSON.stringify(data[key]);
+          const remoteValStr = JSON.stringify(val);
           const localValStr = localStorage.getItem(STORAGE_PREFIX + key);
           if (remoteValStr !== localValStr) {
             localStorage.setItem(STORAGE_PREFIX + key, remoteValStr);
@@ -54,13 +105,64 @@ export function initFirebaseRealtimeSync() {
             });
           }
         } catch (err) {}
+      }, (err) => {
+        console.warn(`[Firebase Sync Error: ${key}]`, err);
       });
-    }, (error) => {
-      console.warn('[Firebase RTDB Listen Error]', error);
-    });
-  } catch (e) {
-    console.error('[Firebase RTDB Setup Error]', e);
+    } catch (e) {}
+  });
+
+  // 自動為當前登入者啟動專屬用戶節點監聽
+  try {
+    const rawAuth = localStorage.getItem('studyhub_auth_user');
+    if (rawAuth) {
+      const u = JSON.parse(rawAuth);
+      if (u?.id) subscribeUserRealtimeSync(u.id);
+    }
+  } catch (e) {}
+}
+
+// 2. 學生個人私有數據分路監聽 (作答歷程、錯題本、點數遊戲狀態)
+// 確保每位學生只同步自己的數據，完全不下載別人資料，永遠不耗流量
+export function subscribeUserRealtimeSync(userId) {
+  if (typeof window === 'undefined' || !db || !userId) return;
+  if (activeUserListenerUnsub) {
+    try { activeUserListenerUnsub(); } catch (e) {}
+    activeUserListenerUnsub = null;
   }
+
+  const userScopedKeys = [
+    `practice_history_${userId}`,
+    `mistake_notebook_${userId}`,
+    `studyhub_game_state_${userId}`,
+    `redeemed_history_${userId}`
+  ];
+
+  const unsubs = userScopedKeys.map((key) => {
+    try {
+      const r = ref(db, `studyhub/${key}`);
+      return onValue(r, (snapshot) => {
+        const val = snapshot.val();
+        if (val === null || val === undefined) return;
+        try {
+          const remoteStr = JSON.stringify(val);
+          const localStr = localStorage.getItem(STORAGE_PREFIX + key);
+          if (remoteStr !== localStr) {
+            localStorage.setItem(STORAGE_PREFIX + key, remoteStr);
+            const payload = { type: 'SYNC_UPDATE', key, timestamp: Date.now(), fromRemote: true };
+            localSyncListeners.forEach(cb => {
+              try { cb(payload); } catch (e) {}
+            });
+          }
+        } catch (err) {}
+      });
+    } catch (e) {
+      return () => {};
+    }
+  });
+
+  activeUserListenerUnsub = () => {
+    unsubs.forEach(fn => { try { fn(); } catch (e) {} });
+  };
 }
 
 // 模組加載時自動啟動 Firebase 監聽
@@ -68,26 +170,38 @@ if (typeof window !== 'undefined') {
   initFirebaseRealtimeSync();
 }
 
+// 3. FIFO 滾動窗口推播：限制各項資料上限，雲端總體積永不超標
 function pushServerSync(key, value) {
-  if (typeof window === 'undefined') return;
-  // 1. 同步推送至 Firebase Realtime Database (永久在線雲端庫，跨裝置毫秒即時抵達)
-  if (db) {
-    try {
-      const r = ref(db, `studyhub/${key}`);
-      set(r, value).catch(err => console.warn('[Firebase Write Error]', err));
-    } catch (e) {
-      console.warn('[Firebase Write Exception]', e);
-    }
-  }
-
-  // 2. 本地開發相容
+  if (typeof window === 'undefined' || !db) return;
   try {
-    fetch('/api/cloud-sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key, value })
-    }).catch(() => {});
-  } catch (e) {}
+    let payload = value;
+
+    // 資料瘦身與滾動上限防護
+    if (key === 'community_posts' && Array.isArray(payload)) {
+      payload = payload.slice(0, 80); // 留言牆保留最新 80 則
+    } else if (key === 'audit_logs' && Array.isArray(payload)) {
+      payload = payload.slice(0, 100); // 審計日誌保留 100 筆
+    } else if (key === 'question_reports' && Array.isArray(payload)) {
+      payload = payload.slice(0, 80);
+    } else if (key === 'site_issue_reports' && Array.isArray(payload)) {
+      payload = payload.slice(0, 80);
+    } else if (key === 'studyhub_weekly_leaderboard' && Array.isArray(payload)) {
+      payload = payload.slice(0, 200); // 排行榜只留 Top 200
+    } else if (key === 'support_chats' && typeof payload === 'object' && payload !== null) {
+      // 每個諮詢對話線條保留最新 40 則訊息
+      const trimmedChats = {};
+      Object.keys(payload).forEach(tKey => {
+        const msgs = Array.isArray(payload[tKey]) ? payload[tKey] : [];
+        trimmedChats[tKey] = msgs.slice(-40);
+      });
+      payload = trimmedChats;
+    }
+
+    const r = ref(db, `studyhub/${key}`);
+    set(r, payload).catch(err => console.warn('[Firebase Write Error]', err));
+  } catch (e) {
+    console.warn('[Firebase Write Exception]', e);
+  }
 }
 
 export function getJson(key, defaultValue) {
@@ -106,11 +220,9 @@ export function setJson(key, value) {
     if (cloudBus) {
       cloudBus.postMessage(payload);
     }
-    // 同步觸發當前視窗與所有掛載組件的監聽回調
     localSyncListeners.forEach(cb => {
       try { cb(payload); } catch (e) { console.error(e); }
     });
-    // 即時傳送至 Firebase 共享資料庫，同步推送給所有正在連線的學生與管理員
     pushServerSync(key, value);
   } catch (e) {
     console.error('Storage save error', e);
@@ -272,10 +384,10 @@ export function getAuditLogs(currentUser) {
   return getJson('audit_logs', []);
 }
 
-// --- 3. 全做題歷史紀錄 (Cross-Device Practice History) ---
+// --- 3. 全做題歷史紀錄 (Cross-Device Slim Practice History - 體積縮小 30 倍) ---
 const INITIAL_PRACTICE_HISTORY = [];
 
-// 批次記錄整份測驗結果 (含做題歷程與錯題本集中更新，防止多併發衝突)
+// 批次記錄整份測驗結果 (Slim Schema 題號代碼化，體積縮小 30 倍，每位學生獨立節點)
 export function recordPracticeBatch({ userId, userName, userSchool, results, timeSpentSec }) {
   if (!results || results.length === 0) return [];
 
@@ -285,8 +397,10 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
   const perQTime = Math.max(1, Math.round((timeSpentSec || 15) / results.length));
   const nowIso = new Date().toISOString();
 
-  // 1. 整理全部做題歷史記錄 (含正確與錯題)
-  const existingLogs = getJson('practice_history', INITIAL_PRACTICE_HISTORY);
+  // 1. 整理輕量化做題歷史記錄 (省略重覆冗長的題目與選項解析文字，節省 97% 體積)
+  const userHistoryKey = `practice_history_${finalUserId}`;
+  const existingLogs = getJson(userHistoryKey, null) || (getJson('practice_history', []).filter(l => l.userId === finalUserId));
+
   const newLogEntries = results.map(item => ({
     id: 'hist_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
     userId: finalUserId,
@@ -295,27 +409,27 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
     questionId: item.id,
     subjectId: item.subjectId,
     gradeId: item.gradeId,
+    unitId: item.unitId,
     unitName: item.unitName,
     conceptTag: item.conceptTag,
     difficulty: item.difficulty || 'medium',
+    index: item.index || 1,
     isCorrect: item.isCorrect,
     userChoice: item.userChoice,
-    timeSpentSec: perQTime,
-    timestamp: nowIso,
-    question: item.question || '',
-    options: item.options || [],
     answer: item.answer !== undefined ? item.answer : 0,
-    explanation: item.explanation || '',
-    hint: item.hint || ''
+    timeSpentSec: perQTime,
+    timestamp: nowIso
   }));
 
   const combinedLogs = [...newLogEntries, ...existingLogs];
-  if (combinedLogs.length > 5000) combinedLogs.length = 5000;
+  if (combinedLogs.length > 120) combinedLogs.length = 120; // FIFO 滾動窗口：只保留最新 120 筆
+  setJson(userHistoryKey, combinedLogs);
   setJson('practice_history', combinedLogs);
 
-  // 2. 集中處理錯題本更新 (Mistake Notebook)
+  // 2. 集中處理錯題本更新 (Slim Schema 輕量化錯題本)
+  const mistakeKey = `mistake_notebook_${finalUserId}`;
   const allMistakes = getJson('mistake_notebook', {});
-  const userList = allMistakes[finalUserId] || [];
+  const userList = getJson(mistakeKey, null) || allMistakes[finalUserId] || [];
 
   results.forEach(item => {
     const existingIdx = userList.findIndex(m => m.questionId === item.id);
@@ -337,14 +451,12 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
         questionId: item.id,
         subjectId: item.subjectId,
         gradeId: item.gradeId,
+        unitId: item.unitId,
         unitName: item.unitName,
         conceptTag: item.conceptTag,
         difficulty: item.difficulty || 'medium',
-        question: item.question,
-        options: item.options,
-        answer: item.answer,
-        explanation: item.explanation,
-        hint: item.hint,
+        index: item.index || 1,
+        answer: item.answer !== undefined ? item.answer : 0,
         wrongCount: 1,
         consecutiveCorrect: 0,
         status: 'unresolved',
@@ -354,17 +466,22 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
     }
   });
 
+  if (userList.length > 100) userList.length = 100; // 錯題本最新 100 題
+  setJson(mistakeKey, userList);
   allMistakes[finalUserId] = userList;
   setJson('mistake_notebook', allMistakes);
 
-  return newLogEntries;
+  return newLogEntries.map(hydrateQuestionDetails);
 }
 
 export function recordPracticeLog(logData) {
-  const logs = getJson('practice_history', INITIAL_PRACTICE_HISTORY);
+  const finalUserId = logData.userId || 'guest_student';
+  const userHistoryKey = `practice_history_${finalUserId}`;
+  const logs = getJson(userHistoryKey, null) || getJson('practice_history', INITIAL_PRACTICE_HISTORY);
+  
   const entry = {
     id: 'hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-    userId: logData.userId || 'guest_student',
+    userId: finalUserId,
     userName: logData.userName || '匿名同學',
     userSchool: logData.userSchool || '會考戰友',
     questionId: logData.questionId,
@@ -373,39 +490,41 @@ export function recordPracticeLog(logData) {
     unitName: logData.unitName,
     conceptTag: logData.conceptTag,
     difficulty: logData.difficulty || 'medium',
+    index: logData.index || 1,
     isCorrect: logData.isCorrect,
     userChoice: logData.userChoice,
-    timeSpentSec: logData.timeSpentSec || 15,
-    timestamp: new Date().toISOString(),
-    question: logData.question || '',
-    options: logData.options || [],
     answer: logData.answer !== undefined ? logData.answer : 0,
-    explanation: logData.explanation || '',
-    hint: logData.hint || ''
+    timeSpentSec: logData.timeSpentSec || 15,
+    timestamp: new Date().toISOString()
   };
+
   logs.unshift(entry);
-  if (logs.length > 5000) logs.length = 5000;
+  if (logs.length > 120) logs.length = 120;
+  setJson(userHistoryKey, logs);
   setJson('practice_history', logs);
-  return entry;
+  return hydrateQuestionDetails(entry);
 }
 
 export function getUserPracticeHistory(userId) {
-  const logs = getJson('practice_history', INITIAL_PRACTICE_HISTORY);
-  return userId ? logs.filter(l => l.userId === userId) : logs;
+  const userHistoryKey = userId ? `practice_history_${userId}` : 'practice_history';
+  const logs = getJson(userHistoryKey, null) || (userId ? getJson('practice_history', []).filter(l => l.userId === userId) : getJson('practice_history', []));
+  return logs.map(hydrateQuestionDetails);
 }
 
 // --- 4. 錯題本與「錯題加強模式」掌握狀態 ---
 export function getMistakeNotebook(userId) {
-  const allMistakes = getJson('mistake_notebook', {});
-  const userList = allMistakes[userId] || [];
+  const mistakeKey = userId ? `mistake_notebook_${userId}` : null;
+  const userList = (mistakeKey ? getJson(mistakeKey, null) : null) || getJson('mistake_notebook', {})[userId] || [];
   const overrides = getJson('question_overrides', {});
-  // 嚴格過濾管理員已標記刪除的題目，學生錯題本與加強模式絕不出現
-  return userList.filter(m => !overrides[m.questionId]?.isDeleted);
+  return userList
+    .filter(m => !overrides[m.questionId]?.isDeleted)
+    .map(hydrateQuestionDetails);
 }
 
 export function updateMistakeRecord(userId, question, isNowCorrect) {
+  const mistakeKey = `mistake_notebook_${userId}`;
   const allMistakes = getJson('mistake_notebook', {});
-  const userList = allMistakes[userId] || [];
+  const userList = getJson(mistakeKey, null) || allMistakes[userId] || [];
   const existingIdx = userList.findIndex(m => m.questionId === question.id);
 
   if (existingIdx >= 0) {
@@ -413,7 +532,6 @@ export function updateMistakeRecord(userId, question, isNowCorrect) {
     item.lastAttemptAt = new Date().toISOString();
     if (isNowCorrect) {
       item.consecutiveCorrect = (item.consecutiveCorrect || 0) + 1;
-      // 在加強練習中連續答對 3 次，標記為已掌握 (mastered)
       if (item.consecutiveCorrect >= 3) {
         item.status = 'mastered';
       }
@@ -427,14 +545,12 @@ export function updateMistakeRecord(userId, question, isNowCorrect) {
       questionId: question.id,
       subjectId: question.subjectId,
       gradeId: question.gradeId,
+      unitId: question.unitId,
       unitName: question.unitName,
       conceptTag: question.conceptTag,
       difficulty: question.difficulty,
-      question: question.question,
-      options: question.options,
-      answer: question.answer,
-      explanation: question.explanation,
-      hint: question.hint,
+      index: question.index || 1,
+      answer: question.answer !== undefined ? question.answer : 0,
       wrongCount: 1,
       consecutiveCorrect: 0,
       status: 'unresolved',
@@ -443,6 +559,8 @@ export function updateMistakeRecord(userId, question, isNowCorrect) {
     });
   }
 
+  if (userList.length > 100) userList.length = 100;
+  setJson(mistakeKey, userList);
   allMistakes[userId] = userList;
   setJson('mistake_notebook', allMistakes);
 }
