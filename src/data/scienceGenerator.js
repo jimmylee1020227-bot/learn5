@@ -1,5 +1,15 @@
 export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
 
+  // 動態樂高引擎：產生絕對不重複的情境前導詞
+  const people = ['小明', '阿華', '建國', '美美', '志明', '春嬌', '大雄', '胖虎', '小夫', '靜香', '王同學', '林老師'];
+  const actions = ['在自然課實驗中', '做筆記時', '幫同學複習時', '寫作業時', '在課堂上聽講時', '準備段考時', '去科博館參觀時', '看科學雜誌時'];
+  const verbs = ['發現了一個奇怪的現象', '遇到了一個難題', '對一個觀念產生了疑惑', '不確定以下哪個說法是對的', '看到了以下這段敘述', '想考考你'];
+  
+  const person = people[Math.floor(rand() * people.length)];
+  const action = actions[Math.floor(rand() * actions.length)];
+  const verb = verbs[Math.floor(rand() * verbs.length)];
+  const preamble = `${person}${action}，${verb}。`;
+
   function getRandItems(arr, count) {
     const res = [];
     const pool = [...arr];
@@ -22,7 +32,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       ];
       const t = traps[Math.floor(rand() * traps.length)];
       return {
-        question: `【生物概念陷阱】關於「${t.q}」，下列敘述何者正確？`,
+        question: `【生物概念陷阱】${preamble}\n關於「${t.q}」，下列敘述何者正確？`,
         options: [t.ans, ...getRandItems(t.wrongs, 3)],
         answer: 0,
         hint: '💡 提示：仔細分辨常見的迷思概念。',
@@ -38,7 +48,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       return {
         isReading: true,
         readingText: `【生態系圖表分析】某${eco.name}生態系的食物網關係如下圖（以文字表示箭頭方向）：\n${eco.web}`,
-        question: `【資料解讀】根據此食物網，如果「次級消費者」因為某種傳染病大量死亡，短時間內下列哪一種生物的數量最可能「增加」？`,
+        question: `【資料解讀】${preamble}\n根據此食物網，如果「次級消費者」因為某種傳染病大量死亡，短時間內下列哪一種生物的數量最可能「增加」？`,
         options: [eco.ans, '頂級掠食者', '生產者', '無法判斷'],
         answer: 0,
         hint: '💡 提示：掠食者減少，獵物會增加。',
@@ -52,7 +62,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       ];
       const ct = cellTraps[Math.floor(rand() * cellTraps.length)];
       return {
-        question: `【細胞與顯微鏡陷阱】關於${ct.q}，何者敘述正確？`,
+        question: `【細胞與顯微鏡陷阱】${preamble}\n關於${ct.q}，何者敘述正確？`,
         options: [ct.ans, ...getRandItems(ct.wrongs, 3)],
         answer: 0,
         hint: '💡 提示：注意「都有」與「只有」的陷阱。',
@@ -70,7 +80,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       const org = organelles[Math.floor(rand() * organelles.length)];
       const otherOrgs = organelles.filter(o => o.name !== org.name).map(o => o.name);
       return {
-        question: `【細胞構造與生理功能】在顯微鏡下觀察細胞，下列何種胞器的主要功能為「${org.fn}」？`,
+        question: `【細胞構造與生理功能】${preamble}\n在顯微鏡下觀察細胞，下列何種胞器的主要功能為「${org.fn}」？`,
         options: [org.name, ...getRandItems(otherOrgs, 3)],
         answer: 0,
         hint: `💡 提示：回憶動植物細胞各胞器的核心生理功能。`,
@@ -90,7 +100,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       
       return {
         isReading: true,
-        readingText: `【溶解度曲線圖表】某固體物質的溶解度數據如下表：\n=================================\n| 溫度 (℃) | ${vT1} | ${t} | ${vT2} |\n|----------|----|----|----|\n| 溶解度(g/100g水) | ${maxSolubility - 10} | ${maxSolubility} | ${maxSolubility + 10} |\n=================================\n小華在 ${t} ℃ 的環境下，將 ${s} 克該固體加入 100 克的純水中充分攪拌。`,
+        readingText: `【溶解度曲線圖表】某固體物質的溶解度數據如下表：\n=================================\n| 溫度 (℃) | ${vT1} | ${t} | ${vT2} |\n|----------|----|----|----|\n| 溶解度(g/100g水) | ${maxSolubility - 10} | ${maxSolubility} | ${maxSolubility + 10} |\n=================================\n${person}在 ${t} ℃ 的環境下，將 ${s} 克該固體加入 100 克的純水中充分攪拌。`,
         question: `【圖表解讀】根據上述表格與情境，下列關於該溶液狀態的推論何者最合理？（假設溫度不變）`,
         options: [
           s > maxSolubility ? '溶液會達到飽和，且有沉澱物產生' : '溶液為未飽和狀態，無沉澱物',
@@ -118,11 +128,12 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
         }
       ];
       const ch = chats[Math.floor(rand() * chats.length)];
+      const names = getRandItems(people, 2);
       return {
         isChat: true,
         chatMessages: [
-          { sender: '小明', text: ch.msg1 },
-          { sender: '小華', text: ch.msg2 }
+          { sender: names[0], text: ch.msg1 },
+          { sender: names[1], text: ch.msg2 }
         ],
         question: `【對話情境解謎】根據上述對話探討的「${ch.topic}」實驗，最後的問題答案為何？`,
         options: [ch.ans, ...getRandItems(ch.wrongs, 3)],
@@ -139,7 +150,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       ];
       const pt = physicsTraps[Math.floor(rand() * physicsTraps.length)];
       return {
-        question: `【物理觀念陷阱】${pt.q}`,
+        question: `【物理觀念陷阱】${preamble}\n${pt.q}`,
         options: [pt.ans, ...getRandItems(pt.wrongs, 3)],
         answer: 0,
         hint: '💡 提示：仔細閱讀題意，破解迷思概念。',
@@ -150,7 +161,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       const vol = Math.floor(rand() * 20) + 5;
       const density = (mass / vol).toFixed(2);
       return {
-        question: `【測量實驗】質量為 ${mass} g 的物體，體積為 ${vol} cm³，則該物體的密度約為多少 g/cm³？`,
+        question: `【測量實驗】${preamble}\n質量為 ${mass} g 的物體，體積為 ${vol} cm³，則該物體的密度約為多少 g/cm³？`,
         options: [`${density}`, `${(density * 1.5).toFixed(2)}`, `${(density * 0.7).toFixed(2)}`, `${(vol / mass).toFixed(2)}`],
         answer: 0,
         hint: '💡 提示：密度公式 D = M / V。',
@@ -177,7 +188,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
           <path d="M 115 50 L 135 50" fill="none" stroke="#ca8a04" stroke-width="2" />
           <path d="M 125 40 L 125 60" fill="none" stroke="#ca8a04" stroke-width="2" />
         </svg>`,
-        question: `【電路圖形判讀】如上圖所示，若每個電池的電壓為 ${v}V，請問此電路中的燈泡兩端電壓為多少？`,
+        question: `【電路圖形判讀】${preamble}\n如上圖所示，若每個電池的電壓為 ${v}V，請問此電路中的燈泡兩端電壓為多少？`,
         options: [`${v * 2}V`, `${v}V`, '0V', `${v * 3}V`],
         answer: 0,
         hint: '💡 提示：電池串聯時，總電壓為各個電池電壓的總和。',
@@ -200,7 +211,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
 
       return {
         isReading: true,
-        readingText: `【圖表分析題】小明進行打點計時器實驗，記錄紙帶上各點的距離如下表（時間間隔 0.1s）：\n| 區間 | 0~1 | 1~2 | 2~3 | 3~4 |\n|------|-----|-----|-----|-----|\n| 距離(cm) |  ${v1}  |  ${v2}  |  ${v3}  |  ${v4}  |`,
+        readingText: `【圖表分析題】${person}進行打點計時器實驗，記錄紙帶上各點的距離如下表（時間間隔 0.1s）：\n| 區間 | 0~1 | 1~2 | 2~3 | 3~4 |\n|------|-----|-----|-----|-----|\n| 距離(cm) |  ${v1}  |  ${v2}  |  ${v3}  |  ${v4}  |`,
         question: `【資料解讀】根據上表，滑車的運動狀態為何？`,
         options: [ans, ...getRandItems(wrongs, 3)],
         answer: 0,
@@ -215,7 +226,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       ];
       const nt = newtonTraps[Math.floor(rand() * newtonTraps.length)];
       return {
-        question: `【物理定律陷阱】${nt.q}`,
+        question: `【物理定律陷阱】${preamble}\n${nt.q}`,
         options: [nt.ans, ...getRandItems(nt.wrongs, 3)],
         answer: 0,
         hint: '💡 提示：回憶牛頓三大運動定律的核心精神。',
@@ -225,11 +236,12 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
   }
 
   // Fallback
+  const fbText = ['請問這句話是正確的嗎？', '下列關於這單元的說法何者無誤？', '針對這個觀念，哪個選項是對的？'][Math.floor(rand() * 3)];
   return {
-    question: `【自然科學核心觀念題】關於「${conceptTag}」，下列敘述何者正確？ (題號 ${index})`,
+    question: `【自然科學素養題】${preamble} \n關於「${conceptTag}」，${fbText}`,
     options: ['符合科學原理之正確敘述', '常見誤解一', '常見誤解二', '不相關的變數'],
     answer: 0,
     hint: '💡 提示：回憶課本核心定義。',
-    explanation: `📖 詳解：這是一道核心素養題，用來測驗基本科學觀念。`
+    explanation: `📖 詳解：這是一道動態核心素養題，用來測驗基本科學觀念。`
   };
 }

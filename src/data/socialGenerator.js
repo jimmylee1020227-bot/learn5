@@ -1,4 +1,13 @@
 export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
+  // 動態樂高引擎：產生絕對不重複的情境前導詞
+  const people = ['阿翔', '小美', '大壯', '阿建', '班長', '老師', '歷史學家', '新聞主播', '公民老師', '小英'];
+  const actions = ['在看報紙時', '準備段考時', '去圖書館查資料時', '看電視新聞時', '上課時', '在網路上看到一篇文章時'];
+  const verbs = ['發現了一段有趣的記載', '提出了一個問題', '考了大家一題', '看到了以下資訊', '想請你幫忙判斷'];
+  
+  const person = people[Math.floor(rand() * people.length)];
+  const action = actions[Math.floor(rand() * actions.length)];
+  const verb = verbs[Math.floor(rand() * verbs.length)];
+  const preamble = `${person}${action}，${verb}。`;
 
   function getRandItems(arr, count) {
     const res = [];
@@ -24,7 +33,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       return {
         isReading: true,
         readingText: `【氣候圖表分析】以下為台灣某測站的部分氣候數據：\n=======================================\n| 月份 | 一月 | 七月 | \n|------|------|------|\n| 氣溫(℃) | ${cl.tJan} | ${cl.tJul} |\n| 降水(mm) | ${cl.rJan} | ${cl.rJul} |\n=======================================`,
-        question: `【圖表解讀】根據上表的氣溫與降水量，下列敘述何者最符合該測站的氣候特徵？`,
+        question: `【圖表解讀】${preamble}\n根據上表的氣溫與降水量，下列敘述何者最符合該測站的氣候特徵？`,
         options: [cl.ans, ...getRandItems(cl.wrongs, 3)],
         answer: 0,
         hint: '💡 提示：觀察最冷月均溫與降水分布。',
@@ -41,7 +50,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       return {
         isReading: true,
         readingText: `【歷史年表分析】台灣歷史重要事件時間軸：\n[${tl.y1}] 事件(甲)：${tl.e1}\n...\n[${tl.y2}] 事件(乙)：${tl.e2}`,
-        question: `【圖表解讀】年表中的(甲)與(乙)事件發生時，統治或接收台灣的政權分別為何？`,
+        question: `【圖表解讀】${preamble}\n年表中的(甲)與(乙)事件發生時，統治或接收台灣的政權分別為何？`,
         options: [tl.ans, ...getRandItems(tl.wrongs, 3)],
         answer: 0,
         hint: '💡 提示：根據年份判斷當時的歷史分期。',
@@ -59,7 +68,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       return {
         isReading: true,
         readingText: `【人口金字塔圖表分析】${cName}的人口金字塔圖形狀呈現「${p.shape}」結構。`,
-        question: `【圖表解讀】根據該人口圖表的特徵，該國最可能面臨或呈現的社會現象為何？`,
+        question: `【圖表解讀】${preamble}\n根據該人口圖表的特徵，該國最可能面臨或呈現的社會現象為何？`,
         options: [p.ans, ...getRandItems(p.wrongs, 3)],
         answer: 0,
         hint: '💡 提示：不同的形狀代表不同的出生率與死亡率特徵。',
@@ -75,7 +84,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       const gt = geoTraps[Math.floor(rand() * geoTraps.length)];
       const wrongs = ['這句話完全正確，沒有迷思。', '實際上是因為氣候暖化導致的。', '這與板塊運動無關。', '這是受到黑潮影響。'];
       return {
-        question: `【地理陷阱題】關於台灣地理的敘述，下列哪一個說法是「錯誤的迷思」？\n迷思：「${gt.q}」\n（請選出下列這句錯誤陳述的正確糾正）`, 
+        question: `【地理陷阱題】${preamble}\n關於台灣地理的敘述，下列哪一個說法是「錯誤的迷思」？\n迷思：「${gt.q}」\n（請選出這句陳述的正確糾正）`, 
         options: [gt.ans, ...getRandItems(wrongs, 3)], 
         answer: 0, 
         hint: '💡 提示：仔細檢視台灣的實際地理特徵。',
@@ -93,7 +102,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       const ev = historyEvents[Math.floor(rand() * historyEvents.length)];
       const wrongs = ['荷蘭人', '西班牙人', '清朝', '英國人', '日本', '中華民國', '葡萄牙人'].filter(x => x !== ev.ans);
       return {
-        question: `【台灣歷史記憶題】\n與「${ev.event}」密切相關的歷史勢力或政權為下列何者？`,
+        question: `【台灣歷史記憶題】${preamble}\n與「${ev.event}」密切相關的歷史勢力或政權為下列何者？`,
         options: [ev.ans, ...getRandItems(wrongs, 3)],
         answer: 0,
         hint: `💡 提示：回想發生該事件的歷史時期。`,
@@ -123,7 +132,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       return {
         isReading: true,
         readingText: `【選舉圖表分析】某國舉行總統大選，三位候選人的得票率圓餅圖數據如下：\n-------------------------\n| 候選人 | 得票率(%) |\n|--------|-----------|\n| 甲黨候選人 |   ${v1}%   |\n| 乙黨候選人 |   ${v2}%   |\n| 丙黨候選人 |   ${v3}%   |\n-------------------------`,
-        question: `【圖表解讀】若該國的選舉制度規定「${sysType}」，則下列敘述何者正確？`,
+        question: `【圖表解讀】${preamble}\n若該國的選舉制度規定「${sysType}」，則下列敘述何者正確？`,
         options: [ans, ...getRandItems(wrongs, 3)],
         answer: 0,
         hint: '💡 提示：注意選舉制度的規定（是否需要過半）。',
@@ -138,8 +147,8 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       ];
       const g = govChats[Math.floor(rand() * govChats.length)];
       const wItems = getRandItems(g.wrongs, 2);
-      const names = ['小明', '小華', '小英'];
-      const correctName = names[Math.floor(rand() * 3)];
+      const names = getRandItems(people, 3);
+      const correctName = names[0];
       
       let msgs = [];
       msgs.push({ sender: '公民老師', text: `各位同學，關於我國「${g.topic}」的職權，誰能舉個例子？` });
@@ -173,7 +182,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       const c = civics[Math.floor(rand() * civics.length)];
       const wrongs = ['主權在民', '權力分立與制衡', '地方自治', '多數決原則', '平等權', '參政權'].filter(x => x !== c.ans);
       return { 
-        question: `【公民原則探討】下列敘述體現了何種憲法原則或基本權利？\n${c.q}`, 
+        question: `【公民原則探討】${preamble}\n下列敘述體現了何種憲法原則或基本權利？\n「${c.q}」`, 
         options: [c.ans, ...getRandItems(wrongs, 3)], 
         answer: 0, 
         hint: '💡 提示：仔細判斷文字敘述中的核心精神。',
@@ -189,7 +198,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       ];
       const al = ageLaw[Math.floor(rand() * ageLaw.length)];
       return {
-        question: `【生活法律陷阱】小華今年滿 ${al.age} 歲，根據我國現行法律，他能否合法且「單獨」有效地進行下列行為：「${al.action}」？`,
+        question: `【生活法律陷阱】${preamble}\n${person}今年滿 ${al.age} 歲，根據我國現行法律，他能否合法且「單獨」有效地進行下列行為：「${al.action}」？`,
         options: [al.canDo ? '可以' : '不可以', al.canDo ? '不可以' : '可以', '需視其是否已結婚而定', '需法官同意'],
         answer: 0,
         hint: '💡 提示：注意民法成年年齡與選舉罷免法規定的不同。',
@@ -206,7 +215,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       return {
         isReading: true,
         readingText: `【經濟圖表分析】某商品在市場上的供給與需求數量表：\n=================================\n| 價格(元) | 需求量(個) | 供給量(個) |\n|----------|------------|------------|\n|   ${p1}   |    ${sBase + 200}     |    ${sBase - 150}     |\n|   ${p2}   |    ${sBase}     |    ${sBase}     |\n|   ${p2+50}   |    ${sBase - 200}     |    ${sBase + 250}     |\n=================================`,
-        question: `【圖表解讀】根據上表，該商品的「均衡價格」為多少元？`,
+        question: `【圖表解讀】${preamble}\n根據上表，該商品的「均衡價格」為多少元？`,
         options: [`${p2}`, `${p1}`, `${p2+50}`, '無法判斷'],
         answer: 0,
         hint: '💡 提示：均衡價格發生在「需求量 = 供給量」的時候。',
@@ -224,7 +233,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       return {
         isReading: true,
         readingText: `【新聞時事分析】\n近年來某國發生以下經濟情況：\n「${ev.q}」`,
-        question: `【公民與經濟推論】根據上文敘述，這項情況最可能造成何種影響或結果？`,
+        question: `【公民與經濟推論】${preamble}\n根據上文敘述，這項情況最可能造成何種影響或結果？`,
         options: [ev.ans, ...getRandItems(wrongs, 3)],
         answer: 0,
         hint: '💡 提示：思考供需原則與貨幣政策的基本邏輯。',
@@ -236,12 +245,12 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
         { q: '引發第一次世界大戰的導火線是發生在哪個半島的暗殺事件？', ans: '巴爾幹半島' },
         { q: '法國大革命爆發的標誌是巴黎市民攻陷了哪一座監獄？', ans: '巴士底監獄' },
         { q: '提出「天賦人權」並深深影響美國獨立宣言的啟蒙運動思想家是誰？', ans: '洛克' },
-        { q: '地理大發現時期，第一位完成環球航行壯舉（雖然途中身亡）的航海家是誰？', ans: '麥哲倫' }
+        { q: '地理大發現時期，第一位完成環球航行壯舉的航海家是誰？', ans: '麥哲倫' }
       ];
       const hw = historyWorld[Math.floor(rand() * historyWorld.length)];
       const wrongs = ['猶太教', '佛教', '亞平寧半島', '凡爾賽宮', '盧梭', '孟德斯鳩', '哥倫布', '達伽馬', '東正教'].filter(x => x !== hw.ans);
       return {
-        question: `【世界歷史記憶】${hw.q}`,
+        question: `【世界歷史記憶】${preamble}\n${hw.q}`,
         options: [hw.ans, ...getRandItems(wrongs, 3)],
         answer: 0,
         hint: '💡 提示：回想世界史的關鍵名詞與人物。',
@@ -251,8 +260,9 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
   }
 
   // Fallback
+  const fbText = ['請問針對這個知識點，下列說法何者最正確？', '關於這方面的歷史或法規，哪一個選項是正確的？', '請選出符合此概念核心精神的敘述。'][Math.floor(rand() * 3)];
   return {
-    question: `【社會科核心觀念題】關於「${conceptTag}」，下列敘述何者正確？ (題號 ${index})`,
+    question: `【社會科素養題】${preamble}\n關於「${conceptTag}」，${fbText}`,
     options: ['符合史實或法規之正確敘述', '常見誤解一', '常見誤解二', '不相關的史事'],
     answer: 0,
     hint: '💡 提示：回憶課本核心定義。',

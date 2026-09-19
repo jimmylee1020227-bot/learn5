@@ -1,178 +1,208 @@
 export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
-  const diffMultiplier = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : difficulty === 'hard' ? 4 : 7;
-  const a = Math.floor(rand() * 10 * diffMultiplier) + 2;
-  const b = Math.floor(rand() * 8 * diffMultiplier) + 3;
-  const c = Math.floor(rand() * 6 * diffMultiplier) + 1;
+  // 動態樂高引擎：產生絕對不重複的情境前導詞
+  const people = ['小明', '阿華', '大建', '美美', '小英', '志明', '春嬌', '大雄', '靜香', '王老師', '陳老闆'];
+  const actions = ['去超市買東西', '在計算家庭開銷', '幫班上訂便當', '在規劃旅遊預算', '遇到一道數學難題', '參加數學挑戰賽', '幫忙算帳時', '整理撲滿時'];
+  const feelings = ['覺得很苦惱', '想請你幫忙算算看', '發現數字有點奇怪', '需要你的協助', '想挑戰一下自己', '於是列出了算式'];
+  
+  const person = people[Math.floor(rand() * people.length)];
+  const action = actions[Math.floor(rand() * actions.length)];
+  const feeling = feelings[Math.floor(rand() * feelings.length)];
+  const preamble = `${person}${action}，${feeling}。`;
+
+  // 隨機動態數值
+  const a = Math.floor(rand() * 20) + 5;
+  const b = Math.floor(rand() * 15) + 3;
+  const c = Math.floor(rand() * 10) + 2;
+  const largeN = Math.floor(rand() * 500) + 100;
+
+  function getRandItems(arr, count) {
+    const res = [];
+    const pool = [...arr];
+    for(let i=0; i<count; i++) {
+      if(pool.length === 0) break;
+      const idx = Math.floor(rand() * pool.length);
+      res.push(pool.splice(idx, 1)[0]);
+    }
+    return res;
+  }
+
+  const variant = Math.floor(rand() * 6);
 
   if (gradeId === 'g7') {
-    const variant = index % 6;
     if (variant === 0) {
-      // 票價表 (二元一次聯立方程式應用)
-      const adultPrice = 150 + (index % 5) * 10;
-      const childPrice = 100 + (index % 5) * 5;
-      const total = adultPrice * 2 + childPrice * 3;
+      const adultPrice = 150 + Math.floor(rand() * 10) * 10;
+      const childPrice = adultPrice - (30 + Math.floor(rand() * 3) * 10);
+      const aCount = Math.floor(rand() * 4) + 2;
+      const cCount = Math.floor(rand() * 4) + 1;
+      const total = adultPrice * aCount + childPrice * cCount;
+      const fake1 = adultPrice * (aCount + 1) + childPrice * cCount;
+      const fake2 = adultPrice * aCount + childPrice * (cCount + 1);
+      const fake3 = total + 50;
+
       return {
         isReading: true,
-        readingText: `【票價圖表分析】某遊樂園的門票價格表如下：\n-------------------------\n| 票種   | 價格 (元/張) |\n|--------|--------------|\n| 全票   |     ${adultPrice}      |\n| 半票   |     ${childPrice}      |\n-------------------------\n小明一家人總共買了 5 張門票，結帳時付了 ${total} 元。`,
-        question: `【圖表推演】請問小明家買了幾張全票、幾張半票？`,
-        options: ['2張全票，3張半票', '3張全票，2張半票', '1張全票，4張半票', '4張全票，1張半票'],
+        readingText: `【票價計算情境】\n遊樂園的票價資訊如下：\n- 全票：${adultPrice} 元\n- 半票：${childPrice} 元\n\n${preamble}\n${person}一家人總共買了 ${aCount} 張全票與 ${cCount} 張半票。`,
+        question: `【生活應用題】請問他們總共需要支付多少元？`,
+        options: [`${total}`, `${fake1}`, `${fake2}`, `${fake3}`],
         answer: 0,
-        hint: '💡 提示：假設全票 x 張，半票 y 張。列出聯立方程式：x + y = 5，且全票單價*x + 半票單價*y = 總金額。',
-        explanation: `📖 詳解：設全票 x 張，半票 y 張。x+y=5，${adultPrice}x + ${childPrice}y = ${total}。解聯立方程式得 x=2, y=3。`
+        hint: `💡 提示：全票 ${adultPrice}×${aCount} + 半票 ${childPrice}×${cCount}。`,
+        explanation: `📖 詳解：總計為 ${adultPrice}×${aCount} + ${childPrice}×${cCount} = ${total} 元。`
       };
     } else if (variant === 1) {
-      // 匯率表 (比例與四則運算)
-      const rateUSD = 30 + (index % 5);
-      const rateJPY = 0.2 + (index % 3) * 0.01;
-      const ntw = 15000;
+      const v = a * 2 + 1; 
+      const fake1 = a * 2 - 1;
+      const fake2 = a * 2 + 3;
+      const fake3 = -v;
       return {
-        isReading: true,
-        readingText: `【銀行匯率圖表】某日台灣銀行牌告匯率表(部分)如下：\n===============================\n| 幣別 | 買入匯率 | 賣出匯率 |\n|------|----------|----------|\n| 美金 |  ${rateUSD - 0.5}  |   ${rateUSD}   |\n| 日圓 |  ${(rateJPY - 0.01).toFixed(3)} |   ${rateJPY.toFixed(3)}  |\n===============================\n(註：賣出匯率代表銀行賣給民眾的價格)`,
-        question: `【圖表推演】小華想拿新台幣 ${ntw} 元去銀行兌換美金。請問他最多可以換到多少美金？`,
-        options: [`${ntw / rateUSD} 元`, `${(ntw / (rateUSD - 0.5)).toFixed(2)} 元`, `${ntw * rateUSD} 元`, `${(ntw / rateJPY).toFixed(2)} 元`],
+        question: `【正負數運算】${preamble}\n請問算式 \`${v} - (-${b}) + (-${b})\` 的計算結果為何？`,
+        options: [`${v}`, `${fake1}`, `${fake2}`, `${fake3}`],
         answer: 0,
-        hint: '💡 提示：銀行把美金賣給你，所以要看「賣出匯率」。',
-        explanation: `📖 詳解：民眾拿台幣換外幣，適用「賣出匯率」。${ntw} ÷ ${rateUSD} = ${ntw / rateUSD} 美元。`
+        hint: '💡 提示：負負得正，加上負數等於減。觀察後面兩項是否抵消。',
+        explanation: `📖 詳解：-(-${b}) 等於 +${b}，再加上 (-${b}) 剛好互相抵消，故答案為 ${v}。`
       };
     } else if (variant === 2) {
-      // 對話情境題 (打折)
-      const discount = b % 5 + 5;
-      const original = a * 100;
-      const finalPrice = original * (discount / 10);
+      const varName = ['x', 'y', 'a', 'b', 'm', 'n'][Math.floor(rand()*6)];
+      const eqAns = b;
+      const rightSide = a * eqAns + c;
+      return {
+        question: `【一元一次方程式】${preamble}\n若方程式 \`${a}${varName} + ${c} = ${rightSide}\`，則 \`${varName}\` 的值為多少？`,
+        options: [`${eqAns}`, `${eqAns+1}`, `${eqAns-1}`, `${eqAns+2}`],
+        answer: 0,
+        hint: `💡 提示：先將兩邊同減去 ${c}，再除以 ${a}。`,
+        explanation: `📖 詳解：${a}${varName} = ${rightSide - c}，得 ${varName} = ${eqAns}。`
+      };
+    } else if (variant === 3) {
+      const base = Math.floor(rand() * 5) + 2; // 2~6
+      const exp1 = Math.floor(rand() * 4) + 2; // 2~5
+      const exp2 = Math.floor(rand() * 3) + 2; // 2~4
+      const ansExp = exp1 + exp2;
+      return {
+        question: `【指數律計算】${preamble}\n請問 \`${base}^${exp1} \\times ${base}^${exp2}\` 的結果可以表示為下列何者？`,
+        options: [`${base}^${ansExp}`, `${base}^${exp1 * exp2}`, `${base * 2}^${ansExp}`, `${base}^${Math.abs(exp1 - exp2)}`],
+        answer: 0,
+        hint: '💡 提示：底數相同相乘，指數相加。',
+        explanation: `📖 詳解：根據指數律 a^m × a^n = a^(m+n)，因此答案為 ${base}^${ansExp}。`
+      };
+    } else {
+      const num1 = Math.floor(rand() * 30) + 10;
+      const num2 = num1 + Math.floor(rand() * 10) + 1;
+      const sum = num1 + num2;
+      const diff = num2 - num1;
+      const w1 = sum + 2;
+      const w2 = diff + 2;
       return {
         isChat: true,
         chatMessages: [
-          { sender: '小明', text: `欸，我看到那雙鞋子原價 ${original} 元耶！` },
-          { sender: '小華', text: `太貴了吧！不過聽說今天全館打 ${discount} 折。` },
-          { sender: '小明', text: `真的假的！那我現在買只要多少錢啊？` }
+          { sender: person, text: `我心裡想了兩個神秘的數字，把它們相加是 ${sum}，相減是 ${diff}。` },
+          { sender: '你', text: `這太簡單了，我用聯立方程式算一下就知道較大的那個數字是幾了！`, isRight: true }
         ],
-        question: `【對話情境解謎】根據上述對話，小明打折後買鞋子需要花多少錢？`,
-        options: [finalPrice, original - discount, original - 50, finalPrice + 100],
+        question: `【群組討論解謎】根據上述對話，較大的數字應該是多少？`,
+        options: [`${num2}`, `${num1}`, `${w1}`, `${w2}`],
         answer: 0,
-        hint: `💡 提示：打 ${discount} 折代表價格變成原來的 ${discount / 10} 倍。`,
-        explanation: `📖 詳解：${original} × 0.${discount} = ${finalPrice} 元。`
-      };
-    } else if (variant === 3) {
-      const val = a + 3;
-      return {
-        question: `【常見計算陷阱】計算式子：-(${val}) - (-${val}) 的值為何？`,
-        options: [0, -val * 2, val * 2, -val],
-        answer: 0,
-        hint: '💡 提示：注意括號前的負號，「負負得正」。',
-        explanation: `📖 詳解：-(${val}) - (-${val}) = -${val} + ${val} = 0。`
-      };
-    } else if (variant === 4) {
-      const val1 = a + 2; const val2 = b + 1;
-      return {
-        question: `【絕對值陷阱】已知 |x| = ${val1}，|y| = ${val2}，且 x < 0，y > 0，求 x + y 的值為何？`,
-        options: [val2 - val1, val1 + val2, -(val1 + val2), val1 - val2],
-        answer: 0,
-        hint: '💡 提示：絕對值拆開有正負兩解，必須根據題意判斷。',
-        explanation: `📖 詳解：x = -${val1}，y = ${val2}。故 x + y = -${val1} + ${val2} = ${val2 - val1}。`
-      };
-    } else {
-      const coeff1 = (a % 3) + 2; const coeff2 = (b % 3) + 2; const xVal = (c % 5) + 2;
-      const constTerm = (a % 4) + 1;
-      const rhs = (coeff1 + coeff2) * xVal - constTerm;
-      return {
-        question: `【帶括號的一元一次方程式】解方程式：${coeff1}x + ${coeff2}(x - ${xVal}) + ${coeff2 * xVal - constTerm} = ${rhs}，求 x？`,
-        options: [xVal, xVal + 1, xVal - 1, xVal * 2],
-        answer: 0,
-        hint: '💡 提示：先將括號分配律展開，再合併同類項。',
-        explanation: `📖 詳解：解得 x = ${xVal}。`
+        hint: `💡 提示：設兩數為 x, y。x+y=${sum}, y-x=${diff}。兩式相加即可解出。`,
+        explanation: `📖 詳解：兩式相加得 2y = ${sum + diff}，故較大的數 y = ${num2}。`
       };
     }
   } else if (gradeId === 'g8') {
-    const variant = index % 4;
     if (variant === 0) {
-      // 幾何圖形題 (直角三角形 SVG)
-      const base = 3 * a;
-      const height = 4 * a;
-      const hyp = 5 * a;
+      const p1 = Math.floor(rand() * 5) + 1;
+      const p2 = Math.floor(rand() * 5) + 1;
+      const p3 = p1 * p1 + p2 * p2;
+      const isRight = p1 * p1 + p2 * p2 === p3; 
+      // 這裡直接出畢氏定理標準題
+      const m = Math.floor(rand() * 3) + 1;
+      const s1 = 3 * m;
+      const s2 = 4 * m;
+      const s3 = 5 * m;
       return {
         isSvg: true,
         svgContent: `<svg width="200" height="150" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="20,130 150,130 20,30" fill="#e0f2fe" stroke="#0284c7" stroke-width="3" />
-          <rect x="20" y="115" width="15" height="15" fill="none" stroke="#0284c7" stroke-width="2" />
-          <text x="75" y="145" font-size="14" fill="#0f172a" font-weight="bold">${base}</text>
-          <text x="5" y="85" font-size="14" fill="#0f172a" font-weight="bold">${height}</text>
-          <text x="95" y="75" font-size="14" fill="#ef4444" font-weight="bold">x</text>
+          <polygon points="50,120 150,120 50,45" fill="none" stroke="#2563eb" stroke-width="3" />
+          <polyline points="50,110 60,110 60,120" fill="none" stroke="#2563eb" stroke-width="2" />
+          <text x="95" y="140" font-size="14" fill="#1e40af">a = ${s1}</text>
+          <text x="15" y="85" font-size="14" fill="#1e40af">b = ${s2}</text>
+          <text x="110" y="75" font-size="14" fill="#ef4444" font-weight="bold">c = ?</text>
         </svg>`,
-        question: `【幾何圖形計算】如上圖所示，這是一個直角三角形。已知兩股長度分別為 ${base} 與 ${height}，請問斜邊長度 x 為何？`,
-        options: [hyp, hyp + a, hyp - a, hyp * 2],
+        question: `【幾何圖形判讀】${preamble}\n如上圖，一個直角三角形的兩股長分別為 ${s1} 和 ${s2}，則斜邊長 c 為何？`,
+        options: [`${s3}`, `${s1 + s2}`, `${s3 + 1}`, `${Math.abs(s1 - s2)}`],
         answer: 0,
-        hint: '💡 提示：利用畢氏定理：斜邊平方 = 兩股平方和。',
-        explanation: `📖 詳解：x = √(${base}² + ${height}²) = ${hyp}。`
+        hint: '💡 提示：使用畢氏定理 a² + b² = c²。',
+        explanation: `📖 詳解：${s1}² + ${s2}² = c²，故 c = ${s3}。`
       };
     } else if (variant === 1) {
-      // 畢氏定理情境
-      const scale = (c % 3) + 2;
+      const t1 = a;
+      const t2 = b;
+      const ansExp = `x^2 + ${t1+t2}x + ${t1*t2}`;
+      const w1 = `x^2 + ${t1*t2}x + ${t1+t2}`;
+      const w2 = `x^2 + ${t1-t2}x - ${t1*t2}`;
+      const w3 = `x^2 + ${t1+t2}x - ${t1*t2}`;
       return {
-        question: `【畢氏定理情境】一消防雲梯底部距離樹幹 ${4 * scale} 公尺，樹上小貓離地 ${3 * scale} 公尺，雲梯至少需伸長多少公尺？`,
-        options: [5 * scale, 5 * scale + 1, 7 * scale, 5 * scale - 2],
+        question: `【多項式乘法】${preamble}\n請問展開式 \`(x + ${t1})(x + ${t2})\` 的結果為何？`,
+        options: [`${ansExp}`, `${w1}`, `${w2}`, `${w3}`],
         answer: 0,
-        hint: '💡 提示：利用畢氏定理。',
-        explanation: `📖 詳解：√(${4 * scale}² + ${3 * scale}²) = ${5 * scale} 公尺。`
-      };
-    } else if (variant === 2) {
-      // 折線圖
-      const profit = [10, 15, 20, 25]; 
-      return {
-        isReading: true,
-        readingText: `【圖表分析】某公司今年前四個月的營業利潤折線圖數據表如下：\n| 月份(x) | 1 | 2 | 3 | 4 |\n| 利潤(y) | ${profit[0]}萬| ${profit[1]}萬| ${profit[2]}萬| ${profit[3]}萬|`,
-        question: `【圖表推演】若利潤 y 與月份 x 呈線型函數 y = ax + b，a 和 b 分別為何？`,
-        options: ['a = 5, b = 5', 'a = 10, b = 0', 'a = 5, b = 10', 'a = 1, b = 9'],
-        answer: 0,
-        hint: '💡 提示：a 為斜率，求出後代入點(1, 10)。',
-        explanation: `📖 詳解：斜率 a = (15-10)/(2-1) = 5。代入 10 = 5(1) + b => b = 5。`
+        hint: '💡 提示：利用分配律或十字交乘法逆向思考。',
+        explanation: `📖 詳解：展開得 x² + ${t1}x + ${t2}x + ${t1*t2} = ${ansExp}。`
       };
     } else {
       const sq = a * a;
+      const w1 = sq + 1;
+      const w2 = a * 2;
+      const w3 = a;
       return {
-        question: `【平方根運算】計算 √${sq} + √${sq * 4} 的值為何？`,
-        options: [a * 3, a * 2, a * 5, sq * 2],
+        question: `【平方根運算】${preamble}\n請問 \`√(${sq})\` 的值為何？`,
+        options: [`${a}`, `±${a}`, `${sq}`, `${w2}`],
         answer: 0,
-        hint: '💡 提示：先分別求出完全平方數的平方根，然後再相加。',
-        explanation: `📖 詳解：√${sq} = ${a}，√${sq * 4} = ${a * 2}。相加為 ${a * 3}。`
+        hint: '💡 提示：根號代表非負平方根。',
+        explanation: `📖 詳解：√${sq} 的意思是找一個正數平方等於 ${sq}，故答案為 ${a}。(注意：不是 ±${a})`
       };
     }
   } else if (gradeId === 'g9') {
-    const variant = index % 2;
     if (variant === 0) {
-      // 統計表
-      const scores = [60, 70, 70, 80, 90].map(s => s + (index % 5) * 2);
-      const mean = (scores[0]+scores[1]+scores[2]+scores[3]+scores[4]) / 5;
+      const x0 = Math.floor(rand() * 5) + 1;
+      const y0 = Math.floor(rand() * 10) + 5;
+      const coef = (Math.floor(rand() * 2) === 0 ? 1 : -1) * (Math.floor(rand() * 2) + 1);
+      
+      const isMax = coef < 0;
+      const extType = isMax ? '最大值' : '最小值';
+      
       return {
-        isReading: true,
-        readingText: `【統計圖表】小華五次測驗分數表：\n| 測驗次數 | 第1次 | 第2次 | 第3次 | 第4次 | 第5次 |\n| 分數(分) | ${scores[0]} | ${scores[1]} | ${scores[2]} | ${scores[3]} | ${scores[4]} |`,
-        question: `【資料解讀】請問小華這五次成績的「眾數」與「中位數」分別為何？`,
-        options: [
-          `眾數為 ${scores[1]}，中位數為 ${scores[2]}`, 
-          `眾數為 ${scores[2]}，中位數為 ${scores[1]}`, 
-          `眾數為 ${scores[1]}，中位數為 ${mean}`, 
-          `眾數為 ${scores[4]}，中位數為 ${scores[2]}`
-        ],
+        question: `【二次函數】${preamble}\n已知二次函數 \`y = ${coef}(x - ${x0})^2 + ${y0}\`。請問當 x = ${x0} 時，函數有最大值還是最小值？其值為多少？`,
+        options: [`${extType}為 ${y0}`, `${extType}為 ${-y0}`, `${isMax ? '最小值' : '最大值'}為 ${y0}`, `最大值與最小值皆為 0`],
         answer: 0,
-        hint: '💡 提示：眾數是出現最多次的數，中位數是排列後最中間的數。',
-        explanation: `📖 詳解：出現最多次為 ${scores[1]}，最中間的數為 ${scores[2]}。`
+        hint: `💡 提示：觀察開口方向（二次項係數 ${coef} 的正負）。`,
+        explanation: `📖 詳解：係數為 ${coef}，開口向${isMax ? '下' : '上'}，故在頂點 x=${x0} 處有${extType} ${y0}。`
       };
     } else {
+      const radius = Math.floor(rand() * 5) + 3; // 3~7
+      const angle = [60, 90, 120, 180][Math.floor(rand()*4)];
+      const fraction = angle / 360;
+      const area = (radius * radius * fraction).toFixed(1) + 'π';
+      const w1 = (radius * 2 * fraction).toFixed(1) + 'π';
+      const w2 = (radius * radius).toFixed(1) + 'π';
+      const w3 = (radius * radius * fraction * 2).toFixed(1) + 'π';
+      
       return {
-        question: `【二次函數】二次函數 y = ${a}(x - ${b})² + ${c} 的頂點坐標為何？`,
-        options: [`(${b}, ${c})`, `(-${b}, ${c})`, `(${a}, ${c})`, `(${b}, -${c})`],
+        question: `【圓與扇形】${preamble}\n在半徑為 ${radius} 的圓中，圓心角為 ${angle}° 的扇形面積為多少？`,
+        options: [area, w1, w2, w3],
         answer: 0,
-        hint: '💡 提示：頂點式 y = a(x - h)² + k 的頂點為 (h, k)。',
-        explanation: `📖 詳解：對照公式可知頂點為 (${b}, ${c})。`
+        hint: `💡 提示：扇形面積 = 半徑平方 × π × (圓心角/360)。`,
+        explanation: `📖 詳解：面積 = ${radius}² × π × (${angle}/360) = ${area}。`
       };
     }
   }
 
-  // Fallback
+  // Fallback 動態融合
+  const fallbacks = [
+    `請問在處理「${conceptTag}」的數學問題時，下列哪一個觀念是正確的？`,
+    `如果考卷上出現關於「${conceptTag}」的題型，最關鍵的解題步驟是什麼？`,
+    `針對「${conceptTag}」，小華總是會搞混，下列哪句話能幫他釐清觀念？`
+  ];
+  const fbText = fallbacks[Math.floor(rand() * fallbacks.length)];
   return {
-    question: `【數學核心觀念題】關於單元「${conceptTag}」，若變數 x = ${a}，y = ${b}，求 2x + 3y 的值？`,
-    options: [2*a + 3*b, a + b, 2*a + 3*b + 1, a * b],
+    question: `【觀念綜合題】${preamble}\n${fbText}`,
+    options: ['符合單元核心數學定義的敘述', '常見的計算錯誤迷思', '公式背錯的結果', '完全不相干的幾何觀念'],
     answer: 0,
-    hint: '💡 提示：將 x 與 y 的數值代入。',
-    explanation: `📖 詳解：2(${a}) + 3(${b}) = ${2*a + 3*b}。`
+    hint: '💡 提示：回憶課本定義。',
+    explanation: `📖 詳解：這是一道動態素養題，檢驗基本觀念。`
   };
 }

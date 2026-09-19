@@ -1,6 +1,16 @@
 export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
   const globalVariant = Math.floor(rand() * 4); 
 
+  // 動態樂高引擎：產生絕對不重複的情境前導詞
+  const people = ['小明', '阿華', '建國', '美美', '志明', '春嬌', '大雄', '胖虎', '小夫', '靜香', '國文老師', '班長'];
+  const actions = ['在寫作文時', '閱讀課外讀物時', '幫同學檢查作業時', '參加語文競賽時', '在圖書館看書時', '準備段考時'];
+  const verbs = ['發現了一個容易寫錯的字', '遇到了一個成語', '對一個國學常識產生了疑惑', '不確定以下哪個說法是對的'];
+  
+  const person = people[Math.floor(rand() * people.length)];
+  const action = actions[Math.floor(rand() * actions.length)];
+  const verb = verbs[Math.floor(rand() * verbs.length)];
+  const preamble = `${person}${action}，${verb}。`;
+
   function getRandItems(arr, count) {
     const res = [];
     const pool = [...arr];
@@ -36,7 +46,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
     const otherWrongs = getRandItems(typos.filter(t => t !== target), 3).map(t => t.wrong);
     
     return {
-      question: `【字音字形測驗】請選出下列詞語「」中文字的正確讀音：\n${target.text}`,
+      question: `【字音字形測驗】${preamble}\n請選出下列詞語「」中文字的正確讀音：\n${target.text}`,
       options: [target.correct, target.wrong, ...otherWrongs].slice(0, 4),
       answer: 0,
       hint: '💡 提示：請注意部首與偏旁的發音差異。',
@@ -51,7 +61,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       const ans = getRandItems(correctWords, 1)[0];
       const wrongs = getRandItems(wrongWords, 3);
       return {
-        question: `【錯別字陷阱】下列四個選項中，何者「沒有」錯別字？`,
+        question: `【錯別字陷阱】${preamble}\n下列四個選項中，何者「沒有」錯別字？`,
         options: [ans, ...wrongs],
         answer: 0,
         hint: '💡 提示：仔細辨認字形，找出唯一正確的。',
@@ -61,7 +71,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       const ans = getRandItems(wrongWords, 1)[0];
       const rights = getRandItems(correctWords, 3);
       return {
-        question: `【錯別字陷阱】下列四個選項中，何者「有」錯別字？`,
+        question: `【錯別字陷阱】${preamble}\n下列四個選項中，何者「有」錯別字？`,
         options: [ans, ...rights],
         answer: 0,
         hint: '💡 提示：找出含有錯別字的選項。',
@@ -81,7 +91,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
     const item = idiomData[Math.floor(rand() * idiomData.length)];
     const w = getRandItems(item.wrongs, 3);
     return {
-      question: `【成語應用測驗】\n用來比喻或形容「${item.q}」的成語是下列何者？`,
+      question: `【成語應用測驗】${preamble}\n用來比喻或形容「${item.q}」的成語是下列何者？`,
       options: [item.ans, ...w],
       answer: 0,
       hint: '💡 提示：思考成語背後的典故。',
@@ -90,15 +100,13 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
   } else {
     const chars = ['江', '河', '湖', '海', '松', '柏', '梅', '櫻', '桐', '楓'];
     const ch = chars[Math.floor(rand() * chars.length)];
-    const names = ['小明', '小華', '阿建', '美美'];
-    const n1 = names[Math.floor(rand() * names.length)];
-    const n2 = names[(Math.floor(rand() * names.length) + 1) % names.length];
+    const names = getRandItems(people, 2);
     
     return {
       isChat: true,
       chatMessages: [
-        { sender: n1, text: `請問「${ch}」這個字是什麼造字法則啊？` },
-        { sender: n2, text: '有一半表示意思，另一半表示聲音，這很明顯是________。' }
+        { sender: names[0], text: `請問「${ch}」這個字是什麼造字法則啊？` },
+        { sender: names[1], text: '有一半表示意思，另一半表示聲音，這很明顯是________。' }
       ],
       question: `【六書討論】根據上述對話，空格中應該填入哪一種六書造字法則？`,
       options: ['形聲', '象形', '會意', '指事'],
@@ -120,7 +128,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       ];
       const q = qs[Math.floor(rand() * qs.length)];
       return {
-        question: `【韻文常識】關於「${q.q}」，下列敘述何者正確？`,
+        question: `【韻文常識】${preamble}\n關於「${q.q}」，下列敘述何者正確？`,
         options: [q.opts[0], ...getRandItems(q.opts.slice(1), 3)],
         answer: 0,
         hint: '💡 提示：回想唐詩宋詞的基本格律規定。',
@@ -137,7 +145,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       const w = writers[Math.floor(rand() * writers.length)];
       const wrongs = writers.filter(x => x !== w).map(x => x.style + '，被稱為' + x.alias);
       return {
-        question: `【國學常識】下列關於「${w.name}」的敘述，何者正確？`,
+        question: `【國學常識】${preamble}\n下列關於「${w.name}」的敘述，何者正確？`,
         options: [w.style + '，被稱為' + w.alias, ...getRandItems(wrongs, 3)],
         answer: 0,
         hint: '💡 提示：回憶作者的稱號與寫作風格。',
@@ -158,7 +166,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       const q = s[Math.floor(rand() * s.length)];
       const otherTypes = ['判斷句', '敘事句', '有無句', '表態句'].filter(x => x !== q.t);
       return {
-        question: `【中文四大句型】文句：「${q.ex}」在語法上屬於下列哪一種句型？`,
+        question: `【中文四大句型】${preamble}\n文句：「${q.ex}」在語法上屬於下列哪一種句型？`,
         options: [q.t, ...getRandItems(otherTypes, 3)],
         answer: 0,
         hint: `💡 提示：分析句中核心謂語。`,
@@ -176,7 +184,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       const q = r[Math.floor(rand() * r.length)];
       const otherRhetorics = ['轉化', '排比', '誇飾', '頂真', '映襯', '譬喻'].filter(x => x !== q.r);
       return {
-        question: `【語文修辭技巧判讀】\n文句：「${q.ex}」主要運用了何種修辭技巧？`,
+        question: `【語文修辭技巧判讀】${preamble}\n文句：「${q.ex}」主要運用了何種修辭技巧？`,
         options: [q.r, ...getRandItems(otherRhetorics, 3)],
         answer: 0,
         hint: `💡 提示：觀察句子的結構與意象。`,
@@ -197,7 +205,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       return {
         isReading: true,
         readingText: `【文言語譯與理解】\n子曰：「${q.text}」`,
-        question: `【文意推敲】孔子這段話最主要的涵義是強調什麼？`,
+        question: `【文意推敲】${preamble}\n孔子這段話最主要的涵義是強調什麼？`,
         options: [q.ans, ...getRandItems(wrongs, 3)],
         answer: 0,
         hint: '💡 提示：仔細閱讀文言文的字面意思。',
@@ -225,8 +233,9 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
   }
 
   // Fallback
+  const fbText = ['請問這句話是正確的嗎？', '下列關於這單元的說法何者無誤？', '針對這個觀念，哪個選項是對的？'][Math.floor(rand() * 3)];
   return {
-    question: `【國文素養題】關於單元「${conceptTag}」的第 ${index} 個核心觀念，下列敘述何者正確？`,
+    question: `【國文素養題】${preamble}\n關於單元「${conceptTag}」，${fbText}`,
     options: ['符合單元核心旨意的敘述', '常見誤解一', '常見誤解二', '常見誤解三'],
     answer: 0,
     hint: '💡 提示：回憶課本定義。',

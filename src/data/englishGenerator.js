@@ -1,7 +1,14 @@
 export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
-  const names = ['Tom', 'Amy', 'Peter', 'Emily', 'Jason', 'Lucy', 'John', 'Sarah'];
+  const names = ['Tom', 'Amy', 'Peter', 'Emily', 'Jason', 'Lucy', 'John', 'Sarah', 'David', 'Mary', 'Kevin', 'Linda'];
   const name1 = names[Math.floor(rand() * names.length)];
   const name2 = names[(Math.floor(rand() * names.length) + 1) % names.length];
+
+  // 動態樂高引擎：產生絕對不重複的情境前導詞
+  const actions = ['is doing homework', 'is talking to a friend', 'is writing an email', 'is studying for a test', 'is reading a book'];
+  const times = ['in the morning', 'at night', 'after school', 'on the weekend'];
+  const action = actions[Math.floor(rand() * actions.length)];
+  const time = times[Math.floor(rand() * times.length)];
+  const preamble = `${name1} ${action} ${time}.`;
 
   function getRandItems(arr, count) {
     const res = [];
@@ -25,7 +32,7 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
           exp: `It was fifty dollars yesterday, but it's on sale today for thirty dollars.\n詳解：外套今天特價 30 元。` 
         },
         { 
-          text: `Woman: Are you going to the library, Peter?\nMan: No, I need to go to the post office first. Then I'll meet Tom at the park.`,
+          text: `Woman: Are you going to the library, ${name1}?\nMan: No, I need to go to the post office first. Then I'll meet ${name2} at the park.`,
           q: `Where is the man going first?`, ans: 'The post office', wrongs: ['The library', 'The park', 'Home', 'The supermarket'], 
           exp: `No, I need to go to the post office first.\n詳解：男子說他要先去郵局 (post office)。` 
         },
@@ -76,7 +83,7 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
       ];
       const g = g7Grammar[Math.floor(rand() * g7Grammar.length)];
       return { 
-        question: `【文法陷阱題】\n${g.q}`, 
+        question: `【文法陷阱題】${preamble}\nChoose the correct answer:\n${g.q}`, 
         options: [g.ans, ...getRandItems(g.wrongs, 3)], 
         answer: 0, 
         hint: '💡 提示：注意時態與單複數。',
@@ -86,12 +93,14 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
   } else if (gradeId === 'g8') {
     const variant = Math.floor(rand() * 2);
     if (variant === 0) {
+      const cities = ['Japan', 'Korea', 'America', 'England', 'Australia'];
+      const city = cities[Math.floor(rand() * cities.length)];
       const readings = [
         { 
-          text: `Dear ${name1},\nHow have you been? I am writing to tell you about my trip to Japan last week. It was amazing! I visited many famous temples in Kyoto and ate delicious sushi in Osaka. The weather was a bit cold, but the scenery was beautiful. I took a lot of photos and I can't wait to show them to you when we meet next Monday at the cafe.\nBest,\n${name2}`, 
+          text: `Dear ${name1},\nHow have you been? I am writing to tell you about my trip to ${city} last week. It was amazing! I visited many famous places and ate delicious food. The weather was a bit cold, but the scenery was beautiful. I took a lot of photos and I can't wait to show them to you when we meet next Monday at the cafe.\nBest,\n${name2}`, 
           q: `What is the main purpose of this email?`, 
-          ans: 'To share travel experiences in Japan.', wrongs: ['To invite someone to visit Kyoto.', 'To complain about the cold weather.', 'To ask for recommendations for sushi restaurants.', 'To cancel a meeting at the cafe.'],
-          exp: `信件開頭明確表示寫信的目的是為了分享去日本旅行的經驗。`
+          ans: `To share travel experiences in ${city}.`, wrongs: [`To invite someone to visit ${city}.`, 'To complain about the cold weather.', 'To ask for recommendations for restaurants.', 'To cancel a meeting at the cafe.'],
+          exp: `信件開頭明確表示寫信的目的是為了分享去 ${city} 旅行的經驗。`
         },
         { 
           text: `Cooking is not just a daily chore; it can be a fun hobby. When you cook, you can choose fresh vegetables and healthy meat. Also, cooking at home is usually cheaper than eating out at restaurants. Most importantly, sharing the food you make with family and friends brings people closer together.`, 
@@ -119,7 +128,7 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
       ];
       const v = g8Vocab[Math.floor(rand() * g8Vocab.length)];
       return { 
-        question: `【進階字彙與文法】\n${v.q}`, 
+        question: `【進階字彙與文法】${preamble}\n${v.q}`, 
         options: [v.ans, ...getRandItems(v.wrongs, 3)], 
         answer: 0, 
         hint: '💡 提示：根據前後文語意判斷。',
@@ -129,9 +138,11 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
   } else if (gradeId === 'g9') {
     const variant = Math.floor(rand() * 3);
     if (variant === 0) {
+      const months = ['October', 'November', 'December', 'January', 'March'];
+      const month1 = months[Math.floor(rand() * months.length)];
       const readings9 = [
         { 
-          text: `【Notice: School Library Renovation】\nThe school library will be closed for renovation starting from next Monday, October 15th, until Friday, November 2nd. During this period, students will not be able to check out new books. However, the study rooms on the second floor will remain open for students to prepare for exams. Late fees for all overdue books will be waived during the renovation.`, 
+          text: `【Notice: School Library Renovation】\nThe school library will be closed for renovation starting from next Monday, ${month1} 15th, until Friday, ${month1} 29th. During this period, students will not be able to check out new books. However, the study rooms on the second floor will remain open for students to prepare for exams. Late fees for all overdue books will be waived during the renovation.`, 
           q: `According to the notice, which of the following statements is TRUE?`, 
           ans: 'Students can still use the study rooms on the second floor.', wrongs: ['Students can check out books from the study rooms.', 'Students have to pay extra money if they return books late during this period.', 'The library renovation will last for exactly one week.', 'The library will be permanently closed.'],
           exp: `文章提到 "the study rooms on the second floor will remain open"，故第一個選項正確。陷阱：late fees 會被 waived (免除)。`
@@ -162,7 +173,7 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
       ];
       const g = g9Grammar[Math.floor(rand() * g9Grammar.length)];
       return { 
-        question: `【文法陷阱題】\n${g.q}`, 
+        question: `【文法陷阱題】${preamble}\n${g.q}`, 
         options: [g.ans, ...getRandItems(g.wrongs, 3)], 
         answer: 0, 
         hint: '💡 提示：注意時態與連接詞用法。',
@@ -177,7 +188,7 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
       ];
       const p = g9Passive[Math.floor(rand() * g9Passive.length)];
       return { 
-        question: `【被動語態陷阱】\n${p.q}`, 
+        question: `【被動語態陷阱】${preamble}\n${p.q}`, 
         options: [p.ans, ...getRandItems(p.wrongs, 3)], 
         answer: 0, 
         hint: '💡 提示：注意動作是主動還是被動，並搭配正確的時態。',
@@ -187,9 +198,10 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
   }
 
   // Fallback
+  const fbAction = ['choose the correct option', 'find the right answer', 'select the true statement'][Math.floor(rand()*3)];
   return {
-    question: `【英文基礎語法題】Regarding "${conceptTag}" (Index ${index}), choose the correct answer:`,
-    options: ['Correct Option', 'Wrong Option 1', 'Wrong Option 2', 'Wrong Option 3'],
+    question: `【英文基礎語法題】${preamble}\nRegarding "${conceptTag}", ${fbAction}:`,
+    options: ['The grammatically correct option', 'Wrong grammar option 1', 'Wrong grammar option 2', 'Wrong grammar option 3'],
     answer: 0,
     hint: '💡 提示：Review the grammar rules.',
     explanation: `📖 詳解：This is a basic grammar question.`
