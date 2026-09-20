@@ -20,6 +20,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import MathText from './MathText';
+import MathSymbolLegend from './MathSymbolLegend';
 
 export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinforce, onBackHome }) {
   const { effectiveMultiplier } = useGame();
@@ -549,6 +551,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               </div>
 
               {/* 題幹內容 */}
+              <MathSymbolLegend question={q} compact={true} />
               <div style={{ fontSize: '1.02rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.8 }}>
                 <MathText text={q.question} />
               </div>

@@ -28,6 +28,7 @@ import {
 
 
 import MathText from './MathText';
+import MathSymbolLegend from './MathSymbolLegend';
 export default function QuizPlayer({ questions, onComplete, onExit }) {
   const { currentUser } = useAuth();
   
@@ -785,6 +786,9 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               })}
             </div>
           )}
+
+          {/* 題目旁的數學符號標註區 */}
+          <MathSymbolLegend question={currentQ} />
 
           {/* 題幹主文 (可縮放字級) */}
           <div 
