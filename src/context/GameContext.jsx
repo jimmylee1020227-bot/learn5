@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { addStudentPoints } from '../services/leaderboardService';
 import { getGlobalSettings, subscribeToCloudSync, getJson, setJson, fetchCloudUserGameState, getTaiwanDateStr } from '../services/cloudStorage';
