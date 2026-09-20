@@ -45,6 +45,10 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
   const [secondsSpent, setSecondsSpent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  // 🛡️ 防作弊與翻群防護機制
+  const [cheatWarnings, setCheatWarnings] = useState(0);
+  const [showCheatAlert, setShowCheatAlert] = useState(false);
+
   // 輔助工具抽屜
   const [showHint, setShowHint] = useState(false);
   const [showScratchpad, setShowScratchpad] = useState(false);
@@ -160,6 +164,75 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
   };
   const activeFont = fontSizes[fontSize] || fontSizes.md;
 
+  // 🛡️ 防作弊：攔截右鍵、複製、快捷鍵與切換分頁
+  useEffect(() => {
+    const handleContextMenu = (e) => e.preventDefault();
+    const handleCopy = (e) => {
+      e.preventDefault();
+      alert('【系統警告】考試期間嚴禁複製題目！');
+    };
+    const handleKeyDown = (e) => {
+      if (
+        e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+        (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+        (e.ctrlKey && e.key === 'u') ||
+        (e.ctrlKey && e.key === 'p') ||
+        (e.metaKey && e.key === 'p')
+      ) {
+        e.preventDefault();
+        alert('【系統警告】考試期間嚴禁使用開發者工具或列印功能！');
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        handleCheatViolation();
+      }
+    };
+    
+    const handleBlur = () => {
+      handleCheatViolation();
+    };
+
+    const handleCheatViolation = () => {
+      setCheatWarnings(prev => prev + 1);
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu);
+    window.addEventListener('copy', handleCopy);
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+      window.removeEventListener('copy', handleCopy);
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+
+  // 監聽警告次數，超過 3 次則觸發強制交卷
+  useEffect(() => {
+    if (cheatWarnings > 0 && cheatWarnings < 3) {
+      setShowCheatAlert(true);
+    } else if (cheatWarnings >= 3) {
+      alert('【嚴重違規】您已多次切換分頁或離開考試畫面，系統將強制收卷！');
+      forceSubmitQuiz();
+    }
+  }, [cheatWarnings]);
+
+  const forceSubmitQuiz = () => {
+    const results = questions.map((q, idx) => ({
+      ...q,
+      userAnswer: userAnswers[idx],
+      isCorrect: userAnswers[idx] === q.correctAnswer
+    }));
+    onComplete(results, secondsSpent);
+  };
+
   // 取消語音播放
   useEffect(() => {
     if ('speechSynthesis' in window) {
@@ -197,8 +270,38 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
     }
   };
 
+  // 產生 50 個浮水印背景
+  const watermarkText = '學習網考試中 禁止拍攝 禁止作弊';
+  const watermarks = Array.from({ length: 50 }).map((_, i) => (
+    <div key={i} className="watermark-item">{watermarkText}</div>
+  ));
+
   return (
-    <div style={{ maxWidth: '1080px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+    <div className="no-select watermark-container" style={{ maxWidth: '1080px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      
+      {/* 🛡️ 全螢幕防翻拍浮水印 */}
+      <div className="watermark-overlay">
+        {watermarks}
+      </div>
+
+      {/* 🛡️ 切換分頁警告彈窗 */}
+      {showCheatAlert && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(239, 68, 68, 0.95)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '20px' }}>
+          <AlertTriangle size={80} color="#ffffff" style={{ marginBottom: '20px' }} />
+          <h2 style={{ color: '#ffffff', fontSize: '2rem', fontWeight: 900, marginBottom: '10px' }}>警告：請勿切換分頁！</h2>
+          <p style={{ color: '#ffffff', fontSize: '1.2rem', marginBottom: '30px', textAlign: 'center' }}>
+            系統偵測到您離開了考試畫面。為維持考試公平性，嚴禁考試期間搜尋答案。<br/>
+            (累計警告: {cheatWarnings} / 3) 達到 3 次將強制收卷！
+          </p>
+          <button 
+            className="btn btn-secondary" 
+            style={{ padding: '16px 32px', fontSize: '1.2rem', background: '#ffffff', color: '#ef4444' }}
+            onClick={() => setShowCheatAlert(false)}
+          >
+            我明白了，返回考試
+          </button>
+        </div>
+      )}
       
       {/* =========================================================================
           翰林雲端學院 頂部專業考試抬頭工具列 (Header Bar)
