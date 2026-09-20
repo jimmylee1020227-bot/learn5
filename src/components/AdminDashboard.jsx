@@ -2003,7 +2003,7 @@ export default function AdminDashboard() {
                 )}
 
                 <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '12px' }}>
-                  {inspectedQuestion.question}
+                  <MathText text={inspectedQuestion.question} />
                 </div>
 
                 <div style={{ marginBottom: '16px' }}>
@@ -2018,7 +2018,10 @@ export default function AdminDashboard() {
                         className={`btn ${editAnsIdx === idx ? 'btn-primary' : 'btn-secondary'}`}
                         style={{ justifyContent: 'flex-start', padding: '10px' }}
                       >
-                        ({['A', 'B', 'C', 'D'][idx]}) {opt}
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
+                          <span>({['A', 'B', 'C', 'D'][idx]})</span>
+                          <MathText text={opt} />
+                        </div>
                       </button>
                     ))}
                   </div>
