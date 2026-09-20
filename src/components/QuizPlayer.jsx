@@ -149,7 +149,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
     const emailData = {
       service_id: 'service_928ruqe',
       template_id: 'template_ckgv0wm',
-      user_id: 'OJCCupMyVjmn-xkr5gB25',
+      user_id: '52OwIYNBqyXqUQdgc',
       template_params: {
         reporter_name: currentUser?.displayName || '同學',
         report_reason: reportReason,
@@ -212,10 +212,6 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       }
     };
     
-    const handleBlur = () => {
-      handleCheatViolation();
-    };
-
     const handleCheatViolation = () => {
       const now = Date.now();
       if (now - lastWarningTime.current > 2000) {
@@ -228,14 +224,12 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
     window.addEventListener('copy', handleCopy);
     window.addEventListener('keydown', handleKeyDown);
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleBlur);
 
     return () => {
       window.removeEventListener('contextmenu', handleContextMenu);
       window.removeEventListener('copy', handleCopy);
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleBlur);
     };
   }, []);
 
