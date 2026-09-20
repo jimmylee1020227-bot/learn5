@@ -542,7 +542,7 @@
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
       "email": "jimmylee1020227@gmail.com",
       "id": "admin_super_jimmy",
-      "lastActive": "2026-09-20T04:40:15.622Z",
+      "lastActive": "2026-09-20T05:32:33.795Z",
       "name": "總管理員",
       "role": "super_admin",
       "school": "系統總管理員",
@@ -693,12 +693,12 @@
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
       "displayName": "Milk 斯",
       "email": "happybrother0717@gmail.com",
-      "tickets": 2039,
-      "totalPoints": 98,
-      "updatedAt": 1789831616199,
+      "tickets": 2040,
+      "totalPoints": 148,
+      "updatedAt": 1789877335564,
       "userId": "u_knbo67cox0xp",
       "weekId": "2026-W38",
-      "weeklyPoints": 98
+      "weeklyPoints": 148
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKE3dOalWYTpif8j_27D4XmF_ff2L0vC1jtnqThj8Xz4tPnEN0N=s96-c",
@@ -712,15 +712,26 @@
       "weeklyPoints": 48
     },
     {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJXwl0g1DLYlVMlIHJxKA9ODE0Eg8itNayR9-m06kbKRABbNiTD=s96-c",
+      "displayName": "Howard Lin",
+      "email": "firstsagittarius@gmail.com",
+      "tickets": 1,
+      "totalPoints": 47,
+      "updatedAt": 1789876357642,
+      "userId": "u_a42c728zmdek",
+      "weekId": "2026-W38",
+      "weeklyPoints": 47
+    },
+    {
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
       "displayName": "總管理員",
       "email": "jimmylee1020227@gmail.com",
       "tickets": 7069,
-      "totalPoints": 31,
-      "updatedAt": 1789876625175,
+      "totalPoints": 34,
+      "updatedAt": 1789882237947,
       "userId": "admin_super_jimmy",
       "weekId": "2026-W38",
-      "weeklyPoints": 31
+      "weeklyPoints": 34
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJiQg4uA9yqKh7hqkrDSAvogyZShe9o2FobNOZS7W9G-VnrHxBm=s96-c",
@@ -743,6 +754,17 @@
       "userId": "u_z9bch3itsp1",
       "weekId": "2026-W38",
       "weeklyPoints": 19
+    },
+    {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJ7n302hhtrQbpzv-wX9jII-yEGS9BJKL3AZzQlzdcxfGuYBA=s96-c",
+      "displayName": "Ot Bb",
+      "email": "otb8377@gmail.com",
+      "tickets": 1,
+      "totalPoints": 18,
+      "updatedAt": 1789874329078,
+      "userId": "u_vggsaeugpr2s",
+      "weekId": "2026-W38",
+      "weeklyPoints": 18
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJWHDusEHHApOH0qgvHSNU7wtLj2ku1VJVLgwQUePlGdPOeXQ=s96-c",
@@ -811,6 +833,17 @@
       "weeklyPoints": 8
     },
     {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKSYKiMZRDcBUn8jnUPFCeOEk_WzYZ0qOPlGGdGWHr7SlkBmg=s96-c",
+      "displayName": "Nice Lin",
+      "email": "vickylin787@gmail.com",
+      "tickets": 1,
+      "totalPoints": 6,
+      "updatedAt": 1789874243415,
+      "userId": "u_yq4q3dcxu56t",
+      "weekId": "2026-W38",
+      "weeklyPoints": 6
+    },
+    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJd2QNwV0lzESprdKQ9WLgh8pS4FxIkp0OL7DiTgZ_Ld3BzAovwRg=s96-c",
       "displayName": "Maggie",
       "email": "scharals@gmail.com",
@@ -840,6 +873,17 @@
       "totalPoints": 4,
       "updatedAt": 1789859713076,
       "userId": "u_ne52bufqrfn0",
+      "weekId": "2026-W38",
+      "weeklyPoints": 4
+    },
+    {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKEyX3fIQlYp3jbOxkY_ZYoBr87VPK3q2xt2vfZQJAcSU2xDY8=s96-c",
+      "displayName": "蘇昊",
+      "email": "suuuuuhaooooo@gmail.com",
+      "tickets": 1,
+      "totalPoints": 4,
+      "updatedAt": 1789878520776,
+      "userId": "u_om74zoieyx5m",
       "weekId": "2026-W38",
       "weeklyPoints": 4
     },
