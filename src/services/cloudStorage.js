@@ -1,4 +1,16 @@
 import { db, ref, set, get, onValue } from './firebase.js';
+
+// 安全寫入 LocalStorage (防 QuotaExceededError 造成後續雲端同步中斷)
+export function safeSetLocalStorage(key, valueStr) {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      safeSetLocalStorage(key, valueStr);
+    }
+  } catch (e) {
+    console.warn(`[LocalStorage Warning] 無法儲存 ${key} (可能已滿 5MB限制)，但不影響雲端存檔。`, e);
+  }
+}
+
 import { getRealDate, getRealTime } from './timeService.js';
 
 // 雲端資料同步與儲存服務層 (Cloud Storage & Sync Service) - Firebase 真正跨裝置即時全域版
@@ -159,7 +171,7 @@ export function initFirebaseRealtimeSync() {
           const remoteValStr = JSON.stringify(val);
           const localValStr = localStorage.getItem(STORAGE_PREFIX + key);
           if (remoteValStr !== localValStr) {
-            localStorage.setItem(STORAGE_PREFIX + key, remoteValStr);
+            safeSetLocalStorage(STORAGE_PREFIX + key, remoteValStr);
             const payload = { type: 'SYNC_UPDATE', key, timestamp: Date.now(), fromRemote: true };
             localSyncListeners.forEach(cb => {
               try { cb(payload); } catch (err) { console.error(err); }
@@ -176,7 +188,7 @@ export function initFirebaseRealtimeSync() {
               .filter(p => p && p.userId)
               .sort((a, b) => (b.weeklyPoints || 0) - (a.weeklyPoints || 0));
             const arrStr = JSON.stringify(playersArr);
-            localStorage.setItem(STORAGE_PREFIX + 'studyhub_weekly_leaderboard', arrStr);
+            safeSetLocalStorage(STORAGE_PREFIX + 'studyhub_weekly_leaderboard', arrStr);
             const boardPayload = { type: 'SYNC_UPDATE', key: 'studyhub_weekly_leaderboard', timestamp: Date.now(), fromRemote: true };
             localSyncListeners.forEach(cb => { try { cb(boardPayload); } catch (e) {} });
           }
@@ -226,7 +238,7 @@ export async function adminPushGameStateTickets(userId, ticketDelta) {
       updatedAt: Date.now()
     };
     if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem(STORAGE_PREFIX + gameKey, JSON.stringify(updatedLocal));
+      safeSetLocalStorage(STORAGE_PREFIX + gameKey, JSON.stringify(updatedLocal));
     }
     const payload = { type: 'SYNC_UPDATE', key: gameKey, userId, timestamp: Date.now(), fromRemote: true };
     localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
@@ -309,7 +321,7 @@ export function subscribeUserRealtimeSync(userId) {
           const remoteStr = JSON.stringify(val);
           const localStr = localStorage.getItem(STORAGE_PREFIX + key);
           if (remoteStr !== localStr) {
-            localStorage.setItem(STORAGE_PREFIX + key, remoteStr);
+            safeSetLocalStorage(STORAGE_PREFIX + key, remoteStr);
             // 同時廣播精確 key 與通用類別 key，確保任何組件皆可即時重新渲染！
             const payloadExact = { type: 'SYNC_UPDATE', key, userId, timestamp: Date.now(), fromRemote: true };
             localSyncListeners.forEach(cb => {
@@ -400,7 +412,7 @@ export function getJson(key, defaultValue) {
 export function setJson(key, value) {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
+      safeSetLocalStorage(STORAGE_PREFIX + key, JSON.stringify(value));
     }
     const payload = { type: 'SYNC_UPDATE', key, timestamp: Date.now() };
     if (cloudBus) {
@@ -950,7 +962,7 @@ export async function fetchAllCloudQuizPapers() {
 
   const sortedPapers = Array.from(papersMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   if (sortedPapers.length > 0) {
-    localStorage.setItem(STORAGE_PREFIX + 'all_quiz_papers', JSON.stringify(sortedPapers));
+    safeSetLocalStorage(STORAGE_PREFIX + 'all_quiz_papers', JSON.stringify(sortedPapers));
   }
   return sortedPapers;
 }
@@ -1054,7 +1066,7 @@ export async function fetchCloudUserPracticeHistory(userId) {
       if (snap.exists()) {
         const val = snap.val();
         if (Array.isArray(val)) {
-          localStorage.setItem(STORAGE_PREFIX + userHistoryKey, JSON.stringify(val));
+          safeSetLocalStorage(STORAGE_PREFIX + userHistoryKey, JSON.stringify(val));
           return val.map(hydrateQuestionDetails);
         }
       }
@@ -1080,7 +1092,7 @@ export async function fetchCloudUserMistakeNotebook(userId) {
       if (snap.exists()) {
         const val = snap.val();
         if (Array.isArray(val)) {
-          localStorage.setItem(STORAGE_PREFIX + mistakeKey, JSON.stringify(val));
+          safeSetLocalStorage(STORAGE_PREFIX + mistakeKey, JSON.stringify(val));
           return val.map(hydrateQuestionDetails);
         }
       }
@@ -1247,7 +1259,7 @@ export async function fetchAllCloudPracticeLogs() {
 
     const aggregated = Array.from(logMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     if (aggregated.length > 0) {
-      localStorage.setItem(STORAGE_PREFIX + 'practice_history', JSON.stringify(aggregated));
+      safeSetLocalStorage(STORAGE_PREFIX + 'practice_history', JSON.stringify(aggregated));
     }
     return aggregated;
   } catch (e) {
@@ -1268,7 +1280,7 @@ export async function fetchCloudUserGameState(userId) {
       if (snap.exists()) {
         const val = snap.val();
         if (val) {
-          localStorage.setItem(STORAGE_PREFIX + gameKey, JSON.stringify(val));
+          safeSetLocalStorage(STORAGE_PREFIX + gameKey, JSON.stringify(val));
           return val;
         }
       }
@@ -2172,7 +2184,7 @@ if (typeof window !== 'undefined') {
             const currentRaw = localStorage.getItem(STORAGE_PREFIX + k);
 
             if (!currentRaw) {
-              localStorage.setItem(STORAGE_PREFIX + k, JSON.stringify(v));
+              safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(v));
               const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
               localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
               return;
@@ -2186,7 +2198,7 @@ if (typeof window !== 'undefined') {
                 const remoteTime = v.updatedAt || 0;
                 const localTime = currentVal?.updatedAt || 0;
                 if (remoteTime > localTime || (v.tickets || 0) > (currentVal?.tickets || 0)) {
-                  localStorage.setItem(STORAGE_PREFIX + k, JSON.stringify(v));
+                  safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(v));
                   const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
                   localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
                 }
@@ -2203,7 +2215,7 @@ if (typeof window !== 'undefined') {
                 };
                 const mergedRaw = JSON.stringify(merged);
                 if (mergedRaw !== currentRaw) {
-                  localStorage.setItem(STORAGE_PREFIX + k, mergedRaw);
+                  safeSetLocalStorage(STORAGE_PREFIX + k, mergedRaw);
                   const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
                   localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
                 }
@@ -2218,7 +2230,7 @@ if (typeof window !== 'undefined') {
                 v.forEach(i => { if (i?.id) map.set(i.id, i); });
                 const merged = Array.from(map.values()).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
                 if (merged.length > currentArr.length) {
-                  localStorage.setItem(STORAGE_PREFIX + k, JSON.stringify(merged));
+                  safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(merged));
                   const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
                   localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
                 }
@@ -2228,7 +2240,7 @@ if (typeof window !== 'undefined') {
 
             const newRaw = JSON.stringify(v);
             if (currentRaw !== newRaw) {
-              localStorage.setItem(STORAGE_PREFIX + k, newRaw);
+              safeSetLocalStorage(STORAGE_PREFIX + k, newRaw);
               const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
               localSyncListeners.forEach(cb => {
                 try { cb(payload); } catch (e) {}
@@ -2252,7 +2264,7 @@ if (typeof window !== 'undefined') {
         try {
           const data = JSON.parse(e.data);
           if (data.type === 'SYNC_UPDATE' && data.key) {
-            localStorage.setItem(STORAGE_PREFIX + data.key, JSON.stringify(data.value));
+            safeSetLocalStorage(STORAGE_PREFIX + data.key, JSON.stringify(data.value));
             const payload = { type: 'SYNC_UPDATE', key: data.key, timestamp: Date.now() };
             localSyncListeners.forEach(cb => {
               try { cb(payload); } catch (err) {}
