@@ -62,6 +62,8 @@ export default function CommunityWallModal({ isOpen, onClose }) {
     }
   }, [isOpen, currentUser]);
 
+  const lastLikeRef = React.useRef(new Map());
+
   if (!isOpen) return null;
 
   const handlePost = (e) => {
@@ -101,7 +103,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
     }
   };
 
-  const lastLikeRef = React.useRef(new Map());
+
   const handleLike = (postId) => {
     const now = Date.now();
     const last = lastLikeRef.current.get(postId) || 0;
