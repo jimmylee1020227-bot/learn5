@@ -32,6 +32,7 @@ import {
   fetchCloudLeaderboard 
 } from '../services/leaderboardService';
 import { generateQuestion } from '../data/questionGenerator';
+import MathText from './MathText';
 import { 
   Shield, 
   Gift, 
@@ -1694,7 +1695,7 @@ export default function AdminDashboard() {
 
                                 {/* 題幹文字 */}
                                 <div style={{ fontSize: '0.94rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.7, background: 'var(--theme-card, var(--theme-card, #fffdf9))', padding: '12px 14px', borderRadius: '10px', border: '1px solid #ded3c5' }}>
-                                  {q.question || `【題目代碼 ${q.id}】：某題庫標準觀念評量題。`}
+                                  <MathText text={q.question || `【題目代碼 ${q.id}】：某題庫標準觀念評量題。`} />
                                 </div>
 
                                 {/* 四大選項呈現 */}
@@ -1746,7 +1747,7 @@ export default function AdminDashboard() {
                                           <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: isCorrectOpt ? '#15803d' : isChosen ? '#b91c1c' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: (isCorrectOpt || isChosen) ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 900 }}>
                                             {letter}
                                           </span>
-                                          <span>{opt}</span>
+                                          <span><MathText text={opt} /></span>
                                           {badge}
                                         </div>
                                       );
@@ -1759,7 +1760,7 @@ export default function AdminDashboard() {
                                   <span style={{ fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'block', marginBottom: '2px' }}>
                                     📖 題目詳解與觀念解讀：
                                   </span>
-                                  {q.explanation || '依據 108 課綱核心考點設計，按標準公式與定義運算即可得出解答。'}
+                                  <MathText text={q.explanation || '依據 108 課綱核心考點設計，按標準公式與定義運算即可得出解答。'} />
                                 </div>
                               </div>
                             );
