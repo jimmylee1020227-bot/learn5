@@ -2034,8 +2034,12 @@ export default function AdminDashboard() {
                   <textarea
                     value={editExpText}
                     onChange={e => setEditExpText(e.target.value)}
-                    style={{ width: '100%', height: '80px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', padding: '10px', fontWeight: 600 }}
+                    style={{ width: '100%', height: '80px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', padding: '10px', fontWeight: 600, marginBottom: '8px' }}
                   />
+                  <div style={{ padding: '10px', background: 'var(--theme-card, #fffdf9)', border: '1px dashed #ded3c5', borderRadius: 'var(--radius-sm)', fontSize: '0.9rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px', fontWeight: 800 }}>即時預覽：</div>
+                    <MathText text={editExpText || '（暫無詳解）'} />
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
