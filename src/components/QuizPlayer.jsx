@@ -78,13 +78,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
     setShowHint(false);
   }, [currentIndex]);
 
-  if (!currentQ) {
-    return (
-      <div style={{ textAlign: 'center', padding: '60px' }}>
-        <h3>題庫載入中...</h3>
-      </div>
-    );
-  }
+
 
   // 作答選擇
   const handleSelectOption = (optIndex) => {
@@ -234,16 +228,6 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
     };
   }, []);
 
-  // 監聽警告次數，超過 3 次則觸發強制交卷
-  useEffect(() => {
-    if (cheatWarnings > 0 && cheatWarnings < 3) {
-      setShowCheatAlert(true);
-    } else if (cheatWarnings >= 3) {
-      alert('【嚴重違規】您已多次切換分頁或離開考試畫面，系統將強制收卷！');
-      forceSubmitQuiz();
-    }
-  }, [cheatWarnings]);
-
   const forceSubmitQuiz = () => {
     const results = questions.map(q => {
       const chosen = userAnswers[q.id];
@@ -256,6 +240,16 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
     });
     onComplete(results, secondsSpent);
   };
+
+  // 監聽警告次數，超過 3 次則觸發強制交卷
+  useEffect(() => {
+    if (cheatWarnings > 0 && cheatWarnings < 3) {
+      setShowCheatAlert(true);
+    } else if (cheatWarnings >= 3) {
+      alert('【嚴重違規】您已多次切換分頁或離開考試畫面，系統將強制收卷！');
+      forceSubmitQuiz();
+    }
+  }, [cheatWarnings]);
 
   // 取消語音播放
   useEffect(() => {
@@ -296,6 +290,14 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
 
   // 產生 50 個浮水印背景
   const watermarkText = '學習網考試中 禁止拍攝 禁止作弊';
+  
+  if (!currentQ) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px' }}>
+        <h3>題庫載入中...</h3>
+      </div>
+    );
+  }
   const watermarks = Array.from({ length: 50 }).map((_, i) => (
     <div key={i} className="watermark-item">{watermarkText}</div>
   ));
