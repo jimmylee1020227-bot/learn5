@@ -108,15 +108,15 @@ export default function HeroBanner({
             </div>
 
             {/* 大主標題 (把努力，變成分數) */}
-            <h1 style={{ fontSize: 'clamp(2.5rem, 5.5vw, 4.4rem)', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.04em', color: 'var(--theme-border, var(--theme-border, #17324d))', margin: '0 0 18px 0' }}>
+            <h1 style={{ fontSize: 'clamp(2.5rem, 5.5vw, 4.4rem)', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.04em', color: 'var(--theme-border, #17324d)', margin: '0 0 18px 0' }}>
               把努力，<br />
-              <span style={{ position: 'relative', display: 'inline-block', color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }}>
+              <span style={{ position: 'relative', display: 'inline-block', color: 'var(--theme-accent, #ef8354)' }}>
                 變成分數
-                <span style={{ position: 'absolute', bottom: '4px', left: 0, width: '100%', height: '12px', background: '#f7cf68', borderRadius: '9999px', zIndex: -1 }} />
+                <span style={{ position: 'absolute', bottom: '4px', left: 0, width: '100%', height: '12px', background: 'var(--theme-accent-shadow, #f7cf68)', borderRadius: '9999px', zIndex: -1 }} />
               </span>。
             </h1>
 
-            <p style={{ color: '#5b6772', fontSize: '1.05rem', lineHeight: 1.8, marginBottom: '28px', maxWidth: '520px', fontWeight: 600 }}>
+            <p style={{ color: 'var(--theme-border, #5b6772)', opacity: 0.85, fontSize: '1.05rem', lineHeight: 1.8, marginBottom: '28px', maxWidth: '520px', fontWeight: 600 }}>
               一個陪你準備會考的讀書基地。符合 108 課綱專屬題庫、每題詳解與思路提示、每週一排行榜歸零結算，和正在努力的同學一起穩穩上岸！
             </p>
 
@@ -257,13 +257,13 @@ export default function HeroBanner({
                   <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#5b6772' }}>天</div>
                 </div>
                 <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', borderRadius: '16px', padding: '12px 6px', border: '2px solid var(--theme-border, #17324d)', boxShadow: '2px 2px 0px var(--theme-border, #17324d)' }}>
-                  <div style={{ fontSize: '1.75rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--theme-border, #17324d)' }}>
                     {String(examCountdown.hours).padStart(2, '0')}
                   </div>
                   <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#5b6772' }}>時</div>
                 </div>
                 <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', borderRadius: '16px', padding: '12px 6px', border: '2px solid var(--theme-border, #17324d)', boxShadow: '2px 2px 0px var(--theme-border, #17324d)' }}>
-                  <div style={{ fontSize: '1.75rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--theme-border, #17324d)' }}>
                     {String(examCountdown.minutes).padStart(2, '0')}
                   </div>
                   <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#5b6772' }}>分</div>
@@ -341,15 +341,15 @@ export default function HeroBanner({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: '#fff7d9', border: '2px solid var(--theme-border, #17324d)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#806523' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'var(--theme-accent-shadow-light, #fff7d9)', border: '2px solid var(--theme-border, #17324d)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-accent, #806523)' }}>
               <Ticket size={22} />
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>輸入兌換碼</div>
-              <div style={{ fontSize: '0.78rem', color: '#5b6772', fontWeight: 600 }}>領取點數與限時暴擊卡</div>
+              <div style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--theme-border, #17324d)' }}>輸入兌換碼</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--theme-border, #5b6772)', opacity: 0.8, fontWeight: 700 }}>領取點數與限時暴擊卡</div>
             </div>
           </div>
-          <ChevronRight size={20} color="var(--theme-border, var(--theme-border, #17324d))" />
+          <ChevronRight size={20} color="var(--theme-border, #17324d)" />
         </div>
 
 
@@ -366,15 +366,15 @@ export default function HeroBanner({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: '#e8f0f2', border: '2px solid var(--theme-border, #17324d)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#48717e' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'var(--theme-shadow-light, #e8f0f2)', border: '2px solid var(--theme-border, #17324d)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-border, #48717e)' }}>
               <Trophy size={22} />
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>每週一歸零競技榜</div>
-              <div style={{ fontSize: '0.78rem', color: '#5b6772', fontWeight: 600 }}>歷史名人堂榮譽典藏</div>
+              <div style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--theme-border, #17324d)' }}>每週一歸零競技榜</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--theme-border, #5b6772)', opacity: 0.8, fontWeight: 700 }}>歷史名人堂榮譽典藏</div>
             </div>
           </div>
-          <ChevronRight size={20} color="var(--theme-border, var(--theme-border, #17324d))" />
+          <ChevronRight size={20} color="var(--theme-border, #17324d)" />
         </div>
 
       </div>
