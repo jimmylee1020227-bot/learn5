@@ -301,10 +301,12 @@ export default function Navbar({
                   className="btn btn-secondary"
                   onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
                   style={{ padding: '7px 12px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '6px' }}
-                  title="視覺氛圍：視覺暖紙格線"
+                  title={`視覺氛圍：${THEMES.find(t => t.id === currentTheme)?.name || '切換主題'}`}
                 >
-                  <Palette size={15} color="#ef8354" />
-                  <span>視覺暖紙格線</span>
+                  <Palette size={15} color="var(--theme-accent, #ef8354)" />
+                  <span style={{ maxWidth: '90px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    {THEMES.find(t => t.id === currentTheme)?.name || '切換主題'}
+                  </span>
                 </button>
 
                 {isThemeMenuOpen && (
@@ -313,43 +315,66 @@ export default function Navbar({
                       position: 'absolute', 
                       top: '110%', 
                       right: 0, 
-                      width: '210px', 
+                      width: '240px', 
                       zIndex: 200, 
                       padding: '10px', 
                       borderRadius: '16px',
-                      background: '#fffdf9',
-                      border: '2px solid #17324d',
-                      boxShadow: '6px 6px 0px #17324d',
+                      background: 'var(--theme-card, #fffdf9)',
+                      border: '2px solid var(--theme-border, #17324d)',
+                      boxShadow: '6px 6px 0px var(--theme-border, #17324d)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '6px'
+                      gap: '6px',
+                      maxHeight: '400px',
+                      overflowY: 'auto'
                     }}
                   >
                     <div style={{ fontSize: '0.72rem', color: '#78818a', padding: '2px 6px', fontWeight: 800 }}>
                       選擇視覺氛圍
                     </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '8px 10px',
-                        borderRadius: '10px',
-                        border: '2px solid #ef8354',
-                        background: '#fff0e9',
-                        color: '#c8643d'
-                      }}
-                    >
-                      <span style={{ fontSize: '1.1rem' }}>📜</span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 800, fontSize: '0.85rem' }}>
-                          視覺暖紙格線
-                        </div>
-                        <div style={{ fontSize: '0.68rem', color: '#78818a' }}>
-                          手帳格線・專屬護眼手感 (已鎖定套用)
+                    {THEMES.map(theme => (
+                      <div
+                        key={theme.id}
+                        onClick={() => {
+                          setCurrentTheme(theme.id);
+                          setIsThemeMenuOpen(false);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 10px',
+                          borderRadius: '10px',
+                          border: currentTheme === theme.id ? `2px solid ${theme.color}` : '1.5px solid transparent',
+                          background: currentTheme === theme.id ? `${theme.color}20` : 'transparent',
+                          color: currentTheme === theme.id ? theme.color : 'var(--theme-border, #17324d)',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (currentTheme !== theme.id) {
+                            e.currentTarget.style.background = 'rgba(23, 50, 77, 0.05)';
+                            e.currentTarget.style.borderColor = 'var(--theme-border, #17324d)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (currentTheme !== theme.id) {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.borderColor = 'transparent';
+                          }
+                        }}
+                      >
+                        <span style={{ fontSize: '1.2rem' }}>{theme.icon}</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.85rem' }}>
+                            {theme.name}
+                          </div>
+                          <div style={{ fontSize: '0.68rem', color: currentTheme === theme.id ? theme.color : '#78818a', opacity: 0.8 }}>
+                            {theme.desc}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
                 )}
               </div>
