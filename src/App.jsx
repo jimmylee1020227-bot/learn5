@@ -285,7 +285,6 @@ function MainAppContent() {
       <PrintExamModal 
         isOpen={isPrintExamOpen}
         onClose={() => setIsPrintExamOpen(false)}
-        currentQuestions={currentQuestions}
       />
     </div>
   );
