@@ -550,7 +550,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
 
               {/* 題幹內容 */}
               <div style={{ fontSize: '1.02rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.8 }}>
-                {q.question}
+                <MathText text={q.question} />
               </div>
 
               {/* 選項列表對照排版 (A, B, C, D) */}
@@ -615,7 +615,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                       >
                         {letter}
                       </span>
-                      <span>{opt}</span>
+                      <span><MathText text={opt} /></span>
                       {badge}
                     </div>
                   );
@@ -659,7 +659,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                 <div style={{ fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   📖 詳細解析與步驟推導：
                 </div>
-                {q.explanation}
+                <MathText text={q.explanation} />
               </div>
 
             </div>

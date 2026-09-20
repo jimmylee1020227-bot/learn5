@@ -26,6 +26,8 @@ import {
   Scissors
 } from 'lucide-react';
 
+
+import MathText from './MathText';
 export default function QuizPlayer({ questions, onComplete, onExit }) {
   const { currentUser } = useAuth();
   
@@ -795,7 +797,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               whiteSpace: 'pre-line'
             }}
           >
-            {currentQ.question}
+            <MathText text={currentQ.question} />
           </div>
 
           {/* 四個選項卡 (支援經典消去法 ✂️ 劃線排除) */}
@@ -867,7 +869,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                         lineHeight: 1.5
                       }}
                     >
-                      {opt}
+                      <MathText text={opt} />
                     </span>
                   </div>
 
@@ -961,7 +963,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               <div style={{ fontWeight: 900, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Lightbulb size={16} /> 108 課綱命題思維提示：
               </div>
-              <div>{currentQ.hint || '本題檢驗國中課綱之核心素養與運算概念，請注意代數符號與題幹給予之限制條件！'}</div>
+              <div><MathText text={currentQ.hint || '本題檢驗國中課綱之核心素養與運算概念，請注意代數符號與題幹給予之限制條件！'} /></div>
             </div>
           )}
 
