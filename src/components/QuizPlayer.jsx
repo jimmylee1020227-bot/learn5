@@ -24,7 +24,10 @@ import {
   Layers,
   Sparkles,
   Scissors,
-  FileText
+  FileText,
+  Shield,
+  Maximize,
+  Minimize
 } from 'lucide-react';
 
 
@@ -65,6 +68,143 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
   const [reportReason, setReportReason] = useState('答案錯誤');
   const [reportComment, setReportComment] = useState('');
   const [reportSuccessNotice, setReportSuccessNotice] = useState(false);
+
+  // 🛡️ 防作弊與安全監控狀態
+  const [cheatWarnings, setCheatWarnings] = useState(0);
+  const [showCheatAlert, setShowCheatAlert] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const lastViolationTimeRef = useRef(0);
+
+  // 🛡️ 強制交卷 (違規累計滿 3 次)
+  const handleForceSubmit = () => {
+    setShowCheatAlert(false);
+    const results = questions.map(q => {
+      const chosen = userAnswers[q.id];
+      const isCorrect = chosen === q.answer;
+      return {
+        ...q,
+        userChoice: chosen,
+        isCorrect
+      };
+    });
+    onComplete(results, secondsSpent);
+  };
+
+  // 🛡️ 全螢幕切換
+  const toggleFullscreen = () => {
+    try {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn('全螢幕啟用受限:', err);
+        });
+      } else {
+        document.exitFullscreen().catch(err => {
+          console.warn('退出全螢幕受限:', err);
+        });
+      }
+    } catch (e) {
+      console.warn('全螢幕 API 不支援:', e);
+    }
+  };
+
+  // 🛡️ 違規偵測處理 (帶 2.5 秒防抖)
+  const handleCheatViolation = (reason = '切換分頁或離開測驗畫面') => {
+    const now = Date.now();
+    if (now - lastViolationTimeRef.current < 2500) return;
+    lastViolationTimeRef.current = now;
+
+    setCheatWarnings(prev => {
+      const nextCount = prev + 1;
+      if (nextCount >= 3) {
+        setTimeout(() => {
+          alert(`【系統強制交卷】偵測到您已累計違規離開考試畫面達 3 次 (${reason})，系統已依防作弊規範強制收卷！`);
+          handleForceSubmit();
+        }, 100);
+      } else {
+        setShowCheatAlert(true);
+      }
+      return nextCount;
+    });
+  };
+
+  // 🛡️ 防作弊全方位安全事件監聽
+  useEffect(() => {
+    // 1. 禁用右鍵選單
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+      return false;
+    };
+
+    // 2. 禁用文字選取與複製
+    const handleCopy = (e) => {
+      e.preventDefault();
+      alert('【防作弊提醒】測驗進行中嚴禁複製題目內容！');
+      return false;
+    };
+
+    // 3. 攔截開發者工具與列印快捷鍵
+    const handleKeyDown = (e) => {
+      if (e.key === 'F12') {
+        e.preventDefault();
+        alert('【防作弊提醒】測驗進行中嚴禁開啟開發者工具 (F12)！');
+        return false;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && (e.key === 'i' || e.key === 'I' || e.key === 'c' || e.key === 'C' || e.key === 'j' || e.key === 'J')) {
+        e.preventDefault();
+        alert('【防作弊提醒】測驗進行中嚴禁使用開發人員除錯工具！');
+        return false;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) {
+        e.preventDefault();
+        alert('【防作弊提醒】測驗進行中嚴禁檢視網頁原始碼！');
+        return false;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        alert('【防作弊提醒】測驗進行中禁止列印畫面！如需紙本請使用官方「紙本考卷列印下載」功能。');
+        return false;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    // 4. 偵測切換瀏覽器分頁
+    const handleVisibilityChange = () => {
+      if (document.hidden && !isSubmitModalOpen) {
+        handleCheatViolation('切換至其他分頁');
+      }
+    };
+
+    // 5. 偵測視窗失焦（例如點擊跳出至其他軟體）
+    const handleBlur = () => {
+      if (!document.hidden && !isSubmitModalOpen) {
+        handleCheatViolation('跳出測驗視窗');
+      }
+    };
+
+    // 6. 全螢幕狀態同步
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu);
+    window.addEventListener('copy', handleCopy);
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+      window.removeEventListener('copy', handleCopy);
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [isSubmitModalOpen, questions, userAnswers, secondsSpent]);
 
   const currentQ = questions[currentIndex] || questions[0];
 
@@ -270,8 +410,77 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
     );
   }
 
+  // 🛡️ 動態產生防翻拍動態浮水印
+  const watermarkText = `學習網 線上作答測驗 • ${currentUser?.displayName || '會考考生'} • 嚴禁翻拍作弊`;
+  const watermarks = Array.from({ length: 48 }).map((_, i) => (
+    <div key={i} className="watermark-item">{watermarkText}</div>
+  ));
+
   return (
-    <div style={{ maxWidth: '1080px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+    <div className="no-select watermark-container" style={{ maxWidth: '1080px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '18px', position: 'relative' }}>
+      
+      {/* 🛡️ 全螢幕防翻拍動態浮水印 */}
+      <div className="watermark-overlay" aria-hidden="true">
+        {watermarks}
+      </div>
+
+      {/* 🛡️ 切換分頁／離開視窗違規警告彈窗 */}
+      {showCheatAlert && (
+        <div 
+          style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            width: '100%', 
+            height: '100%', 
+            background: 'rgba(220, 38, 38, 0.95)', 
+            zIndex: 99999, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            flexDirection: 'column', 
+            padding: '24px', 
+            textAlign: 'center', 
+            backdropFilter: 'blur(8px)',
+            animation: 'popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}
+        >
+          <div style={{ background: '#ffffff', width: '84px', height: '84px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.25)', marginBottom: '18px' }}>
+            <AlertTriangle size={52} color="#dc2626" />
+          </div>
+          <h2 style={{ color: '#ffffff', fontSize: '2rem', fontWeight: 900, margin: '0 0 10px 0', textShadow: '0 2px 4px rgba(0,0,0,0.25)' }}>
+            ⚠️ 嚴正警告：請勿離開測驗畫面！
+          </h2>
+          <div style={{ background: 'rgba(0, 0, 0, 0.28)', padding: '16px 24px', borderRadius: '16px', maxWidth: '520px', color: '#ffffff', fontSize: '1rem', lineHeight: 1.6, marginBottom: '22px' }}>
+            系統偵測到您已切換分頁或離開測驗視窗。<br/>
+            為維護測驗公平性，作答期間嚴禁搜尋答案、截圖或切換軟體。<br/>
+            <div style={{ marginTop: '10px', fontSize: '1.25rem', fontWeight: 900, color: '#fef08a' }}>
+              累計違規警告：{cheatWarnings} / 3 次
+            </div>
+            <div style={{ fontSize: '0.86rem', opacity: 0.9, marginTop: '4px' }}>
+              （⚠️ 警告達 3 次系統將立即自動強制收卷並計算成績！）
+            </div>
+          </div>
+          <button 
+            type="button"
+            className="btn" 
+            style={{ 
+              padding: '12px 32px', 
+              fontSize: '1.05rem', 
+              fontWeight: 900, 
+              background: '#ffffff', 
+              color: '#dc2626', 
+              border: '2px solid #ffffff', 
+              borderRadius: '14px', 
+              boxShadow: '0 6px 16px rgba(0,0,0,0.3)', 
+              cursor: 'pointer' 
+            }}
+            onClick={() => setShowCheatAlert(false)}
+          >
+            我已知悉違規，立即返回測驗
+          </button>
+        </div>
+      )}
       
       {/* =========================================================================
           頂部專業考試抬頭工具列 (Header Bar)
@@ -304,7 +513,7 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
             </span>
           </div>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', margin: 0 }}>
-            會考全真線上模擬作答測驗
+            線上作答測驗
           </h2>
         </div>
 
@@ -426,7 +635,39 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
             <span>紙本考卷列印下載</span>
           </button>
 
-          {/* 5. 結束交卷大按鈕 */}
+          {/* 5. 🛡️ 智能防作弊安全監控指示燈 */}
+          <div 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px', 
+              padding: '6px 11px', 
+              background: cheatWarnings > 0 ? '#fef2f2' : 'var(--theme-bg, #f8f3eb)', 
+              border: `1.5px solid ${cheatWarnings > 0 ? '#ef4444' : 'var(--theme-border, #17324d)'}`, 
+              borderRadius: '12px',
+              fontWeight: 800,
+              fontSize: '0.8rem',
+              color: cheatWarnings > 0 ? '#b91c1c' : 'var(--theme-border, #17324d)'
+            }}
+            title="智能防作弊安全監控系統：切換分頁、離開畫面累計達 3 次將強制收卷"
+          >
+            <Shield size={15} color={cheatWarnings > 0 ? '#ef4444' : '#10b981'} />
+            <span>防作弊監控 ({cheatWarnings}/3)</span>
+          </div>
+
+          {/* 6. 全螢幕專注作答切換按鈕 */}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="btn btn-secondary"
+            style={{ padding: '7px 12px', fontSize: '0.82rem', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+            title={isFullscreen ? '退出全螢幕' : '切換全螢幕專注作答'}
+          >
+            {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
+            <span>{isFullscreen ? '視窗模式' : '全螢幕專注'}</span>
+          </button>
+
+          {/* 7. 結束交卷大按鈕 */}
           <button
             onClick={() => setIsSubmitModalOpen(true)}
             className="btn btn-primary"

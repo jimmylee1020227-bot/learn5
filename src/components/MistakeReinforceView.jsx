@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getMistakeNotebook, getUnresolvedErrorConcepts, subscribeToCloudSync, hydrateQuestionDetails } from '../services/cloudStorage';
 import { generateQuestion } from '../data/questionGenerator';
+import { CURRICULUM_UNITS } from '../data/curriculum108';
 import { 
   Sparkles, 
   Target, 
@@ -13,6 +14,22 @@ import {
   ShieldCheck,
   TrendingUp
 } from 'lucide-react';
+
+// 尋找概念標籤所屬的科目、年級與單元
+function findCurriculumLocationByConcept(conceptName) {
+  if (!conceptName) return null;
+  for (const [subId, grades] of Object.entries(CURRICULUM_UNITS)) {
+    for (const [grdId, units] of Object.entries(grades)) {
+      if (!Array.isArray(units)) continue;
+      for (const u of units) {
+        if (u.tags && u.tags.some(t => t.includes(conceptName) || conceptName.includes(t))) {
+          return { subjectId: subId, gradeId: grdId, unitId: u.id, unitName: u.name };
+        }
+      }
+    }
+  }
+  return null;
+}
 
 export default function MistakeReinforceView({ onStartReinforceQuiz }) {
   const { currentUser } = useAuth();
@@ -42,60 +59,99 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
   // 取得出錯頻率最高的概念標籤（排前 6 名）
   const sortedConcepts = Object.entries(unresolvedConcepts).sort((a, b) => b[1] - a[1]);
 
-  // 啟動錯題加強模式
+  // 啟動錯題加強模式 / 全能弱點分析 / 專項突破
   const handleLaunchReinforce = (targetConcept = null) => {
-    // 找出符合目標概念或所有尚未掌握概念的題目
-    const candidateMistakes = targetConcept 
-      ? activeMistakes.filter(m => m.conceptTag === targetConcept)
-      : activeMistakes;
-
-    if (candidateMistakes.length === 0) {
-      alert('太棒了！您目前沒有未掌握的弱點題目類型！');
-      return;
-    }
-
-    // 將錯題本身與同類型變換題混編，組成 5~10 題針對性靶向測驗
     const quizList = [];
-    candidateMistakes.slice(0, 10).forEach((m, idx) => {
-      // 1. 還原原錯題：解析 questionId (例如 "math-g1-s1-u1-1" 或 "Q-G1-MA-U1-0001") 取得題號 (Index)
-      const parts = (m.questionId || '').split('-');
-      const lastPart = parts[parts.length - 1] || '1';
-      const parsedIdx = parseInt(lastPart, 10);
-      const questionIndex = isNaN(parsedIdx) ? 1 : parsedIdx;
-      
-      const unitId = m.unitId || parts[3] || 'u1';
-      const hydratedQuestion = hydrateQuestionDetails({
-        id: m.questionId,
-        subjectId: m.subjectId,
-        gradeId: m.gradeId,
-        unitId: unitId,
-        index: questionIndex,
-        difficulty: m.difficulty || 'medium',
-        conceptTag: m.conceptTag,
-        isCustom: false
+
+    if (targetConcept) {
+      // 🎯 專項突破模式
+      // 1. 先撈取已記錄的該概念錯題
+      const relatedMistakes = activeMistakes.filter(m => m.conceptTag === targetConcept);
+      relatedMistakes.slice(0, 5).forEach((m, idx) => {
+        const parts = (m.questionId || '').split('-');
+        const parsedIdx = parseInt(parts[parts.length - 1] || '1', 10);
+        const qIndex = isNaN(parsedIdx) ? (idx + 1) : parsedIdx;
+        const hq = hydrateQuestionDetails({
+          ...m,
+          index: qIndex,
+          difficulty: m.difficulty || 'medium'
+        });
+        if (hq && hq.question && Array.isArray(hq.options) && hq.options.length >= 4) {
+          quizList.push(hq);
+        }
       });
 
-      if (hydratedQuestion && hydratedQuestion.question && Array.isArray(hydratedQuestion.options) && hydratedQuestion.options.length >= 4) {
-        quizList.push(hydratedQuestion);
+      // 2. 若題目不足 6 題，搜尋該概念所屬的單元進行智能衍生補足
+      const loc = (relatedMistakes[0] && relatedMistakes[0].unitId) 
+        ? { subjectId: relatedMistakes[0].subjectId || 'math', gradeId: relatedMistakes[0].gradeId || 'g8', unitId: relatedMistakes[0].unitId }
+        : (findCurriculumLocationByConcept(targetConcept) || { subjectId: 'math', gradeId: 'g8', unitId: 'ma-8-u1' });
 
-        // 2. 自動衍生一題同單元同概念題進行交叉驗證
-        const targetSub = hydratedQuestion.subjectId || m.subjectId || 'math';
-        const targetGrd = hydratedQuestion.gradeId || m.gradeId || 'g7';
-        const targetUnit = hydratedQuestion.unitId || unitId;
-        const variantQ = generateQuestion(targetSub, targetGrd, targetUnit, idx + 500, m.difficulty || 'medium');
-        if (variantQ && variantQ.question && Array.isArray(variantQ.options) && variantQ.options.length >= 4) {
-          variantQ.conceptTag = m.conceptTag || variantQ.conceptTag;
-          quizList.push(variantQ);
+      let seedOffset = 100;
+      while (quizList.length < 6 && seedOffset < 160) {
+        const diff = quizList.length >= 4 ? 'hard' : 'medium';
+        const q = generateQuestion(loc.subjectId, loc.gradeId, loc.unitId, seedOffset, diff);
+        if (q && q.question && Array.isArray(q.options) && q.options.length >= 4) {
+          q.conceptTag = targetConcept;
+          quizList.push(q);
+        }
+        seedOffset += 7;
+      }
+    } else {
+      // ⚡ 全能弱點分析 (綜合診斷 / 綜合弱點加強)
+      // 1. 若有既有錯題，優先加入前 4 筆錯題
+      activeMistakes.slice(0, 4).forEach((m, idx) => {
+        const parts = (m.questionId || '').split('-');
+        const parsedIdx = parseInt(parts[parts.length - 1] || '1', 10);
+        const qIndex = isNaN(parsedIdx) ? (idx + 1) : parsedIdx;
+        const hq = hydrateQuestionDetails({
+          ...m,
+          index: qIndex,
+          difficulty: m.difficulty || 'medium'
+        });
+        if (hq && hq.question && Array.isArray(hq.options) && hq.options.length >= 4) {
+          quizList.push(hq);
+        }
+      });
+
+      // 2. 依 108 課綱五大考科標準核心單元補足至 8~10 題
+      const coreDiagnostics = [
+        { sub: 'math', grd: 'g7', unit: 'ma-7-u2', tag: '指數律與科學記號' },
+        { sub: 'math', grd: 'g8', unit: 'ma-8-u1', tag: '乘法公式與多項式運算' },
+        { sub: 'math', grd: 'g8', unit: 'ma-8-u2', tag: '平方根與畢氏定理' },
+        { sub: 'math', grd: 'g9', unit: 'ma-9-u1', tag: '相似形與比例線段' },
+        { sub: 'english', grd: 'g8', unit: 'en-8-u3', tag: '形容詞副詞比較級與最高級' },
+        { sub: 'english', grd: 'g9', unit: 'en-9-u2', tag: '被動語態' },
+        { sub: 'science', grd: 'g8', unit: 'sc-8-u1', tag: '基本測量物質密度與相變化' },
+        { sub: 'science', grd: 'g8', unit: 'sc-8-u5', tag: '原子分子化學反應與計量' },
+        { sub: 'chinese', grd: 'g8', unit: 'zh-8-u3', tag: '四大句型與修辭技巧' },
+        { sub: 'social', grd: 'g8', unit: 'so-8-u1', tag: '中國與東亞歷史變局' }
+      ];
+
+      for (let i = 0; i < coreDiagnostics.length && quizList.length < 8; i++) {
+        const item = coreDiagnostics[i];
+        const q = generateQuestion(item.sub, item.grd, item.unit, 200 + i * 9, 'medium');
+        if (q && q.question && Array.isArray(q.options) && q.options.length >= 4) {
+          q.conceptTag = item.tag;
+          quizList.push(q);
         }
       }
-    });
+    }
 
-    const validSet = quizList.filter(q => q && q.question && Array.isArray(q.options) && q.options.length >= 4);
-    if (validSet.length === 0) {
-      alert('錯題題目正在重新同步中，請稍候再試。');
+    // 終極保底防線：確保至少有 6 題
+    if (quizList.length === 0) {
+      const emergency = [
+        generateQuestion('math', 'g7', 'ma-7-u1', 301, 'medium'),
+        generateQuestion('math', 'g8', 'ma-8-u1', 302, 'medium'),
+        generateQuestion('english', 'g8', 'en-8-u1', 303, 'medium'),
+        generateQuestion('science', 'g8', 'sc-8-u1', 304, 'medium'),
+        generateQuestion('chinese', 'g8', 'zh-8-u1', 305, 'medium'),
+        generateQuestion('social', 'g8', 'so-8-u1', 306, 'medium')
+      ].filter(Boolean);
+      onStartReinforceQuiz(emergency);
       return;
     }
-    onStartReinforceQuiz(validSet.slice(0, 8));
+
+    onStartReinforceQuiz(quizList);
   };
 
   return (
@@ -142,7 +198,7 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
               style={{ width: '100%', padding: '12px', fontSize: '0.95rem' }}
             >
               <Flame size={18} />
-              立即啟動綜合弱點加強
+              立即啟動全能弱點分析 (綜合弱點加強)
             </button>
           </div>
         </div>

@@ -39,7 +39,8 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
   const rand = mulberry32(seed);
 
   const unitList = CURRICULUM_UNITS[subjectId]?.[gradeId] || [];
-  const currentUnit = unitList.find(u => u.id === unitId) || unitList[0] || { id: unitId, name: '綜合複習單元', tags: ['核心觀念素養'] };
+  const currentUnit = unitList.find(u => u.id === unitId) || unitList[0] || { id: unitId || 'u1', name: '綜合複習單元', tags: ['核心觀念素養'] };
+  const finalUnitId = currentUnit.id || (unitId ? String(unitId) : 'u1');
   const conceptTags = currentUnit.tags || ['108課綱核心素養'];
   const tagIdx = Math.floor(rand() * conceptTags.length);
   const conceptTag = conceptTags[tagIdx];
@@ -112,14 +113,15 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
   const correctIdx = shuffled.findIndex(item => item.isCorrect);
 
   const formattedIndex = String(index).padStart(4, '0');
-  const questionId = `Q-${gradeId.toUpperCase()}-${subjectId.substring(0, 2).toUpperCase()}-${unitId.split('-').pop().toUpperCase()}-${formattedIndex}`;
+  const unitSuffix = (finalUnitId.split('-').pop() || 'U1').toUpperCase();
+  const questionId = `Q-${(gradeId || 'G7').toUpperCase()}-${(subjectId ? subjectId.substring(0, 2) : 'MA').toUpperCase()}-${unitSuffix}-${formattedIndex}`;
 
   return {
     id: questionId,
     index,
     subjectId,
     gradeId,
-    unitId,
+    unitId: finalUnitId,
     unitName: currentUnit.name,
     conceptTag,
     difficulty,
@@ -161,9 +163,19 @@ function generateFallbackQuestion(subjectId, gradeId, unitId, index, difficulty,
   };
 }
 
-export function generateQuizSet({ subjectId, gradeId, unitIds, difficulty = 'medium', count = 10, excludeIds = [] }) {
+export function generateQuizSet({ subjectId, gradeId, unitIds, unitId, difficulty = 'medium', count = 10, excludeIds = [] } = {}) {
   const quizSet = [];
-  const validUnits = unitIds.length > 0 ? unitIds : (CURRICULUM_UNITS[subjectId]?.[gradeId] || []).map(u => u.id);
+  let normalizedUnits = [];
+  if (Array.isArray(unitIds) && unitIds.length > 0) {
+    normalizedUnits = unitIds;
+  } else if (unitId) {
+    normalizedUnits = [unitId];
+  } else if (typeof unitIds === 'string' && unitIds) {
+    normalizedUnits = [unitIds];
+  } else {
+    normalizedUnits = (CURRICULUM_UNITS[subjectId]?.[gradeId] || []).map(u => u.id);
+  }
+  const validUnits = normalizedUnits.filter(Boolean);
   if (validUnits.length === 0) return [];
 
   const usedQuestionIds = new Set(excludeIds);

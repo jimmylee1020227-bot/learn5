@@ -96,8 +96,18 @@ function MainAppContent() {
 
   // 啟動錯題加強模式測驗
   const handleStartReinforceQuiz = (reinforceQuestions) => {
-    if (!reinforceQuestions || reinforceQuestions.length === 0) return;
-    setCurrentQuestions(reinforceQuestions);
+    let questionsToStart = reinforceQuestions;
+    if (!questionsToStart || questionsToStart.length === 0) {
+      questionsToStart = generateQuizSet({
+        subjectId: 'math',
+        gradeId: 'g8',
+        unitId: 'ma-8-u1',
+        count: 8,
+        difficulty: 'medium'
+      });
+    }
+    setCurrentQuestions(questionsToStart);
+    setActiveTab('quiz'); // 確保切換回主測驗分頁，立刻渲染作答畫面
     setQuizState('in_quiz');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

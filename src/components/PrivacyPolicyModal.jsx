@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, BookOpen, Trophy, Sparkles, MessageSquare, Database, LogOut, CheckCircle, ExternalLink, Check } from 'lucide-react';
 
-export const PRIVACY_POLICY_VERSION = '1.1.0';
+export const PRIVACY_POLICY_VERSION = '1.2.0';
 
 export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }) {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
@@ -250,18 +250,68 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#fee2e2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
                 6
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>
-                考試防作弊與系統安全監控
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                線上考試防作弊監控機制與公平性維護
               </h3>
             </div>
             <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
-              <li><strong>收集項目與行為</strong>：監控滑鼠點擊行為（禁用右鍵/反白/拖曳）、鍵盤快捷鍵使用狀況（封鎖開發人員工具與列印）、以及瀏覽器分頁切換頻率。</li>
-              <li><strong>使用目的</strong>：維持平台考試公平性。當系統偵測到異常切換分頁等可能作弊之行為，將自動給予警告，屢勸不聽者系統將強制中斷考試並沒收測驗。</li>
+              <li><strong>防作弊機制項目</strong>：作答測驗時啟用全螢幕專注監控、右鍵選單封鎖、題目複製阻擋、開發人員除錯工具與列印快捷鍵攔截、考生浮水印防翻拍、以及切換分頁／失焦頻率偵測。</li>
+              <li><strong>監控使用目的</strong>：僅用於即時維護線上作答與每週排行榜之真實性與公平性。當偵測到離開作答畫面行為，系統提供即時警告（累計達 3 次自動強制收卷）。相關警告僅於本地即時比對，不作外部惡意標籤。</li>
             </ul>
           </div>
 
-          {/* 條款 7：資安保障與零商業化承諾 */}
-          <div 
+          {/* 條款 7：未成年人及兒童個人資料特別保障 */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#f3e8ff', color: '#7e22ce', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
+                7
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                未成年學子及兒童個人資料保護宣告 (COPPA & 兒少權益法)
+              </h3>
+            </div>
+            <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
+              <li><strong>兒少權益最高準則</strong>：本平台使用者多為國中與國小學子，我們嚴格遵循《兒童及少年福利與權益保障法》與國際 COPPA 兒少隱私標準。</li>
+              <li><strong>零商業化側寫</strong>：絕不對未成年學生進行商業消費性格分析、不投放定向廣告、亦不要求輸入電話、身分證號或家庭財務等敏感隱私。</li>
+              <li><strong>法定代理人權利</strong>：家長或法定監護人可隨時透過站務管道查閱、檢驗或要求全數移除學生之作答歷程與帳戶連結。</li>
+            </ul>
+          </div>
+
+          {/* 條款 8：AI 弱點診斷演算法與自適應數據安全 */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#ecfdf5', color: '#047857', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
+                8
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                AI 自適應弱點診斷與題庫數據隱私
+              </h3>
+            </div>
+            <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
+              <li><strong>運算範圍限定</strong>：系統之自適應弱點診斷、專項突破派題與錯題標籤推薦，均於安全的沙盒環境運作，僅作為提升個人學習成效用途。</li>
+              <li><strong>非公開模型訓練承諾</strong>：本平台鄭重聲明，絕不將學生的真實作答數據、個別錯題紀錄或對話歷程作為任何第三方公開大型語言模型（LLM）的訓練資料集。</li>
+            </ul>
+          </div>
+
+          {/* 條款 9：當事人權利之行使與帳戶完全刪除 (Right to be Forgotten) */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#e0f2fe', color: '#0369a1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
+                9
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                當事人法律權利與帳戶完全清除權 (被遺忘權)
+              </h3>
+            </div>
+            <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
+              <li><strong>查詢與下載</strong>：您可隨時於個人歷程中心檢視所有作答歷程，並支援匯出與離線紙本考卷列印。</li>
+              <li><strong>即時清除快取</strong>：您可隨時透過瀏覽器或設定清除所有 LocalStorage 本機暫存數據。</li>
+              <li><strong>永久銷毀帳戶</strong>：使用者或家長若欲註銷帳號，可聯繫管理團隊，我們將於 48 小時內自雲端資料庫中永久抹除您的 Email、暱稱、歷史積分與所有作答軌跡。</li>
+            </ul>
+          </div>
+
+          {/* 條款 10：資安保障與零商業化法定承諾 */}
+          <div
             style={{
               background: '#f0fdf4',
               border: '1.5px solid #86efac',
@@ -275,7 +325,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
             <div style={{ fontWeight: 800, fontSize: '0.94rem', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Lock size={16} /> 資訊安全保護與「零商業廣告」法定承諾
             </div>
-            本平台為 100% 專注教育公益與會考複習之學習網站。全站通訊強制採用 SSL/TLS 傳輸層安全加密。我們鄭重承諾：<strong>絕不會將學生的任何個人資料、做題成績或聯絡信箱販售、交換或提供給任何第三方補習班、教材業務或廣告代理商</strong>。
+            本平台為 100% 專注台灣國中 108 課綱會考複習之非營利教育公益網站。全站通訊強制採用 SSL/TLS 256-bit 高規格傳輸層加密。我們鄭重承諾：<strong>絕不會將學生的任何個人資料、做題成績或聯絡信箱販售、交換或提供給任何第三方補習班、教材業務或商業廣告代理商</strong>。
           </div>
         </div>
 
