@@ -155,6 +155,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
         report_reason: reportReason,
         question_id: currentQ.id,
         question_text: currentQ.question || '(無文字內容)',
+        question_answer: currentQ.options ? currentQ.options[currentQ.answer] : '(無選項)',
         report_comment: reportComment || '(無補充說明)'
       }
     };
