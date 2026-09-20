@@ -291,7 +291,7 @@ export default function SuperAdminConsole() {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img src={adm.avatar} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+                      <img src={adm.avatar} alt={`${adm.displayName} 的管理員頭像`} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{adm.displayName}</span>

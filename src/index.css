@@ -21,9 +21,9 @@
   --color-card: var(--theme-card, #fffdf9);
   --color-card-border: var(--theme-border, #17324d);
   --color-text-main: var(--theme-border, #17324d);
-  --color-text-muted: #5b6772;
-  --color-text-dim: #78818a;
-  --color-text-light: #9aa2a8;
+  --color-text-muted: #475569;
+  --color-text-dim: #334155;
+  --color-text-light: #64748b;
 
   /* 粉彩標籤與背景色 */
   --color-chinese-bg: #fff0e9;
@@ -198,6 +198,7 @@ button:disabled {
 .btn-primary {
   background: var(--theme-accent, #ef8354);
   color: #ffffff;
+  text-shadow: 0 1px 2px rgba(15, 34, 53, 0.6);
   box-shadow: 0 6px 0 var(--theme-accent-dark, #d76740);
   border-color: var(--theme-border, #17324d);
 }
@@ -797,4 +798,31 @@ body.theme-glacier {
   padding: 40px;
   white-space: nowrap;
   user-select: none;
+}
+
+/* ==========================================================================
+   ♿ WCAG 2.1 AA 無障礙標準與鍵盤操作支援 (Accessibility & Keyboard Focus)
+   ========================================================================== */
+*:focus-visible {
+  outline: 3px solid var(--theme-accent, #ef8354) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px rgba(239, 131, 84, 0.25) !important;
+  transition: outline-offset 0.1s ease;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--theme-accent, #ef8354) !important;
+  outline-offset: 3px !important;
+}
+
+/* 高對比模式增強 */
+@media (prefers-contrast: more) {
+  :root {
+    --theme-border: #000000 !important;
+    --text-dim: #1e293b !important;
+  }
 }

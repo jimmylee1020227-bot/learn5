@@ -25,14 +25,16 @@ import {
   Palette,
   Bell,
   Users,
-  FileText
+  FileText,
+  Scale
 } from 'lucide-react';
 
 export default function Navbar({ 
   activeTab, 
   setActiveTab,
   onOpenRedemptionModal,
-  onOpenPrintExamModal
+  onOpenPrintExamModal,
+  onOpenLegalModal
 }) {
   const { 
     currentUser, 
@@ -324,6 +326,18 @@ export default function Navbar({
           {/* 視覺氛圍標示與天天抽獎按鈕 (電腦平板自動顯示，手機版已整合至底部導航列) */}
           {!isMobile && (
             <>
+              {/* 法規遵循與隱私條款快捷按鈕 */}
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => onOpenLegalModal?.('privacy')}
+                style={{ padding: '7px 11px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '5px' }}
+                title="查看隱私權政策、服務條款 (T&C)、第三方嵌入宣告與組織立案資訊"
+              >
+                <Scale size={14} color="var(--theme-accent, #ef8354)" />
+                <span>法規條款</span>
+              </button>
+
               <div style={{ position: 'relative' }}>
                 <button 
                   className="btn btn-secondary"

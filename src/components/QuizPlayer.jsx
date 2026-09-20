@@ -67,6 +67,7 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState('答案錯誤');
   const [reportComment, setReportComment] = useState('');
+  const [reportConsent, setReportConsent] = useState(false);
   const [reportSuccessNotice, setReportSuccessNotice] = useState(false);
 
   // 🛡️ 防作弊與安全監控狀態
@@ -1444,12 +1445,31 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
                     />
                   </div>
 
+                  {/* 表單個資與隱私授權勾選 (Form Consent) */}
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.8rem', color: '#5b6772', fontWeight: 600, cursor: 'pointer', margin: '4px 0' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={reportConsent} 
+                      onChange={e => setReportConsent(e.target.checked)} 
+                      style={{ marginTop: '2px', accentColor: 'var(--theme-accent, #ef8354)', width: '16px', height: '16px', cursor: 'pointer' }}
+                      aria-required="true"
+                    />
+                    <span>我同意本平台依《個人資料保護法》及隱私權政策處理上述疑義說明與通訊紀錄。</span>
+                  </label>
+
                   <button
                     onClick={handleSubmitReport}
+                    disabled={!reportConsent}
                     className="btn btn-primary"
-                    style={{ width: '100%', padding: '12px', fontWeight: 900 }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '12px', 
+                      fontWeight: 900,
+                      opacity: reportConsent ? 1 : 0.5,
+                      cursor: reportConsent ? 'pointer' : 'not-allowed'
+                    }}
                   >
-                    送出回報給管理員
+                    {reportConsent ? '確認送出疑義報告給管理組' : '請先勾選同意隱私條款'}
                   </button>
                 </>
               )}

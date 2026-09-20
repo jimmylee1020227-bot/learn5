@@ -21,6 +21,9 @@ import MobileBottomNav from './components/MobileBottomNav';
 import LoginGateway from './components/LoginGateway';
 import PrivacyPolicyModal from './components/PrivacyPolicyModal';
 import PrintExamModal from './components/PrintExamModal';
+import Footer from './components/Footer';
+import LegalCenterModal from './components/LegalCenterModal';
+import CookieConsentBanner from './components/CookieConsentBanner';
 import { generateQuizSet } from './data/questionGenerator';
 import { 
   recordPracticeBatch,
@@ -49,6 +52,13 @@ function MainAppContent() {
   const [activeTab, setActiveTab] = useState('quiz'); // 'quiz' | 'reinforce' | 'leaderboard' | 'history' | 'admin' | 'super_admin'
   const [isRedemptionOpen, setIsRedemptionOpen] = useState(false);
   const [isPrintExamOpen, setIsPrintExamOpen] = useState(false);
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [legalModalTab, setLegalModalTab] = useState('privacy');
+
+  const handleOpenLegalModal = (tab = 'privacy') => {
+    setLegalModalTab(tab);
+    setIsLegalModalOpen(true);
+  };
   
   // 測驗流程狀態管理: 'idle' | 'in_quiz' | 'result'
   const [quizState, setQuizState] = useState('idle');
@@ -185,6 +195,7 @@ function MainAppContent() {
         }}
         onOpenRedemptionModal={() => setIsRedemptionOpen(true)}
         onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
+        onOpenLegalModal={handleOpenLegalModal}
       />
 
       {/* 主工作區塊 */}
@@ -203,6 +214,7 @@ function MainAppContent() {
                   onOpenRedemptionModal={() => setIsRedemptionOpen(true)}
                   onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
                 />
+
                 <div id="scope-selector-section">
                   <ScopeSelector 
                     onStartQuiz={handleStartQuiz} 
@@ -272,6 +284,9 @@ function MainAppContent() {
         )}
       </main>
 
+      {/* 網站頁尾 (包含組織立案、法務條款導覽與無障礙宣告) */}
+      <Footer onOpenLegalModal={handleOpenLegalModal} />
+
       {/* 手機專屬智慧底部導航列 (自動偵測手機寬度呈現，不可手動切換) */}
       {isMobile && (
         <MobileBottomNav 
@@ -295,6 +310,14 @@ function MainAppContent() {
       <PrintExamModal 
         isOpen={isPrintExamOpen}
         onClose={() => setIsPrintExamOpen(false)}
+      />
+      <LegalCenterModal 
+        isOpen={isLegalModalOpen}
+        onClose={() => setIsLegalModalOpen(false)}
+        initialTab={legalModalTab}
+      />
+      <CookieConsentBanner 
+        onOpenLegalModal={handleOpenLegalModal}
       />
     </div>
   );
