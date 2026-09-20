@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/obfuscate.js",
+    "build": "vite build && node scripts/obfuscate.js && rm -rf docs && cp -r dist docs && touch docs/.nojekyll dist/.nojekyll .nojekyll",
     "build:raw": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"

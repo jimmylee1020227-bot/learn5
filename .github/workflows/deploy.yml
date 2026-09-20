@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -24,6 +24,9 @@ jobs:
       - name: 檢出原始碼
         uses: actions/checkout@v4
 
+      - name: 設定 GitHub Pages
+        uses: actions/configure-pages@v5
+
       - name: 安裝 Node.js
         uses: actions/setup-node@v4
         with:
@@ -38,14 +41,19 @@ jobs:
         env:
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
 
-      - name: 設定 GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: 上傳打包產物
+      - name: 上傳打包產物至 GitHub Pages (Actions 模式)
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
 
-      - name: 部署至 GitHub Pages
+      - name: 部署至 GitHub Pages (Actions 模式)
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: 備援自動同步部署至 gh-pages 分支 (Branch 模式)
+        uses: peaceiris/actions-gh-pages@v4
+        if: ${{ always() }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          keep_files: false
