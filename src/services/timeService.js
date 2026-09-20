@@ -20,27 +20,27 @@ export async function syncServerTime() {
       // 紀錄發送請求前的本機時間
       const startLocalTime = Date.now();
       
-      // 這裡使用完全支援跨域 (CORS) 的 timeapi.io 來獲取 UTC 絕對時間
+      // 這裡使用完全支援跨域 (CORS) 的 GitHub API 來獲取絕對時間
       // 加上 cache: 'no-store' 確保不會被瀏覽器快取
-      const response = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=UTC', { 
+      const response = await fetch('https://api.github.com/', { 
         method: 'GET',
         cache: 'no-store'
       });
       
-      const data = await response.json();
-      if (data && data.dateTime) {
+      const serverDateStr = response.headers.get('date');
+      if (serverDateStr) {
         const endLocalTime = Date.now();
         // 假設網路延遲是來回對稱的，伺服器真實時間大約等於 serverDate 加上單趟延遲
         const roundTripTime = endLocalTime - startLocalTime;
-        // 注意：必須在字串尾部加上 'Z'，讓 JS 知道這是絕對的 UTC 時間，不受使用者電腦時區干擾
-        const serverTimeMs = new Date(data.dateTime + 'Z').getTime() + (roundTripTime / 2);
+        // GitHub 回傳的 date header 已經是標準的 UTC 字串 (例如: Sun, 20 Sep 2026 03:45:29 GMT)
+        const serverTimeMs = new Date(serverDateStr).getTime() + (roundTripTime / 2);
         
         // 算出時差
         serverTimeOffset = serverTimeMs - endLocalTime;
         isTimeSynced = true;
         console.log(`[TimeSync] 成功同步伺服器時間，與本機時差: ${serverTimeOffset} ms`);
       } else {
-        throw new Error("無法取得 timeapi.io 的時間資料");
+        throw new Error("無法取得 GitHub API 的 Date Header");
       }
     } catch (err) {
       console.warn(`[TimeSync] 伺服器時間同步失敗，退回使用本機時間: ${err.message}`);

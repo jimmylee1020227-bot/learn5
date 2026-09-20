@@ -58,8 +58,8 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
     const quizList = [];
     candidateMistakes.slice(0, 10).forEach((m, idx) => {
       // 1. 還原原錯題：解析 questionId (例如 "math-g1-s1-u1-1" 或 "Q-G1-MA-U1-0001") 取得題號 (Index)
-      const parts = m.questionId.split('-');
-      const lastPart = parts[parts.length - 1];
+      const parts = (m.questionId || '').split('-');
+      const lastPart = parts[parts.length - 1] || '1';
       const parsedIdx = parseInt(lastPart, 10);
       const questionIndex = isNaN(parsedIdx) ? 1 : parsedIdx;
       

@@ -140,7 +140,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
         question: `【幾何圖形判讀】${preamble}\n如上圖，一個直角三角形的兩股長分別為 ${s1} 和 ${s2}，則斜邊長 c 為何？`,
         options: [`${s3}`, `${s1 + s2}`, `${s3 + 1}`, `${Math.abs(s1 - s2)}`],
         answer: 0,
-        hint: '💡 提示：使用畢氏定理 a² + b² = c²。',
+        hint: '💡 提示：對於 y = a(x-h)² + k，頂點為 (h, k)。',
         explanation: `📖 詳解：${s1}² + ${s2}² = c²，故 c = ${s3}。`
       };
     } else if (variant === 1) {
@@ -183,7 +183,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
       const extType = isMax ? '最大值' : '最小值';
       
       return {
-        question: `【二次函數】${preamble}\n已知二次函數 \`y = ${coef}(x - ${x0})^2 + ${y0}\`。請問當 x = ${x0} 時，函數有最大值還是最小值？其值為多少？`,
+        question: `【二次函數】${preamble}\n已知二次函數 \`y = ${coef}(x - ${x0})² + ${y0}\`。請問當 x = ${x0} 時，函數有最大值還是最小值？其值為多少？`,
         options: [`${extType}為 ${y0}`, `${extType}為 ${-y0}`, `${isMax ? '最小值' : '最大值'}為 ${y0}`, `最大值與最小值皆為 0`],
         answer: 0,
         hint: `💡 提示：觀察開口方向（二次項係數 ${coef} 的正負）。`,
@@ -214,7 +214,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
       const qNum1 = Math.floor(rand() * 5) + 3;
       const qNum2 = Math.floor(rand() * 5) + 4;
       return {
-        question: `【112會考模擬-跨域素養】${preamble}\n有兩個圓形跑道，小華跑大圈一圈需 ${qNum1} 分鐘，大明跑小圈一圈需 ${qNum2} 分鐘。若兩人同時同地出發，至少需經過幾分鐘後兩人才會再次於起點相遇？\n另外，若此時小華跑了 $x$ 圈，大明跑了 $y$ 圈，則 $x+y$ 為何？`,
+        question: `【112會考模擬-跨域素養】${preamble}\n有兩個圓形跑道，小華跑大圈一圈需 ${qNum1} 分鐘，大明跑小圈一圈需 ${qNum2} 分鐘。若兩人同時同地出發，至少需經過幾分鐘後兩人才會再次於起點相遇？\n另外，若此時小華跑了 x 圈，大明跑了 y 圈，則 x+y 為何？`,
         options: [
           `${qNum1 * qNum2} 分鐘，${qNum1 + qNum2} 圈`,
           `${qNum1 * qNum2} 分鐘，${Math.abs(qNum1 - qNum2)} 圈`,
@@ -251,11 +251,11 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
       const prime2 = [17, 19, 23][Math.floor(rand() * 3)];
       const target = prime1 * prime2;
       return {
-        question: `【私校資優-數論】${preamble}\n若 $p$、$q$ 皆為質數，且滿足方程式 $p^2 - q^2 = ${target}$，請問 $p + q$ 的值可能為何？`,
+        question: `【私校資優-數論】${preamble}\n若 p、q 皆為質數，且滿足方程式 p² - q² = ${target}，請問 p + q 的值可能為何？`,
         options: [`${prime2}`, `${prime1}`, `${prime1 + prime2}`, `不可能有解`],
         answer: 0,
-        hint: '💡 提示：利用平方差公式 $p^2 - q^2 = (p-q)(p+q)$，且已知目標數的質因數分解。',
-        explanation: `📖 詳解：$${target} = ${prime1} \\times ${prime2}$，因 $p, q$ 為質數且 $p+q > p-q$，故 $p+q = ${prime2}$、$p-q = ${prime1}$。`
+        hint: '💡 提示：利用平方差公式 p² - q² = (p-q)(p+q)，且已知目標數的質因數分解。',
+        explanation: `📖 詳解：${target} = ${prime1} × ${prime2}，因 p, q 為質數且 p+q > p-q，故 p+q = ${prime2}、p-q = ${prime1}。`
       };
     } else {
       const sides = Math.floor(rand() * 6) + 5;
