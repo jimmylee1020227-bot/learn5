@@ -75,19 +75,27 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
         isCustom: false
       });
 
-      if (hydratedQuestion && hydratedQuestion.question) {
+      if (hydratedQuestion && hydratedQuestion.question && Array.isArray(hydratedQuestion.options) && hydratedQuestion.options.length >= 4) {
         quizList.push(hydratedQuestion);
-      }
 
-      // 2. 自動衍生一題同單元同概念題進行交叉驗證
-      const variantQ = generateQuestion(m.subjectId, m.gradeId, unitId, idx + 500, m.difficulty || 'medium');
-      if (variantQ) {
-        variantQ.conceptTag = m.conceptTag;
-        quizList.push(variantQ);
+        // 2. 自動衍生一題同單元同概念題進行交叉驗證
+        const targetSub = hydratedQuestion.subjectId || m.subjectId || 'math';
+        const targetGrd = hydratedQuestion.gradeId || m.gradeId || 'g7';
+        const targetUnit = hydratedQuestion.unitId || unitId;
+        const variantQ = generateQuestion(targetSub, targetGrd, targetUnit, idx + 500, m.difficulty || 'medium');
+        if (variantQ && variantQ.question && Array.isArray(variantQ.options) && variantQ.options.length >= 4) {
+          variantQ.conceptTag = m.conceptTag || variantQ.conceptTag;
+          quizList.push(variantQ);
+        }
       }
     });
 
-    onStartReinforceQuiz(quizList.slice(0, 8));
+    const validSet = quizList.filter(q => q && q.question && Array.isArray(q.options) && q.options.length >= 4);
+    if (validSet.length === 0) {
+      alert('錯題題目正在重新同步中，請稍候再試。');
+      return;
+    }
+    onStartReinforceQuiz(validSet.slice(0, 8));
   };
 
   return (

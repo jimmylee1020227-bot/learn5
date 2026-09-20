@@ -1,5 +1,5 @@
 import { db, ref, set, get, onValue } from './firebase.js';
-import { getRealDate, getRealTime } from './timeService';
+import { getRealDate, getRealTime } from './timeService.js';
 
 // 雲端資料同步與儲存服務層 (Cloud Storage & Sync Service) - Firebase 真正跨裝置即時全域版
 const STORAGE_PREFIX = 'studyhub_cloud_';
@@ -55,23 +55,63 @@ export function hydrateQuestionDetails(item) {
   if (item.question && Array.isArray(item.options) && item.options.length > 0) {
     return item;
   }
-  if (typeof registeredQuestionHydrator === 'function' && item.subjectId && item.gradeId && item.unitId) {
+
+  let subjectId = item.subjectId;
+  let gradeId = item.gradeId;
+  let unitId = item.unitId;
+  let index = item.index;
+
+  // 若部分欄位缺失，從 questionId 自動智慧解析 (支援 Q-G7-MA-U1-0001 與 math-g7-u1-1 雙標準)
+  if ((!subjectId || !gradeId || !unitId) && (item.questionId || item.id)) {
+    const rawId = item.questionId || item.id || '';
+    const matchQ = rawId.match(/^Q-([^-]+)-([^-]+)-([^-]+)-(\d+)$/i);
+    if (matchQ) {
+      gradeId = gradeId || matchQ[1].toLowerCase();
+      const subCode = matchQ[2].toUpperCase();
+      const subMap = { MA: 'math', CH: 'chinese', EN: 'english', SC: 'science', SO: 'social' };
+      subjectId = subjectId || subMap[subCode] || 'math';
+      unitId = unitId || matchQ[3].toLowerCase();
+      index = index || parseInt(matchQ[4], 10) || 1;
+    } else {
+      const parts = rawId.split('-');
+      if (parts.length >= 4) {
+        subjectId = subjectId || parts[0];
+        gradeId = gradeId || parts[1];
+        unitId = unitId || parts[2];
+        index = index || parseInt(parts[3], 10) || 1;
+      }
+    }
+  }
+
+  if (typeof registeredQuestionHydrator === 'function' && subjectId && gradeId && unitId) {
     try {
       const gen = registeredQuestionHydrator(
-        item.subjectId,
-        item.gradeId,
-        item.unitId,
-        item.index || 1,
+        subjectId,
+        gradeId,
+        unitId,
+        index || 1,
         item.difficulty || 'medium'
       );
       if (gen) {
         return {
           ...item,
+          subjectId,
+          gradeId,
+          unitId,
+          index: index || 1,
           question: gen.question,
           options: gen.options,
           answer: item.answer !== undefined ? item.answer : gen.answer,
           explanation: gen.explanation,
-          hint: gen.hint
+          hint: gen.hint,
+          isListening: gen.isListening || false,
+          audioText: gen.audioText || null,
+          isReading: gen.isReading || false,
+          readingText: gen.readingText || null,
+          isSvg: gen.isSvg || false,
+          svgContent: gen.svgContent || null,
+          isChat: gen.isChat || false,
+          chatMessages: gen.chatMessages || null
         };
       }
     } catch (e) {}
@@ -1491,20 +1531,7 @@ export function getKnownStudents() {
     return Array.from(map.values());
   }
 
-  return [
-    {
-      id: 'student_lin',
-      name: '建中前鋒‧林同學',
-      school: '國三衝刺 5A++',
-      lastActive: new Date().toISOString()
-    },
-    {
-      id: 'student_chen',
-      name: '北一女‧陳同學',
-      school: '北一女中衝刺組',
-      lastActive: new Date().toISOString()
-    }
-  ];
+  return [];
 }
 
 export function getAllChatThreads() {

@@ -67,6 +67,18 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
 
   const currentQ = questions[currentIndex] || questions[0];
 
+  // 當題目組合改變（例如重測、換批題目或新測驗啟動）時，徹底重置測驗狀態，杜絕上一回答案殘留
+  useEffect(() => {
+    setCurrentIndex(0);
+    setUserAnswers({});
+    setFlaggedQuestions({});
+    setEliminatedOptions({});
+    setSecondsSpent(0);
+    setIsPaused(false);
+    setShowHint(false);
+    setShowAnswerSheet(false);
+  }, [questions]);
+
   // 考試計時器 (支援暫停)
   useEffect(() => {
     if (isPaused) return;
@@ -78,9 +90,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
     setShowHint(false);
   }, [currentIndex]);
 
-
-
-  // 作答選擇
+  // 作答選擇 (支援再次點擊已選選項取消選取)
   const handleSelectOption = (optIndex) => {
     if (isPaused) return;
     // 如果已被消去劃線，點選時自動取消消去
@@ -89,10 +99,18 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       setEliminatedOptions(prev => ({ ...prev, [elimKey]: false }));
     }
 
-    setUserAnswers(prev => ({
-      ...prev,
-      [currentQ.id]: optIndex
-    }));
+    setUserAnswers(prev => {
+      // 若再次點擊相同選項，則取消作答 (方便誤點時重置)
+      if (prev[currentQ.id] === optIndex) {
+        const next = { ...prev };
+        delete next[currentQ.id];
+        return next;
+      }
+      return {
+        ...prev,
+        [currentQ.id]: optIndex
+      };
+    });
   };
 
   // 切換消去法劃線 (刪去法)
@@ -180,13 +198,13 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
   };
   const activeFont = fontSizes[fontSize] || fontSizes.md;
 
-  // 取消語音播放
-
-  // 取消語音播放
+  // 切換題目或退出時取消語音播放
   useEffect(() => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
   }, [currentIndex]);
 
   const playAudio = (text) => {
@@ -219,10 +237,34 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
     }
   };
 
-  if (!currentQ) {
+  if (!currentQ || questions.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px' }}>
-        <h3>題庫載入中...</h3>
+      <div 
+        style={{ 
+          maxWidth: '520px', 
+          margin: '60px auto', 
+          padding: '40px 24px', 
+          textAlign: 'center',
+          background: 'var(--theme-card, #fffdf9)',
+          border: '2.5px solid var(--theme-border, #17324d)',
+          borderRadius: '24px',
+          boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
+        }}
+      >
+        <div style={{ fontSize: '2.4rem', marginBottom: '12px' }}>📚</div>
+        <h3 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--theme-border, #17324d)', marginBottom: '8px' }}>
+          目前沒有可作答的題目
+        </h3>
+        <p style={{ color: '#78818a', fontSize: '0.9rem', marginBottom: '24px' }}>
+          請檢查單元選取範圍，或點擊下方按鈕重新選題開始測驗！
+        </p>
+        <button 
+          onClick={onExit} 
+          className="btn btn-primary"
+          style={{ padding: '10px 24px', fontSize: '0.95rem', borderRadius: '12px' }}
+        >
+          返回題庫首頁
+        </button>
       </div>
     );
   }
@@ -712,7 +754,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               return (
                 <div
                   key={optIdx}
-                  onClick={() => !isEliminated && handleSelectOption(optIdx)}
+                  onClick={() => handleSelectOption(optIdx)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -734,8 +776,8 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                       : isEliminated 
                       ? 'none' 
                       : '3px 3px 0 var(--theme-border, #17324d)',
-                    cursor: isEliminated ? 'not-allowed' : 'pointer',
-                    opacity: isEliminated ? 0.45 : 1,
+                    cursor: 'pointer',
+                    opacity: isEliminated ? 0.6 : 1,
                     transition: 'all 0.15s ease'
                   }}
                 >
@@ -775,7 +817,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                   </div>
 
                   {/* 右側操作：消去法按鈕 (✂️ 排除) */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                     {isSelected && (
                       <span className="badge badge-coral" style={{ fontWeight: 800 }}>
                         已選中

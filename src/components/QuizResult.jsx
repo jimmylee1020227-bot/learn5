@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { useGame } from '../context/GameContext';
 import { 
   Trophy, 
@@ -17,7 +18,8 @@ import {
   Flame,
   Check,
   X,
-  AlertCircle
+  AlertCircle,
+  Play
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import MathText from './MathText';
@@ -27,6 +29,16 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
   const { effectiveMultiplier } = useGame();
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'wrong' | 'correct'
   const [activeHighlightIdx, setActiveHighlightIdx] = useState(null);
+
+  const playAudio = (text) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
   const totalCount = results.length;
   const correctCount = results.filter(r => r.isCorrect).length;
@@ -549,6 +561,68 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                   <span>{isCorrect ? '答對 (+1 點)' : isUnanswered ? '未作答' : '答錯 (收錄至錯題本)'}</span>
                 </div>
               </div>
+
+              {/* 聽力播放區塊 */}
+              {q.isListening && q.audioText && (
+                <div style={{ background: '#eef2ff', border: '1.5px solid #c7d2fe', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#4f46e5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Play size={16} style={{ marginLeft: '2px' }} />
+                    </div>
+                    <div>
+                      <h5 style={{ margin: 0, color: '#312e81', fontSize: '0.92rem', fontWeight: 800 }}>英聽測驗題</h5>
+                      <span style={{ color: '#4f46e5', fontSize: '0.78rem', fontWeight: 700 }}>點擊可重新聆聽題目音訊</span>
+                    </div>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => playAudio(q.audioText)}
+                    className="btn btn-primary"
+                    style={{ background: '#4f46e5', padding: '6px 14px', fontSize: '0.8rem' }}
+                  >
+                    <Play size={14} />
+                    <span>播放</span>
+                  </button>
+                </div>
+              )}
+
+              {/* 閱讀測驗長文區塊 */}
+              {q.isReading && q.readingText && (
+                <div style={{ background: '#fcf8e3', border: '1.5px solid #faebcc', borderRadius: '14px', padding: '16px 20px' }}>
+                  <span style={{ display: 'inline-block', background: '#8a6d3b', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 900, marginBottom: '8px' }}>
+                    閱讀素養文本
+                  </span>
+                  <div style={{ fontSize: '0.96rem', lineHeight: '1.8', fontWeight: 700, color: '#4a4a4a', whiteSpace: 'pre-wrap', fontFamily: 'var(--font-serif)' }}>
+                    {q.readingText}
+                  </div>
+                </div>
+              )}
+
+              {/* SVG 向量幾何/圖形題區塊 */}
+              {q.isSvg && q.svgContent && (
+                <div style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd', borderRadius: '14px', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.svgContent, { USE_PROFILES: { svg: true, svgFilters: true }, FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'], FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'] }) }} />
+                </div>
+              )}
+
+              {/* Chat 模擬通訊軟體對話題區塊 */}
+              {q.isChat && q.chatMessages && (
+                <div style={{ background: '#e5e5ea', border: '1.5px solid #d1d1d6', borderRadius: '14px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {q.chatMessages.map((msg, mIdx) => {
+                    const isMe = msg.sender === '我' || msg.isRight;
+                    return (
+                      <div key={mIdx} style={{ display: 'flex', flexDirection: isMe ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: '8px' }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isMe ? '#007aff' : '#fff', border: '1px solid #d1d1d6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 900, color: isMe ? '#fff' : '#8e8e93', flexShrink: 0 }}>
+                          {msg.sender.substring(0, 1)}
+                        </div>
+                        <div style={{ background: isMe ? '#007aff' : '#fff', color: isMe ? '#fff' : '#000', padding: '8px 12px', borderRadius: '14px', fontSize: '0.88rem', maxWidth: '280px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                          {msg.text}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* 題幹內容 */}
               <MathSymbolLegend question={q} compact={true} />

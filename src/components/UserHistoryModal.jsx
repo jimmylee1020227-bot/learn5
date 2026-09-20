@@ -3,9 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { 
   getUserPracticeHistory, 
   getMistakeNotebook, 
-  fetchCloudUserPracticeHistory,
-  fetchCloudUserQuizPapers,
-  subscribeToCloudSync 
+  fetchCloudUserPracticeHistory, 
+  fetchCloudUserQuizPapers, 
+  subscribeToCloudSync,
+  hydrateQuestionDetails
 } from '../services/cloudStorage';
 import { 
   BookOpen, 
@@ -118,11 +119,19 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
       alert('目前沒有符合條件的錯題！');
       return;
     }
-    const questionsToRetry = filteredMistakes.map(m => ({
-      ...m,
-      id: m.questionId || m.id,
-      isCustom: false
-    }));
+    const questionsToRetry = filteredMistakes
+      .map(m => hydrateQuestionDetails({
+        ...m,
+        id: m.questionId || m.id,
+        isCustom: false
+      }))
+      .filter(q => q && q.question && Array.isArray(q.options) && q.options.length >= 4);
+
+    if (questionsToRetry.length === 0) {
+      alert('錯題題目資料正在同步還原中，請稍候重試。');
+      return;
+    }
+
     if (typeof onLaunchRetryQuiz === 'function') {
       onLaunchRetryQuiz(questionsToRetry.slice(0, 15));
     }
@@ -134,18 +143,27 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
       alert('此試卷無可用題目');
       return;
     }
-    const questionsToRetry = paper.questions.map(q => ({
-      id: q.id,
-      question: q.question,
-      options: q.options,
-      answer: q.answer,
-      explanation: q.explanation,
-      hint: q.hint || '',
-      subjectId: paper.subjectId || q.subjectId,
-      unitName: paper.unitName || q.unitName,
-      grade: paper.grade || q.grade,
-      conceptTag: q.conceptTag || '綜合評量'
-    }));
+    const questionsToRetry = paper.questions
+      .map(q => hydrateQuestionDetails({
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        answer: q.answer,
+        explanation: q.explanation,
+        hint: q.hint || '',
+        subjectId: paper.subjectId || q.subjectId,
+        unitName: paper.unitName || q.unitName,
+        grade: paper.grade || q.grade,
+        conceptTag: q.conceptTag || '綜合評量',
+        isCustom: false
+      }))
+      .filter(q => q && q.question && Array.isArray(q.options) && q.options.length >= 4);
+
+    if (questionsToRetry.length === 0) {
+      alert('此試卷題目資料正在同步中，請稍候重試。');
+      return;
+    }
+
     if (typeof onLaunchRetryQuiz === 'function') {
       onLaunchRetryQuiz(questionsToRetry);
     }

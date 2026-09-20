@@ -214,6 +214,19 @@ export function generateQuizSet({ subjectId, gradeId, unitIds, difficulty = 'med
     }
   }
 
+  // 保底機制：若因題幹嚴格去重導致題數尚未達到目標，以多樣化種子迅速補齊至 count 題
+  let fallbackAttempts = 0;
+  while (quizSet.length < count && fallbackAttempts < count * 30) {
+    fallbackAttempts++;
+    const unitId = validUnits[fallbackAttempts % validUnits.length];
+    const questionIndex = Math.floor(Math.random() * maxIndex) + 5000 + fallbackAttempts * 13;
+    let q = generateQuestion(subjectId, gradeId, unitId, questionIndex, difficulty);
+    if (!overrides[q.id]?.isDeleted && !usedQuestionIds.has(q.id)) {
+      usedQuestionIds.add(q.id);
+      quizSet.push(q);
+    }
+  }
+
   return quizSet;
 }
 

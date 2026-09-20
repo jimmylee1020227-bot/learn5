@@ -208,7 +208,10 @@ function MainAppContent() {
                 results={lastResults}
                 timeSpentSec={lastTimeSpent}
                 onRetry={handleRetryQuiz}
-                onGoReinforce={() => setActiveTab('reinforce')}
+                onGoReinforce={() => {
+                  setQuizState('idle');
+                  setActiveTab('reinforce');
+                }}
                 onBackHome={() => setQuizState('idle')}
               />
             )}
