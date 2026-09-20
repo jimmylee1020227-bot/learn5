@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { getAdminNotifications, subscribeToCloudSync } from '../services/cloudStorage';
+import { getRealTime } from '../services/timeService';
 import { Megaphone, Flame, Sparkles, X, BellRing } from 'lucide-react';
 
 export default function GlobalBroadcastBanner() {
@@ -132,7 +133,7 @@ export default function GlobalBroadcastBanner() {
       {/* 右側時間標籤與收合按鈕 */}
       <div className="marquee-right-actions">
         <span className="marquee-time-tag">
-          {new Date(broadcast?.timestamp || Date.now()).toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit' })}
+          {new Date(broadcast?.timestamp || getRealTime()).toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit' })}
         </span>
 
         <button
