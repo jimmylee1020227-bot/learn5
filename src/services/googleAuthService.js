@@ -67,11 +67,26 @@ export function generateDeterministicUserId(email) {
 export async function parseGoogleAuthCallback() {
   if (typeof window === 'undefined') return null;
 
-  // 1. 安全防護：徹底杜絕 URL 偽造提權參數 (?google_auth_success)
+  // 1. 支援從 GoogleAuthPage.jsx 跳轉過來的模擬登入 (因為 GitHub Pages 沒有真實 OAuth Backend)
   const searchParams = new URLSearchParams(window.location.search);
   if (searchParams.has('google_auth_success')) {
-    // 移除惡意/測試殘留參數保持乾淨
-    window.history.replaceState(null, '', window.location.pathname);
+    const mockEmail = searchParams.get('email');
+    if (mockEmail) {
+      window.history.replaceState(null, '', window.location.pathname);
+      const cleanEmail = mockEmail.trim().toLowerCase();
+      const isJimmy = cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase();
+      const legacyId = typeof btoa !== 'undefined' ? btoa(cleanEmail).replace(/[^a-zA-Z0-9]/g, '').slice(0, 16) : generateDeterministicUserId(cleanEmail);
+      
+      return {
+        googleId: isJimmy ? 'admin_super_jimmy' : legacyId,
+        id: isJimmy ? 'admin_super_jimmy' : legacyId, // 確保有 id (使用舊版 btoa 邏輯，保留舊帳號分數)
+        email: cleanEmail,
+        displayName: cleanEmail.split('@')[0],
+        avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
+        isGoogleBound: true,
+        role: isJimmy ? 'super_admin' : 'student'
+      };
+    }
   }
 
   // 2. 檢查 Google 官方 OAuth 2.0 Token 回調 (#access_token=...)
