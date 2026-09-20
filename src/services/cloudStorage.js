@@ -4,7 +4,7 @@ import { db, ref, set, get, onValue } from './firebase.js';
 export function safeSetLocalStorage(key, valueStr) {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
-      safeSetLocalStorage(key, valueStr);
+      window.localStorage.setItem(key, valueStr);
     }
   } catch (e) {
     console.warn(`[LocalStorage Warning] 無法儲存 ${key} (可能已滿 5MB限制)，但不影響雲端存檔。`, e);
