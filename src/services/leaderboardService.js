@@ -15,35 +15,38 @@ const LAST_WEEK_KEY = 'studyhub_last_reset_week';
 
 // 取得台北時區 (UTC+8) 的 ISO 週次識別碼 (例如: 2026-W38)
 export function getTaiwanWeekId(d = new Date()) {
-  const utcTime = d.getTime() + (d.getTimezoneOffset() * 60000);
-  const taipeiTime = new Date(utcTime + (3600000 * 8));
+  const taipeiShifted = new Date(d.getTime() + (8 * 3600000));
   
   // 計算本週週一
-  const day = taipeiTime.getDay();
-  const diff = taipeiTime.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(taipeiTime.setDate(diff));
+  const day = taipeiShifted.getUTCDay();
+  const diff = taipeiShifted.getUTCDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(taipeiShifted);
+  monday.setUTCDate(diff);
   
-  const year = monday.getFullYear();
-  const firstJan = new Date(year, 0, 1);
-  const numberOfDays = Math.floor((monday - firstJan) / (24 * 60 * 60 * 1000));
-  const weekNumber = Math.ceil((numberOfDays + firstJan.getDay() + 1) / 7);
+  const year = monday.getUTCFullYear();
+  const firstJan = new Date(Date.UTC(year, 0, 1));
+  const numberOfDays = Math.floor((monday.getTime() - firstJan.getTime()) / (24 * 60 * 60 * 1000));
+  const weekNumber = Math.ceil((numberOfDays + firstJan.getUTCDay() + 1) / 7);
   return `${year}-W${String(weekNumber).padStart(2, '0')}`;
 }
 
 // 計算距離「下週一 00:00:00 (UTC+8)」的倒數毫秒與時分秒
 export function getNextMondayCountdown() {
   const now = new Date();
-  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const taipeiNow = new Date(utcTime + (3600000 * 8));
-
-  const dayOfWeek = taipeiNow.getDay(); // 0(週日) ~ 6(週六)
+  
+  // 取得台灣時間的絕對值 (將 UTC 加上 8 小時偏移量)
+  const taipeiShifted = new Date(now.getTime() + (8 * 3600000));
+  
+  const dayOfWeek = taipeiShifted.getUTCDay(); // 0(週日) ~ 6(週六)
   const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+  
+  const nextMonday = new Date(taipeiShifted);
+  // 使用 UTC 方法設定下週一的時間，確保絕對時間的精確對齊
+  nextMonday.setUTCDate(taipeiShifted.getUTCDate() + daysUntilMonday);
+  nextMonday.setUTCHours(0, 0, 0, 0);
 
-  const nextMonday = new Date(taipeiNow);
-  nextMonday.setDate(taipeiNow.getDate() + daysUntilMonday);
-  nextMonday.setHours(0, 0, 0, 0);
-
-  const diffMs = Math.max(0, nextMonday.getTime() - taipeiNow.getTime());
+  // 計算與現在的絕對毫秒差
+  const diffMs = Math.max(0, nextMonday.getTime() - taipeiShifted.getTime());
   const totalSeconds = Math.floor(diffMs / 1000);
   const days = Math.floor(totalSeconds / (3600 * 24));
   const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
