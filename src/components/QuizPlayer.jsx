@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { submitQuestionReport } from '../services/cloudStorage';
 import { 
@@ -48,6 +48,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
   // 🛡️ 防作弊與翻群防護機制
   const [cheatWarnings, setCheatWarnings] = useState(0);
   const [showCheatAlert, setShowCheatAlert] = useState(false);
+  const lastWarningTime = useRef(0);
 
   // 輔助工具抽屜
   const [showHint, setShowHint] = useState(false);
@@ -216,7 +217,11 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
     };
 
     const handleCheatViolation = () => {
-      setCheatWarnings(prev => prev + 1);
+      const now = Date.now();
+      if (now - lastWarningTime.current > 2000) {
+        lastWarningTime.current = now;
+        setCheatWarnings(prev => prev + 1);
+      }
     };
 
     window.addEventListener('contextmenu', handleContextMenu);
@@ -245,11 +250,15 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
   }, [cheatWarnings]);
 
   const forceSubmitQuiz = () => {
-    const results = questions.map((q, idx) => ({
-      ...q,
-      userAnswer: userAnswers[idx],
-      isCorrect: userAnswers[idx] === q.correctAnswer
-    }));
+    const results = questions.map(q => {
+      const chosen = userAnswers[q.id];
+      const isCorrect = chosen === q.answer;
+      return {
+        ...q,
+        userChoice: chosen,
+        isCorrect
+      };
+    });
     onComplete(results, secondsSpent);
   };
 
