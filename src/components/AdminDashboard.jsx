@@ -508,13 +508,27 @@ export default function AdminDashboard() {
 
   // 6. 搜尋題庫並修改
   const handleInspectQuestion = () => {
-    // 演算法生成或取得現有題
-    const sample = generateQuestion('math', 'g7', 'ma-7-u1', 1, 'medium');
-    sample.id = searchQId.trim();
-    setInspectedQuestion(sample);
-    setEditAnsIdx(sample.answer);
-    setEditExpText(sample.explanation);
-    setQActionMsg('');
+    const qId = searchQId.trim().toUpperCase();
+    const parts = qId.split('-');
+    if (parts.length >= 5 && parts[0] === 'Q') {
+      const gradeId = parts[1].toLowerCase();
+      const subjMap = { 'MA': 'math', 'EN': 'english', 'SC': 'science', 'SO': 'social', 'CH': 'chinese' };
+      const subjectId = subjMap[parts[2]] || 'math';
+      const unitCode = parts[3].toLowerCase();
+      const gradeNum = gradeId.replace('g', '');
+      const prefixMap = { 'math': 'ma', 'english': 'en', 'science': 'sc', 'social': 'so', 'chinese': 'zh' };
+      const unitId = `${prefixMap[subjectId]}-${gradeNum}-${unitCode}`;
+      const index = parseInt(parts[4], 10) || 1;
+      
+      const sample = generateQuestion(subjectId, gradeId, unitId, index, 'medium');
+      sample.id = qId;
+      setInspectedQuestion(sample);
+      setEditAnsIdx(sample.answer);
+      setEditExpText(sample.explanation);
+      setQActionMsg('');
+    } else {
+      setQActionMsg('❌ 無效的題目 ID 格式！請輸入正確的格式 (例如: Q-G7-MA-U1-0015)');
+    }
   };
 
   const handleSaveQuestionChanges = () => {
