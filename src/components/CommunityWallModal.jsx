@@ -439,7 +439,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '6px', borderTop: '1px solid #f1eae0' }}>
                   <span style={{ fontSize: '0.72rem', color: '#9aa2a8', fontWeight: 600 }}>
-                    {new Date(post.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(post.timestamp).toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit' })}
                   </span>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -119,7 +119,8 @@ export default function Navbar({
               <div style={{ fontSize: '0.74rem', color: '#5b6772', fontWeight: 700 }}>
                 週榜結算倒數：
                 <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--theme-border, var(--theme-border, #17324d))', marginLeft: '4px', fontWeight: 900 }}>
-                  {countdown.days}天 {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
+                  {countdown.days > 0 ? `${countdown.days}天 ` : ''}
+                  {countdown.hours}小時 {String(countdown.minutes).padStart(2, '0')}分 {String(countdown.seconds).padStart(2, '0')}秒
                 </span>
               </div>
             </div>

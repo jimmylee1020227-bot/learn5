@@ -132,7 +132,7 @@ export default function GlobalBroadcastBanner() {
       {/* 右側時間標籤與收合按鈕 */}
       <div className="marquee-right-actions">
         <span className="marquee-time-tag">
-          {new Date(broadcast?.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {new Date(broadcast?.timestamp || Date.now()).toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit' })}
         </span>
 
         <button

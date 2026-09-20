@@ -542,7 +542,7 @@
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
       "email": "jimmylee1020227@gmail.com",
       "id": "admin_super_jimmy",
-      "lastActive": "2026-09-20T03:43:54.719Z",
+      "lastActive": "2026-09-20T03:58:11.163Z",
       "name": "總管理員",
       "role": "super_admin",
       "school": "系統總管理員",
@@ -672,13 +672,13 @@
     }
   },
   "studyhub_game_state_admin_super_jimmy": {
-    "tickets": 0,
-    "pityCount": 1,
+    "tickets": 1,
+    "pityCount": 0,
     "lastDailyClaimDate": "",
     "personalMultiplier": 1,
     "multiplierExpiresAt": 0,
     "unlockedBadges": [],
-    "updatedAt": 1789875920236
+    "updatedAt": 0
   },
   "privacy_consent_admin_super_jimmy": {
     "userId": "admin_super_jimmy",
@@ -716,11 +716,11 @@
       "displayName": "總管理員",
       "email": "jimmylee1020227@gmail.com",
       "tickets": 7069,
-      "totalPoints": 26,
-      "updatedAt": 1789871193902,
+      "totalPoints": 31,
+      "updatedAt": 1789876625175,
       "userId": "admin_super_jimmy",
       "weekId": "2026-W38",
-      "weeklyPoints": 26
+      "weeklyPoints": 31
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJiQg4uA9yqKh7hqkrDSAvogyZShe9o2FobNOZS7W9G-VnrHxBm=s96-c",
