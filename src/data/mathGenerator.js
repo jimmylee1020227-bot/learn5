@@ -4,6 +4,9 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
   const isHard = difficulty === 'hard';
   const isEasy = difficulty === 'easy';
 
+  const sup = (n) => String(n).split('').map(c => '⁰¹²³⁴⁵⁶⁷⁸⁹'[c] || c).join('');
+
+
   const people = ['小明', '阿華', '大建', '美美', '小英', '志明', '春嬌', '大雄', '靜香', '王老師', '陳老闆'];
   const person = people[Math.floor(rand() * people.length)];
   const preamble = `${person}在解題時：`;
@@ -51,11 +54,11 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
     if (uNum === 2) {
       if (isExtreme) {
         return {
-          question: `【AMC競賽/私中-指數比較大小】${preamble}\n若 a = 2^300，b = 3^200，c = 5^100，請比較 a、b、c 三數的大小關係：`,
+          question: `【AMC競賽/私中-指數比較大小】${preamble}\n若 a = 2³⁰⁰，b = 3²⁰⁰，c = 5¹⁰⁰，請比較 a、b、c 三數的大小關係：`,
           options: [`b > a > c`, `a > b > c`, `c > b > a`, `b > c > a`],
           answer: 0,
-          hint: `💡 提示：將指數化為同指數 100：a = (2^3)^100 = 8^100，b = (3^2)^100 = 9^100。`,
-          explanation: `📖 詳解：a = 8^100，b = 9^100，c = 5^100。因為 9 > 8 > 5，故 b > a > c。`
+          hint: `💡 提示：將指數化為同指數 100：a = (2³)¹⁰⁰ = 8¹⁰⁰，b = (3²)¹⁰⁰ = 9¹⁰⁰。`,
+          explanation: `📖 詳解：a = 8¹⁰⁰，b = 9¹⁰⁰，c = 5¹⁰⁰。因為 9 > 8 > 5，故 b > a > c。`
         };
       } else {
         const p = Math.floor(rand() * 3) + 2; // 2, 3, 4
@@ -63,7 +66,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
         const base = [2, 3, 5][Math.floor(rand() * 3)];
         return {
           question: `【指數律計算】${preamble}\n計算 \`(${base}^${p})^${q} ÷ ${base}^${p * 2}\`，其結果可化簡為下列何者？`,
-          options: [`${base}^${p * q - p * 2}`, `${base}^${p * q + p * 2}`, `${base}^${q - 2}`, `${base}^${p * q}`],
+          options: [`${base}${sup(p * q - p * 2)}`, `${base}${sup(p * q + p * 2)}`, `${base}${sup(q - 2)}`, `${base}${sup(p * q)}`],
           answer: 0,
           hint: `💡 提示：(a^m)^n = a^(mn)；同底數相除，指數相減。`,
           explanation: `📖 詳解：(${base}^${p})^${q} = ${base}^${p * q}。相除指數相減：${base}^(${p * q} - ${p * 2}) = ${base}^${p * q - p * 2}。`
@@ -192,11 +195,11 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
     if (uNum === 1) {
       if (isExtreme) {
         return {
-          question: `【奧林匹亞/IMC競賽-乘法公式變形】${preamble}\n已知實數 x 滿足 \`x + 1/x = 4\`，請問 \`x^3 + 1/x^3\` 的值為何？`,
+          question: `【奧林匹亞/IMC競賽-乘法公式變形】${preamble}\n已知實數 x 滿足 \`x + ¹/ₓ = 4\`，請問 \`x³ + ¹/ₓ³\` 的值為何？`,
           options: [`52`, `64`, `48`, `56`],
           answer: 0,
-          hint: `💡 提示：利用立方和展開式：(x + 1/x)³ = x³ + 1/x³ + 3(x + 1/x)。`,
-          explanation: `📖 詳解：(x + 1/x)³ = 4³ = 64。64 = x³ + 1/x³ + 3(4) ⇒ x³ + 1/x³ = 64 - 12 = 52。`
+          hint: `💡 提示：利用立方和展開式：(x + ¹/ₓ)³ = x³ + ¹/ₓ³ + 3(x + ¹/ₓ)。`,
+          explanation: `📖 詳解：(x + ¹/ₓ)³ = 4³ = 64。64 = x³ + ¹/ₓ³ + 3(4) ⇒ x³ + ¹/ₓ³ = 64 - 12 = 52。`
         };
       } else {
         return {
@@ -234,7 +237,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
     if (uNum === 3) {
       if (isExtreme) {
         return {
-          question: `【私中資優-雙十字交乘因式分解】${preamble}\n因式分解多項式 \`2x^2 + 5xy + 2y^2 + 7x + 5y + 3\`，下列何者為其正確的因式分解結果？`,
+          question: `【私中資優-雙十字交乘因式分解】${preamble}\n因式分解多項式 \`2x² + 5xy + 2y² + 7x + 5y + 3\`，下列何者為其正確的因式分解結果？`,
           options: [`(2x + y + 1)(x + 2y + 3)`, `(2x + y + 3)(x + 2y + 1)`, `(2x - y + 1)(x - 2y + 3)`, `無法因式分解`],
           answer: 0,
           hint: `💡 提示：先分解前三項 (2x + y)(x + 2y)，再利用雙十字交乘法決定常數項 1 與 3。`,
@@ -242,7 +245,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
         };
       } else {
         return {
-          question: `【十字交乘因式分解】${preamble}\n將 \`x^2 - 5x - 24\` 因式分解，其結果為何？`,
+          question: `【十字交乘因式分解】${preamble}\n將 \`x² - 5x - 24\` 因式分解，其結果為何？`,
           options: [`(x - 8)(x + 3)`, `(x + 8)(x - 3)`, `(x - 6)(x + 4)`, `(x - 12)(x + 2)`],
           answer: 0,
           hint: `💡 提示：尋找兩數乘積為 -24，且相加為 -5。-8 × 3 = -24 且 -8 + 3 = -5。`,
@@ -255,7 +258,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
     if (uNum === 4) {
       if (isExtreme) {
         return {
-          question: `【私中/競賽-韋達定理求值】${preamble}\n若方程式 \`x^2 - 6x + 2 = 0\` 的兩根為 α 與 β，則 \`α^2 + β^2\` 的值為多少？`,
+          question: `【私中/競賽-韋達定理求值】${preamble}\n若方程式 \`x² - 6x + 2 = 0\` 的兩根為 α 與 β，則 \`α² + β²\` 的值為多少？`,
           options: [`32`, `36`, `38`, `34`],
           answer: 0,
           hint: `💡 提示：韋達定理：α + β = 6，αβ = 2。α² + β² = (α + β)² - 2αβ。`,
