@@ -330,7 +330,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       )}
       
       {/* =========================================================================
-          翰林雲端學院 頂部專業考試抬頭工具列 (Header Bar)
+          頂部專業考試抬頭工具列 (Header Bar)
           ========================================================================= */}
       <header 
         style={{ 
@@ -627,7 +627,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       )}
 
       {/* =========================================================================
-          翰林雲端學院 核心作答題幹與選項卡片 (Main Question Canvas)
+          核心作答題幹與選項卡片 (Main Question Canvas)
           ========================================================================= */}
       {!isPaused && (
         <main
@@ -666,7 +666,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               </span>
             </div>
 
-            {/* 翰林特色：標記待檢查按鈕 (Flag Question) */}
+            {/* 標記待檢查按鈕 (Flag Question) */}
             <button
               onClick={toggleFlagCurrent}
               style={{
@@ -797,7 +797,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             {currentQ.question}
           </div>
 
-          {/* 四個選項卡 (支援 翰林經典消去法 ✂️ 劃線排除) */}
+          {/* 四個選項卡 (支援經典消去法 ✂️ 劃線排除) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {currentQ.options.map((opt, optIdx) => {
               const letter = ['A', 'B', 'C', 'D'][optIdx];
@@ -964,7 +964,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             </div>
           )}
 
-          {/* 線上草稿計算紙 (翰林特色 Scratchpad) */}
+          {/* 線上草稿計算紙 (Scratchpad) */}
           {showScratchpad && (
             <div 
               style={{ 
@@ -1068,7 +1068,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       )}
 
       {/* =========================================================================
-          翰林雲端學院 交卷防呆確認視窗 (Submit Modal)
+          交卷防呆確認視窗 (Submit Modal)
           ========================================================================= */}
       {isSubmitModalOpen && (
         <div className="modal-overlay">

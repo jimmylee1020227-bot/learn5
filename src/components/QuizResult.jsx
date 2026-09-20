@@ -105,7 +105,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
   return (
     <div style={{ maxWidth: '980px', margin: '0 auto', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
       
-      {/* 1. 翰林雲端學院風格：成績總結與會考落點診斷卡 */}
+      {/* 1. 風格：成績總結與會考落點診斷卡 */}
       <div 
         style={{
           background: 'var(--theme-card, var(--theme-card, #fffdf9))',
@@ -129,7 +129,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                 E-HANLIN DIAGNOSTIC REPORT
               </div>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', margin: 0 }}>
-                翰林雲端學院｜學力診斷結算報告
+                學力診斷結算報告
               </h2>
             </div>
           </div>
@@ -260,7 +260,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
 
       </div>
 
-      {/* 2. 翰林雲端學院特有：單元學力掌握度診斷清單 */}
+      {/* 2. 特有：單元學力掌握度診斷清單 */}
       <div 
         style={{
           background: 'var(--theme-card, var(--theme-card, #fffdf9))',
@@ -364,7 +364,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
         </div>
       </div>
 
-      {/* 3. 翰林雲端學院核心：答題卡題號總覽矩陣與快速篩選 */}
+      {/* 3. 核心：答題卡題號總覽矩陣與快速篩選 */}
       <div 
         style={{
           background: 'var(--theme-card, var(--theme-card, #fffdf9))',
