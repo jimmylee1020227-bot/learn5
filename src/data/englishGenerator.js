@@ -210,6 +210,60 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
     }
   }
 
+  // ==== 歷屆會考試題 (高鑑別度 / 跨領域長文) ====
+  if (gradeId === 'past-exams') {
+    if (unitId.includes('u1')) {
+      return {
+        isReading: true,
+        readingText: `【111會考精選-跨領域閱讀】\nThe "Fast Fashion" industry produces clothes quickly and cheaply to meet the newest trends. However, this business model causes serious environmental problems. First, making clothes requires a lot of water. For example, it takes about 2,700 liters of water to make just one cotton T-shirt. Second, many cheap clothes are thrown away after being worn only a few times. Most of these clothes end up in landfills and take hundreds of years to break down. To help the earth, some people have started to buy second-hand clothes or choose brands that use recycled materials.`,
+        question: `According to the reading, which of the following is NOT true about the "Fast Fashion" industry?`,
+        options: [
+          `It is good for the environment because it recycles old clothes.`,
+          `It uses a large amount of water to produce cotton clothes.`,
+          `It encourages people to buy clothes cheaply and throw them away quickly.`,
+          `It causes clothes to end up in landfills for a very long time.`
+        ],
+        answer: 0,
+        hint: '💡 提示：回文尋找 Fast Fashion 造成的影響，並留意 NOT true (何者不為真)。',
+        explanation: `📖 詳解：文章指出 Fast Fashion 會導致嚴重的環境問題，且多數衣服被丟棄在垃圾掩埋場，並未提及它會回收舊衣。回收舊衣是最後一句 "To help the earth..." 的解決方案，並非 Fast Fashion 產業本身的特徵。`
+      };
+    } else {
+      return {
+        question: `【110會考精選-文法陷阱】${preamble}\n________ the heavy rain, the baseball game was not canceled, and thousands of fans still showed up at the stadium.`,
+        options: [`Despite`, `Because of`, `Although`, `Due to`],
+        answer: 0,
+        hint: '💡 提示：後接名詞片語 (the heavy rain)，且前後文意為「雖然...但是...」(讓步語氣)。',
+        explanation: `📖 詳解：Despite 後接名詞片語，表「儘管」。Although 必須接完整子句 (Although it rained heavily)。Because of 和 Due to 則表原因，與後方「比賽沒有取消」語意不合。`
+      };
+    }
+  }
+
+  // ==== 私校入學考題 (超綱 / 資優字彙) ====
+  if (gradeId === 'private-school') {
+    if (unitId.includes('u1')) {
+      return {
+        question: `【私校資優-進階字彙】${preamble}\nThe new policy was implemented to ________ the negative effects of air pollution in the city, making the environment much cleaner for residents.`,
+        options: [`mitigate`, `exacerbate`, `fabricate`, `prolong`],
+        answer: 0,
+        hint: '💡 提示：從後方的 making the environment much cleaner 推敲出空格應填「減輕、緩和」。',
+        explanation: `📖 詳解：mitigate (減輕、緩和) 符合句意。exacerbate 為惡化，fabricate 為捏造，prolong 為延長。私校入學考常出現高中程度單字。`
+      };
+    } else {
+      return {
+        question: `【私校資優-邏輯推論】${preamble}\nTom is taller than Jerry but shorter than Mike. David is taller than Mike. Which of the following statements is definitely true?`,
+        options: [
+          `David is the tallest of the four.`,
+          `Jerry is taller than David.`,
+          `Tom is the shortest of the four.`,
+          `Mike is the shortest of the four.`
+        ],
+        answer: 0,
+        hint: '💡 提示：畫出高矮順序：Jerry < Tom < Mike < David。',
+        explanation: `📖 詳解：依據題意排列高矮：David > Mike > Tom > Jerry。故選項「David 是四人中最高的」必然為真。`
+      };
+    }
+  }
+
   // Fallback
   const fbAction = ['choose the correct option', 'find the right answer', 'select the true statement'][Math.floor(rand()*3)];
   return {

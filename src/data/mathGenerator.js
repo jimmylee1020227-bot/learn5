@@ -208,6 +208,72 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
     }
   }
 
+  // ==== 歷屆會考試題 (高鑑別度 / 跨觀念整合) ====
+  if (gradeId === 'past-exams') {
+    if (unitId.includes('u1')) {
+      const qNum1 = Math.floor(rand() * 5) + 3;
+      const qNum2 = Math.floor(rand() * 5) + 4;
+      return {
+        question: `【112會考模擬-跨域素養】${preamble}\n有兩個圓形跑道，小華跑大圈一圈需 ${qNum1} 分鐘，大明跑小圈一圈需 ${qNum2} 分鐘。若兩人同時同地出發，至少需經過幾分鐘後兩人才會再次於起點相遇？\n另外，若此時小華跑了 $x$ 圈，大明跑了 $y$ 圈，則 $x+y$ 為何？`,
+        options: [
+          `${qNum1 * qNum2} 分鐘，${qNum1 + qNum2} 圈`,
+          `${qNum1 * qNum2} 分鐘，${Math.abs(qNum1 - qNum2)} 圈`,
+          `${(qNum1 * qNum2) / 2} 分鐘，${qNum1 + qNum2} 圈`,
+          `${qNum1 * qNum2 * 2} 分鐘，${qNum1 * qNum2} 圈`
+        ],
+        answer: 0,
+        hint: '💡 提示：最小公倍數與圈數的計算。',
+        explanation: `📖 詳解：相遇時間為 ${qNum1} 與 ${qNum2} 的最小公倍數 ${qNum1 * qNum2}。此時小華跑了 ${qNum2} 圈，大明跑了 ${qNum1} 圈，共 ${qNum1 + qNum2} 圈。`
+      };
+    } else {
+      const cost = Math.floor(rand() * 50) * 10 + 200;
+      return {
+        isReading: true,
+        readingText: `【圖表判讀-會考B++挑戰】\n某店家推出促銷活動，方案A為「打八折」，方案B為「滿千送百」。\n${preamble}`,
+        question: `若原價為 ${cost} 元，且只能擇一方案，請問哪一個方案比較划算？相差多少元？`,
+        options: [
+          cost >= 1000 ? `方案A划算，差 ${cost - cost*0.8 - Math.floor(cost/1000)*100} 元` : `方案A划算，差 ${cost - cost*0.8} 元`,
+          cost >= 1000 ? `方案B划算，差 ${cost*0.8 - (cost - Math.floor(cost/1000)*100)} 元` : `方案B划算，差 ${cost*0.8} 元`,
+          `兩方案一樣划算，相差 0 元`,
+          `資訊不足，無法計算`
+        ],
+        answer: 0,
+        hint: '💡 提示：分別計算兩種方案的折扣金額後進行比較。',
+        explanation: `📖 詳解：方案A折扣為 ${cost} × 0.2 = ${cost * 0.2} 元。方案B折扣為 ${Math.floor(cost/1000)*100} 元。比較兩者可知方案A較優。`
+      };
+    }
+  }
+
+  // ==== 私校入學考題 (超綱 / 資優競賽) ====
+  if (gradeId === 'private-school') {
+    if (unitId.includes('u1')) {
+      const prime1 = [7, 11, 13][Math.floor(rand() * 3)];
+      const prime2 = [17, 19, 23][Math.floor(rand() * 3)];
+      const target = prime1 * prime2;
+      return {
+        question: `【私校資優-數論】${preamble}\n若 $p$、$q$ 皆為質數，且滿足方程式 $p^2 - q^2 = ${target}$，請問 $p + q$ 的值可能為何？`,
+        options: [`${prime2}`, `${prime1}`, `${prime1 + prime2}`, `不可能有解`],
+        answer: 0,
+        hint: '💡 提示：利用平方差公式 $p^2 - q^2 = (p-q)(p+q)$，且已知目標數的質因數分解。',
+        explanation: `📖 詳解：$${target} = ${prime1} \\times ${prime2}$，因 $p, q$ 為質數且 $p+q > p-q$，故 $p+q = ${prime2}$、$p-q = ${prime1}$。`
+      };
+    } else {
+      const sides = Math.floor(rand() * 6) + 5;
+      return {
+        question: `【私校競賽-幾何】${preamble}\n在正 ${sides} 邊形中，任選三個頂點構成一個三角形，請問其中有幾個是直角三角形？`,
+        options: [
+          sides % 2 === 0 ? `${sides * (sides - 2) / 2}` : `0`,
+          `${sides * 2}`,
+          `${sides}`,
+          `無法計算`
+        ],
+        answer: 0,
+        hint: '💡 提示：若為奇數邊形，無法找到外接圓直徑的兩端點；若為偶數邊形，考慮直徑的數量與剩餘點數。',
+        explanation: `📖 詳解：唯有偶數邊形才有外接圓直徑。正 ${sides} 邊形若為奇數則答案為 0。`
+      };
+    }
+  }
+
   // Fallback 動態融合
   const fallbacks = [
     `請問在處理「${conceptTag}」的數學問題時，下列哪一個觀念是正確的？`,

@@ -3,6 +3,8 @@ export const GRADES = [
   { id: 'g7', name: '國一 (七年級)', short: '國一', badge: '7th' },
   { id: 'g8', name: '國二 (八年級)', short: '國二', badge: '8th' },
   { id: 'g9', name: '國三 (九年級)', short: '國三', badge: '9th' },
+  { id: 'past-exams', name: '會考歷屆試題', short: '大考', badge: 'EXAM' },
+  { id: 'private-school', name: '私校入學考題', short: '私校', badge: 'PRO' },
 ];
 
 export const SUBJECTS = [
@@ -66,6 +68,14 @@ export const CURRICULUM_UNITS = {
       { id: 'en-9-u3', name: 'Unit 3: Relative Clauses & Pronouns', tags: ['關係代名詞who/which/that主格受格', '所有格whose與先行詞限制'] },
       { id: 'en-9-u4', name: 'Unit 4: Noun Clauses & Indirect Questions', tags: ['名詞子句that引導', '間接問句疑問詞+S+V主謂倒裝'] },
       { id: 'en-9-u5', name: 'Unit 5: Tag Questions & Reading Comprehension', tags: ['附加問句前肯後否前否後肯', '會考情境與圖表閱讀克漏字'] }
+    ],
+    'past-exams': [
+      { id: 'en-past-u1', name: '歷屆會考：素養克漏字與文法陷阱', tags: ['長篇閱讀', '時態綜合', '跨文化理解'] },
+      { id: 'en-past-u2', name: '歷屆會考：圖表判讀與推論', tags: ['圖表判讀', '單字陷阱', '語意推論'] }
+    ],
+    'private-school': [
+      { id: 'en-priv-u1', name: '私校精選：進階字彙與介系詞', tags: ['超綱單字', '同義字替換', '介系詞搭配'] },
+      { id: 'en-priv-u2', name: '私校精選：長篇閱測與邏輯', tags: ['長篇分析', '邏輯推論', '時事文章'] }
     ]
   },
   math: {
@@ -92,6 +102,14 @@ export const CURRICULUM_UNITS = {
       { id: 'ma-9-u3', name: '第 3 單元：幾何證明與三角形三心 (外心、內心、重心)', tags: ['外心到三頂點等距與外接圓', '內心到三邊等距與重心2:1分點'] },
       { id: 'ma-9-u4', name: '第 4 單元：二次函數與圖形極值', tags: ['配方法求頂點坐標對稱軸', '開口方向與極值應用問題'] },
       { id: 'ma-9-u5', name: '第 5 單元：統計與機率', tags: ['平均數中位數百分位數盒狀圖', '樹狀圖列舉法與古典機率求法'] }
+    ],
+    'past-exams': [
+      { id: 'ma-past-u1', name: '會考經典：幾何與代數綜合題', tags: ['跨單元整合', '陷阱題', '多步推導'] },
+      { id: 'ma-past-u2', name: '會考經典：生活情境與圖表素養', tags: ['非選題型', '生活應用', '數據解讀'] }
+    ],
+    'private-school': [
+      { id: 'ma-priv-u1', name: '私校衝刺：數論與高階代數', tags: ['奧林匹亞預備', '複雜聯立', '數論初探'] },
+      { id: 'ma-priv-u2', name: '私校衝刺：競賽級幾何挑戰', tags: ['輔助線技巧', '立體切割', '極端圖形'] }
     ]
   },
   science: {

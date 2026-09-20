@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getMistakeNotebook, getUnresolvedErrorConcepts, subscribeToCloudSync } from '../services/cloudStorage';
+import { getMistakeNotebook, getUnresolvedErrorConcepts, subscribeToCloudSync, hydrateQuestionDetails } from '../services/cloudStorage';
 import { generateQuestion } from '../data/questionGenerator';
 import { 
   Sparkles, 
@@ -57,14 +57,29 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
     // 將錯題本身與同類型變換題混編，組成 5~10 題針對性靶向測驗
     const quizList = [];
     candidateMistakes.slice(0, 10).forEach((m, idx) => {
-      // 原錯題
-      quizList.push({
-        ...m,
+      // 1. 還原原錯題：解析 questionId (例如 "math-g1-s1-u1-1" 或 "Q-G1-MA-U1-0001") 取得題號 (Index)
+      const parts = m.questionId.split('-');
+      const lastPart = parts[parts.length - 1];
+      const parsedIdx = parseInt(lastPart, 10);
+      const questionIndex = isNaN(parsedIdx) ? 1 : parsedIdx;
+      
+      const hydratedQuestion = hydrateQuestionDetails({
         id: m.questionId,
+        subjectId: m.subjectId,
+        gradeId: m.gradeId,
+        unitId: parts[3] || 'u1',
+        index: questionIndex,
+        difficulty: m.difficulty || 'medium',
+        conceptTag: m.conceptTag,
         isCustom: false
       });
-      // 自動衍生一題同單元同概念題進行交叉驗證
-      const variantQ = generateQuestion(m.subjectId, m.gradeId, m.questionId.split('-')[3] || 'u1', idx + 500, m.difficulty || 'medium');
+
+      if (hydratedQuestion && hydratedQuestion.question) {
+        quizList.push(hydratedQuestion);
+      }
+
+      // 2. 自動衍生一題同單元同概念題進行交叉驗證
+      const variantQ = generateQuestion(m.subjectId, m.gradeId, parts[3] || 'u1', idx + 500, m.difficulty || 'medium');
       if (variantQ) {
         variantQ.conceptTag = m.conceptTag;
         quizList.push(variantQ);
