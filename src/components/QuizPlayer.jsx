@@ -143,6 +143,26 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       reporterId: currentUser?.id || 'guest_student',
       reporterName: currentUser?.displayName || '同學'
     });
+
+    // 觸發 EmailJS 背景寄信
+    const emailData = {
+      service_id: 'service_928ruqe',
+      template_id: 'template_ckgv0wm',
+      user_id: 'OJCCupMyVjmn-xkr5gB25',
+      template_params: {
+        reporter_name: currentUser?.displayName || '同學',
+        report_reason: reportReason,
+        question_id: currentQ.id,
+        question_text: currentQ.question || '(無文字內容)',
+        report_comment: reportComment || '(無補充說明)'
+      }
+    };
+
+    fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(emailData)
+    }).catch(err => console.error('EmailJS Failed:', err));
     setReportSuccessNotice(true);
     setTimeout(() => {
       setReportSuccessNotice(false);
