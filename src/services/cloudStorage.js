@@ -1,4 +1,5 @@
 import { db, ref, set, get, onValue } from './firebase.js';
+import { getRealDate, getRealTime } from './timeService';
 
 // 雲端資料同步與儲存服務層 (Cloud Storage & Sync Service) - Firebase 真正跨裝置即時全域版
 const STORAGE_PREFIX = 'studyhub_cloud_';
@@ -528,7 +529,7 @@ export function addAdmin(newAdmin, operatorUser) {
     role: 'admin', // 總管理員只有一個，其餘皆為一般管理員
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(newAdmin.displayName)}`,
     specialties: newAdmin.specialties || ['課綱答疑', '題庫審核'],
-    createdAt: new Date().toISOString()
+    createdAt: new Date(getRealTime()).toISOString()
   };
   admins.push(createdAdmin);
   setJson('admins_list', admins);
@@ -2027,7 +2028,7 @@ export function resolveCommunityReport(reportId, decision, operatorUser, reviewN
 }
 
 // 取得台灣時區 (UTC+8) 當日日期字串 (YYYY-MM-DD)
-export function getTaiwanDateStr(d = new Date()) {
+export function getTaiwanDateStr(d = getRealDate()) {
   // 將絕對時間 (UTC) 往未來推 8 小時，再強制用 ISO UTC 格式切出日期，
   // 這樣無論使用者電腦在哪個時區，切出來的日期永遠等同於台灣的當地日期。
   const taipeiShifted = new Date(d.getTime() + (8 * 3600000));

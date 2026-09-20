@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
 import { getDailyPracticeStats, subscribeToCloudSync } from '../services/cloudStorage';
+import { getRealTime } from '../services/timeService';
 import { 
   Flame, 
   Sparkles, 
@@ -41,7 +42,7 @@ export default function HeroBanner({
     const targetTime = new Date(target.date).getTime();
 
     const updateCountdown = () => {
-      const now = Date.now();
+      const now = getRealTime();
       const diff = Math.max(0, targetTime - now);
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);

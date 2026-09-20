@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { addStudentPoints } from '../services/leaderboardService';
 import { getGlobalSettings, subscribeToCloudSync, getJson, setJson, fetchCloudUserGameState, getTaiwanDateStr } from '../services/cloudStorage';
+import { getRealDate, getRealTime, syncServerTime } from '../services/timeService';
 import confetti from 'canvas-confetti';
 
 const GameContext = createContext();
@@ -30,6 +31,12 @@ export function GameProvider({ children }) {
   });
 
   const [isLuckyDrawOpen, setIsLuckyDrawOpen] = useState(false);
+  const hasClaimedTodayRef = useRef(false);
+
+  // 初始化同步伺服器時間
+  useEffect(() => {
+    syncServerTime();
+  }, []);
   const [multiplierRemainingSec, setMultiplierRemainingSec] = useState(0);
 
   // 跨裝置同步狀態鎖：初次載入未自雲端讀取前，禁止以本地預設空值覆蓋雲端！
@@ -109,12 +116,17 @@ export function GameProvider({ children }) {
     // 未水合前不執行，避免用預設值 lastDailyClaimDate 誤判
     if (!isHydratedRef.current) return;
     const todayStr = getTaiwanDateStr();
-    if (gameState.lastDailyClaimDate !== todayStr) {
+    
+    // 如果今天還沒領過，且同步鎖定還沒開啟，才給予抽獎券
+    if (gameState.lastDailyClaimDate !== todayStr && !hasClaimedTodayRef.current) {
+      hasClaimedTodayRef.current = true; // 立即鎖定，防止 React 18 兩次執行
       setGameState(prev => ({
         ...prev,
         tickets: (prev.tickets || 0) + 1,
         lastDailyClaimDate: todayStr
       }));
+    } else if (gameState.lastDailyClaimDate === todayStr) {
+      hasClaimedTodayRef.current = true; // 如果發現已經是今天，順便鎖定
     }
   }, [gameState.lastDailyClaimDate, userId]);
 
@@ -138,8 +150,9 @@ export function GameProvider({ children }) {
   // 倍率倒數計時器
   useEffect(() => {
     const timer = setInterval(() => {
-      if (gameState.multiplierExpiresAt > Date.now()) {
-        const diff = Math.floor((gameState.multiplierExpiresAt - Date.now()) / 1000);
+      const now = getRealTime();
+      if (gameState.multiplierExpiresAt > now) {
+        const diff = Math.floor((gameState.multiplierExpiresAt - now) / 1000);
         setMultiplierRemainingSec(diff);
       } else {
         if (gameState.personalMultiplier > 1) {
@@ -153,7 +166,7 @@ export function GameProvider({ children }) {
 
   // 計算目前真實生效倍率
   const isGlobal2x = !!globalSettings.global2xActive;
-  const isPersonal2x = gameState.personalMultiplier >= 2 && gameState.multiplierExpiresAt > Date.now();
+  const isPersonal2x = gameState.personalMultiplier >= 2 && gameState.multiplierExpiresAt > getRealTime();
 
   let effectiveMultiplier = 1;
   if (isGlobal2x && isPersonal2x) {
@@ -185,7 +198,7 @@ export function GameProvider({ children }) {
   // 啟用個人限時倍率 Buff (用於幸運抽獎、兌換碼獎勵)
   const activateUserMultiplier = (durationSec = 900) => {
     const safeDuration = Math.min(Math.max(60, durationSec), 86400); // 1分鐘至24小時
-    const expires = Date.now() + (safeDuration * 1000);
+    const expires = getRealTime() + (safeDuration * 1000);
     setGameState(prev => ({
       ...prev,
       personalMultiplier: 2,
@@ -237,7 +250,7 @@ export function GameProvider({ children }) {
       ...gameState,
       tickets: Math.max(0, (gameState.tickets || 0) - 1),
       pityCount: nextPity,
-      updatedAt: Date.now()
+      updatedAt: getRealTime()
     };
 
     // 同步立即寫入 localStorage 與 state，防止連點抽獎時狀態遺失或被舊快取反彈

@@ -8,13 +8,14 @@ import {
   assertAdminPermission,
   adminPushGameStateTickets
 } from './cloudStorage';
+import { getRealDate, getRealTime } from './timeService';
 
 const LEADERBOARD_KEY = 'studyhub_weekly_leaderboard';
 const HALL_OF_FAME_KEY = 'studyhub_hall_of_fame';
 const LAST_WEEK_KEY = 'studyhub_last_reset_week';
 
 // 取得台北時區 (UTC+8) 的 ISO 週次識別碼 (例如: 2026-W38)
-export function getTaiwanWeekId(d = new Date()) {
+export function getTaiwanWeekId(d = getRealDate()) {
   const taipeiShifted = new Date(d.getTime() + (8 * 3600000));
   
   // 計算本週週一
@@ -32,7 +33,7 @@ export function getTaiwanWeekId(d = new Date()) {
 
 // 計算距離「下週一 00:00:00 (UTC+8)」的倒數毫秒與時分秒
 export function getNextMondayCountdown() {
-  const now = new Date();
+  const now = getRealDate();
   
   // 取得台灣時間的絕對值 (將 UTC 加上 8 小時偏移量)
   const taipeiShifted = new Date(now.getTime() + (8 * 3600000));
@@ -105,7 +106,7 @@ export function checkAndExecuteWeeklyReset() {
         ...player,
         weeklyPoints: 0,
         weekId: currentWeekId,
-        updatedAt: Date.now()
+        updatedAt: getRealTime()
       };
       pushPlayerLeaderboardSync(player.userId, updated);
       return updated;
@@ -163,7 +164,7 @@ export function addStudentPoints(user, earnedPoints) {
   }
 
   // 頻率限制：1 秒內不可超過 8 次加分請求
-  const now = Date.now();
+  const now = getRealTime();
   const history = pointEarnRateTracker.get(user.id) || [];
   const recent = history.filter(t => now - t < 1000);
   if (recent.length >= 8) {
@@ -189,7 +190,7 @@ export function addStudentPoints(user, earnedPoints) {
       totalPoints: 0,
       tickets: 1,
       weekId: currentWeekId,
-      updatedAt: Date.now()
+      updatedAt: getRealTime()
     };
     board.push(player);
   }
@@ -206,7 +207,7 @@ export function addStudentPoints(user, earnedPoints) {
   player.weeklyPoints = (player.weeklyPoints || 0) + safeEarned;
   player.totalPoints = (player.totalPoints || 0) + safeEarned;
   player.weekId = currentWeekId;
-  player.updatedAt = Date.now();
+  player.updatedAt = getRealTime();
 
   // 1. 本地儲存與廣播
   setJson(LEADERBOARD_KEY, board);
@@ -227,7 +228,7 @@ export function updatePlayerDisplayName(userId, newName) {
   const player = board.find(p => p.userId === userId);
   if (player) {
     player.displayName = sanitized;
-    player.updatedAt = Date.now();
+    player.updatedAt = getRealTime();
     setJson(LEADERBOARD_KEY, board);
     pushPlayerLeaderboardSync(userId, player);
   }
@@ -260,7 +261,7 @@ export function adminGrantPoints(targetUserId, points, operatorUser) {
             totalPoints: 0,
             tickets: 1,
             weekId: currentWeekId,
-            updatedAt: Date.now()
+            updatedAt: getRealTime()
           };
           board.push(p);
         }
@@ -271,7 +272,7 @@ export function adminGrantPoints(targetUserId, points, operatorUser) {
       p.weeklyPoints = (p.weeklyPoints || 0) + safePoints;
       p.totalPoints = (p.totalPoints || 0) + safePoints;
       p.weekId = currentWeekId;
-      p.updatedAt = Date.now();
+      p.updatedAt = getRealTime();
       pushPlayerLeaderboardSync(p.userId, p);
     });
     msg = `向全體玩家 (${board.length} 人) 發放 ${safePoints} 點數`;
@@ -281,7 +282,7 @@ export function adminGrantPoints(targetUserId, points, operatorUser) {
       target.weeklyPoints = (target.weeklyPoints || 0) + safePoints;
       target.totalPoints = (target.totalPoints || 0) + safePoints;
       target.weekId = currentWeekId;
-      target.updatedAt = Date.now();
+      target.updatedAt = getRealTime();
       pushPlayerLeaderboardSync(target.userId, target);
       msg = `向玩家【${target.displayName}】發放 ${safePoints} 點數`;
     }
@@ -318,7 +319,7 @@ export function adminGrantTickets(targetUserId, ticketCount, operatorUser) {
 
     board.forEach(p => {
       p.tickets = (p.tickets || 0) + safeTickets;
-      p.updatedAt = Date.now();
+      p.updatedAt = getRealTime();
       pushPlayerLeaderboardSync(p.userId, p);
     });
 
@@ -331,7 +332,7 @@ export function adminGrantTickets(targetUserId, ticketCount, operatorUser) {
     const target = board.find(p => p.userId === targetUserId);
     if (target) {
       target.tickets = (target.tickets || 0) + safeTickets;
-      target.updatedAt = Date.now();
+      target.updatedAt = getRealTime();
       pushPlayerLeaderboardSync(target.userId, target);
       adminPushGameStateTickets(target.userId, safeTickets);
       msg = `向玩家【${target.displayName}】發放 ${safeTickets} 張抽獎券`;
