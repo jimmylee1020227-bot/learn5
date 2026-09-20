@@ -52,20 +52,20 @@ export default function RedemptionModal({ isOpen, onClose }) {
         onClick={e => e.stopPropagation()} 
         style={{ 
           maxWidth: '500px', 
-          background: '#fffdf9',
-          border: '2.5px solid #17324d',
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+          border: '2.5px solid var(--theme-border, #17324d)',
           borderRadius: '24px',
-          boxShadow: '8px 8px 0px #17324d',
-          color: '#17324d'
+          boxShadow: '8px 8px 0px var(--theme-border, #17324d)',
+          color: 'var(--theme-border, var(--theme-border, #17324d))'
         }}
       >
-        <div className="modal-header" style={{ borderBottom: '2px solid #17324d', background: '#fffdf9', padding: '18px 24px' }}>
+        <div className="modal-header" style={{ borderBottom: '2px solid var(--theme-border, #17324d)', background: 'var(--theme-card, var(--theme-card, #fffdf9))', padding: '18px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: '#fff7d9', border: '1.5px solid #17324d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#806523' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: '#fff7d9', border: '1.5px solid var(--theme-border, #17324d)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#806523' }}>
               <Ticket size={20} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#17324d' }}>輸入兌換碼，領取獎勵</h3>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>輸入兌換碼，領取獎勵</h3>
               <p style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 600 }}>
                 會考讀書網專屬序號兌換
               </p>
@@ -83,7 +83,7 @@ export default function RedemptionModal({ isOpen, onClose }) {
               <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#e8f6ed', border: '2px solid #347650', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#347650' }}>
                 <CheckCircle2 size={36} />
               </div>
-              <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#17324d' }}>恭喜兌換成功！</h4>
+              <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>恭喜兌換成功！</h4>
               <p style={{ fontSize: '0.95rem', color: '#347650', fontWeight: 800 }}>
                 {successReward.label}
               </p>
@@ -118,10 +118,10 @@ export default function RedemptionModal({ isOpen, onClose }) {
                     style={{
                       flex: 1,
                       padding: '12px 16px',
-                      background: '#f8f3eb',
+                      background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                       border: '1.5px solid #ded3c5',
                       borderRadius: '12px',
-                      color: '#17324d',
+                      color: 'var(--theme-border, var(--theme-border, #17324d))',
                       fontSize: '1rem',
                       fontFamily: 'var(--font-mono)',
                       fontWeight: 800,
@@ -149,9 +149,9 @@ export default function RedemptionModal({ isOpen, onClose }) {
               )}
 
               {/* 官方限時推薦兌換碼 (動態支援管理員新增之自訂序號) */}
-              <div style={{ background: '#f8f3eb', border: '1.5px solid #e8ded0', borderRadius: '16px', padding: '14px' }}>
+              <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #e8ded0', borderRadius: '16px', padding: '14px' }}>
                 <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#5b6772', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Sparkles size={14} color="#ef8354" /> 官方福利序號（點擊直接填入兌換）：
+                  <Sparkles size={14} color="var(--theme-accent, var(--theme-accent, #ef8354))" /> 官方福利序號（點擊直接填入兌換）：
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto' }}>
                   {availableCodes.map(codeItem => (
@@ -163,7 +163,7 @@ export default function RedemptionModal({ isOpen, onClose }) {
                         alignItems: 'center', 
                         justifyContent: 'space-between', 
                         padding: '10px 14px', 
-                        background: '#fffdf9', 
+                        background: 'var(--theme-card, var(--theme-card, #fffdf9))', 
                         borderRadius: '10px', 
                         cursor: 'pointer', 
                         border: '1.5px dashed #ded3c5',
@@ -171,7 +171,7 @@ export default function RedemptionModal({ isOpen, onClose }) {
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, color: '#17324d' }}>{codeItem.code}</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{codeItem.code}</span>
                         <span className={`badge ${codeItem.type === 'multiplier' ? 'badge-fire' : codeItem.type === 'lottery_ticket' ? 'badge-coral' : 'badge-gold'}`} style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
                           {codeItem.type === 'multiplier' ? '🔥 雙倍狂暴' : codeItem.type === 'lottery_ticket' ? '🎫 抽獎券' : '🏆 積分'}
                         </span>
@@ -188,7 +188,7 @@ export default function RedemptionModal({ isOpen, onClose }) {
 
         </div>
 
-        <div className="modal-footer" style={{ borderTop: '2px solid #17324d', background: '#fffdf9', padding: '14px 24px' }}>
+        <div className="modal-footer" style={{ borderTop: '2px solid var(--theme-border, #17324d)', background: 'var(--theme-card, var(--theme-card, #fffdf9))', padding: '14px 24px' }}>
           <button onClick={onClose} className="btn btn-secondary" style={{ padding: '8px 16px' }}>
             關閉
           </button>

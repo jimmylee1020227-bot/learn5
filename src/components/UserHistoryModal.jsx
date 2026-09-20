@@ -168,7 +168,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                 </span>
               )}
             </div>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#17324d', marginBottom: '6px' }}>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '6px' }}>
               歷次完整試卷調閱與個人錯題本
             </h1>
             <p style={{ color: '#78818a', fontSize: '0.92rem', margin: 0 }}>
@@ -233,8 +233,8 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
               value={filterSubject}
               onChange={e => setFilterSubject(e.target.value)}
               style={{
-                background: '#f8f3eb',
-                color: '#17324d',
+                background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+                color: 'var(--theme-border, var(--theme-border, #17324d))',
                 border: '1.5px solid #ded3c5',
                 borderRadius: '10px',
                 padding: '7px 14px',
@@ -258,15 +258,15 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
       {subTab === 'papers' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {isLoading ? (
-            <div className="glass-panel" style={{ padding: '50px 20px', textAlign: 'center', color: '#17324d' }}>
-              <RefreshCw size={36} className="animate-spin" style={{ margin: '0 auto 12px', color: '#ef8354' }} />
+            <div className="glass-panel" style={{ padding: '50px 20px', textAlign: 'center', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+              <RefreshCw size={36} className="animate-spin" style={{ margin: '0 auto 12px', color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
               <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>正在自 Firebase 雲端調閱您的歷史試卷...</div>
               <div style={{ fontSize: '0.82rem', color: '#78818a', marginTop: '6px' }}>完整還原各卷題目、所選選項與名師詳解</div>
             </div>
           ) : filteredPapers.length === 0 ? (
             <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', color: '#78818a' }}>
-              <FileText size={48} style={{ margin: '0 auto 14px', opacity: 0.5, color: '#ef8354' }} />
-              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#17324d' }}>目前尚無測驗試卷紀錄</div>
+              <FileText size={48} style={{ margin: '0 auto 14px', opacity: 0.5, color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>目前尚無測驗試卷紀錄</div>
               <div style={{ fontSize: '0.88rem', marginTop: '6px' }}>
                 前往「會考模擬題庫」完成任意科目或單元測驗交卷後，整張試卷與詳解將永久封存於此。
               </div>
@@ -280,11 +280,11 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                 <div
                   key={paper.id || pIdx}
                   style={{
-                    background: '#fffdf9',
-                    border: '2px solid #17324d',
+                    background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+                    border: '2px solid var(--theme-border, #17324d)',
                     borderRadius: '18px',
                     padding: '22px',
-                    boxShadow: '4px 4px 0px #17324d',
+                    boxShadow: '4px 4px 0px var(--theme-border, #17324d)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '16px'
@@ -306,14 +306,14 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                         </span>
                       </div>
 
-                      <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#17324d', margin: 0 }}>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', margin: 0 }}>
                         📄 {paper.paperTitle || '會考實戰模擬考卷'}
                       </h3>
                     </div>
 
                     {/* 得分成績與操作按鈕 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                      <div style={{ textAlign: 'right', background: '#f8f3eb', border: '1.5px solid #ded3c5', padding: '8px 14px', borderRadius: '12px' }}>
+                      <div style={{ textAlign: 'right', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', padding: '8px 14px', borderRadius: '12px' }}>
                         <div style={{ fontSize: '1.3rem', fontWeight: 900, color: scoreColor }}>
                           {paper.score} <span style={{ fontSize: '0.8rem', color: '#78818a' }}>分</span>
                         </div>
@@ -346,7 +346,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                   {/* 試卷完整逐題展開展示 */}
                   {isExpanded && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', paddingTop: '4px' }}>
-                      <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#17324d', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <CheckCircle2 size={16} color="#15803d" />
                         整卷各題作答結果與詳解（共 {paper.questions?.length || 0} 題）：
                       </div>
@@ -381,7 +381,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                                 }}>
                                   第 {qIndex + 1} 題
                                 </span>
-                                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#17324d' }}>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                                   題號代碼：{q.id}
                                 </span>
                                 {q.conceptTag && (
@@ -405,7 +405,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                             </div>
 
                             {/* 題幹內容 */}
-                            <div style={{ fontSize: '0.96rem', fontWeight: 800, color: '#17324d', lineHeight: 1.5 }}>
+                            <div style={{ fontSize: '0.96rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.5 }}>
                               {q.question}
                             </div>
 
@@ -416,9 +416,9 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                                   const isSelected = isUserPick === optIdx;
                                   const isCorrectOption = q.answer === optIdx;
 
-                                  let optBg = '#fffdf9';
+                                  let optBg = 'var(--theme-card, var(--theme-card, #fffdf9))';
                                   let optBorder = '1px solid #ded3c5';
-                                  let optColor = '#17324d';
+                                  let optColor = 'var(--theme-border, var(--theme-border, #17324d))';
 
                                   if (isCorrectOption) {
                                     optBg = '#e8f8ed';
@@ -469,8 +469,8 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                             )}
 
                             {/* 名師推導詳解 */}
-                            <div style={{ background: '#fffdf9', border: '1px solid #ded3c5', borderRadius: '10px', padding: '10px 14px', fontSize: '0.84rem', color: '#2d3748', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
-                              <span style={{ fontWeight: 900, color: '#17324d', display: 'block', marginBottom: '2px' }}>
+                            <div style={{ background: 'var(--theme-card, var(--theme-card, #fffdf9))', border: '1px solid #ded3c5', borderRadius: '10px', padding: '10px 14px', fontSize: '0.84rem', color: '#2d3748', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+                              <span style={{ fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'block', marginBottom: '2px' }}>
                                 📖 題目詳解與觀念推導：
                               </span>
                               {q.explanation || '依據 108 課綱核心考點設計，按標準公式與定義運算即可得出解答。'}
@@ -493,7 +493,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
           {filteredMistakes.length === 0 ? (
             <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', color: '#78818a' }}>
               <CheckCircle2 size={50} color="#10b981" style={{ margin: '0 auto 12px' }} />
-              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#17324d' }}>錯題本目前空空如也！</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>錯題本目前空空如也！</div>
               <div style={{ fontSize: '0.88rem', marginTop: '4px' }}>保持這個節奏，繼續在題庫測驗中發揮實力吧！</div>
             </div>
           ) : (
@@ -504,7 +504,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                 style={{ 
                   padding: '20px', 
                   borderLeft: m.status === 'mastered' ? '5px solid #10b981' : '5px solid #ef4444',
-                  background: '#fffdf9'
+                  background: 'var(--theme-card, var(--theme-card, #fffdf9))'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
@@ -514,7 +514,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                     <span style={{ fontSize: '0.75rem', color: '#78818a' }}>題號: {m.questionId}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#ef8354', fontWeight: 800 }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontWeight: 800 }}>
                       累計出錯 {m.wrongCount || 1} 次
                     </span>
                     {m.status === 'mastered' ? (
@@ -525,12 +525,12 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                   </div>
                 </div>
 
-                <div style={{ fontSize: '1.02rem', fontWeight: 800, color: '#17324d', marginBottom: '12px' }}>
+                <div style={{ fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '12px' }}>
                   {m.question}
                 </div>
 
                 {/* 正確解答與推導 */}
-                <div style={{ background: '#f8f3eb', border: '1px solid #ded3c5', padding: '12px 14px', borderRadius: '10px', marginBottom: '8px', fontSize: '0.86rem', color: '#5b6772' }}>
+                <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1px solid #ded3c5', padding: '12px 14px', borderRadius: '10px', marginBottom: '8px', fontSize: '0.86rem', color: '#5b6772' }}>
                   <div style={{ color: '#047857', fontWeight: 800, marginBottom: '4px' }}>
                     標準答案：{m.options && m.answer !== undefined ? `${String.fromCharCode(65 + m.answer)}. ${m.options[m.answer]}` : `選項 (${m.answer + 1})`}
                   </div>
@@ -554,7 +554,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
           {filteredHistory.length === 0 ? (
             <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', color: '#78818a' }}>
               <History size={50} color="#64748b" style={{ margin: '0 auto 12px' }} />
-              <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#17324d' }}>尚無雲端作答紀錄</div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>尚無雲端作答紀錄</div>
               <div style={{ fontSize: '0.85rem', marginTop: '4px' }}>前往「題庫測驗」做幾道題目，所有歷程都會即時記錄在此！</div>
             </div>
           ) : (
@@ -567,7 +567,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'space-between',
-                  background: '#fffdf9'
+                  background: 'var(--theme-card, var(--theme-card, #fffdf9))'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -578,7 +578,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                   )}
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: 800, fontSize: '0.92rem', color: '#17324d' }}>
+                      <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                         {h.unitName || '單元綜合'}
                       </span>
                       <span className="badge badge-purple" style={{ fontSize: '0.7rem' }}>

@@ -138,7 +138,7 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
           {sortedConcepts.length === 0 ? (
             <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-dim)' }}>
               <ShieldCheck size={48} color="#10b981" style={{ margin: '0 auto 12px' }} />
-              <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#17324d' }}>恭喜！目前無待攻克弱點！</div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>恭喜！目前無待攻克弱點！</div>
               <div style={{ fontSize: '0.85rem', marginTop: '6px' }}>先前往題庫測驗，系統會自動在出錯時收錄類型並為你診斷。</div>
             </div>
           ) : (
@@ -158,7 +158,7 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
                     }}
                   >
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#17324d', marginBottom: '4px' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '4px' }}>
                         {concept}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem', color: 'var(--text-dim)' }}>
@@ -211,7 +211,7 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#17324d' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                       {m.conceptTag}
                     </div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '2px' }}>

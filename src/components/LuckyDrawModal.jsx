@@ -22,10 +22,10 @@ const S = {
     padding: '16px',
   },
   card: {
-    background: '#fffdf9',
-    border: '2.5px solid #17324d',
+    background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+    border: '2.5px solid var(--theme-border, #17324d)',
     borderRadius: '28px',
-    boxShadow: '8px 8px 0 #17324d',
+    boxShadow: '8px 8px 0 var(--theme-border, #17324d)',
     width: '100%',
     maxWidth: '520px',
     maxHeight: '90vh',
@@ -34,12 +34,12 @@ const S = {
     flexDirection: 'column',
   },
   header: {
-    borderBottom: '2px solid #17324d',
+    borderBottom: '2px solid var(--theme-border, #17324d)',
     padding: '16px 20px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    background: '#fffdf9',
+    background: 'var(--theme-card, var(--theme-card, #fffdf9))',
     flexShrink: 0,
   },
   headerLeft: {
@@ -63,7 +63,7 @@ const S = {
     margin: 0,
     fontSize: '17px',
     fontWeight: 900,
-    color: '#17324d',
+    color: 'var(--theme-border, var(--theme-border, #17324d))',
     fontFamily: '"Noto Serif TC", serif',
   },
   subtitle: {
@@ -98,20 +98,20 @@ const S = {
     justifyContent: 'center',
     gap: '8px',
     background: '#fff0e9',
-    border: '1px solid #ef8354',
+    border: '1px solid var(--theme-accent, #ef8354)',
     borderRadius: '12px',
     padding: '10px 14px',
     marginBottom: '16px',
     fontSize: '12px',
     fontWeight: 900,
-    color: '#ef8354',
+    color: 'var(--theme-accent, var(--theme-accent, #ef8354))',
   },
   pityBox: {
     width: '100%',
-    background: '#f8f3eb',
-    border: '2px solid #17324d',
+    background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+    border: '2px solid var(--theme-border, #17324d)',
     borderRadius: '16px',
-    boxShadow: '3px 3px 0 #17324d',
+    boxShadow: '3px 3px 0 var(--theme-border, #17324d)',
     padding: '14px 16px',
     marginBottom: '20px',
     textAlign: 'left',
@@ -133,14 +133,14 @@ const S = {
     fontFamily: 'monospace',
     fontSize: '14px',
     fontWeight: 900,
-    color: '#17324d',
+    color: 'var(--theme-border, var(--theme-border, #17324d))',
   },
   progressTrack: {
     marginTop: '10px',
     height: '12px',
     width: '100%',
     background: 'white',
-    border: '1px solid #17324d',
+    border: '1px solid var(--theme-border, #17324d)',
     borderRadius: '999px',
     overflow: 'hidden',
   },
@@ -162,7 +162,7 @@ const S = {
     marginBottom: '20px',
   },
   ticketBadge: {
-    background: '#17324d',
+    background: 'var(--theme-border, var(--theme-border, #17324d))',
     color: '#f7cf68',
     borderRadius: '999px',
     padding: '4px 14px',
@@ -174,9 +174,9 @@ const S = {
     width: '192px',
     height: '192px',
     borderRadius: '50%',
-    border: '3px solid #17324d',
-    background: '#f8f3eb',
-    boxShadow: '5px 5px 0 #17324d',
+    border: '3px solid var(--theme-border, #17324d)',
+    background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+    boxShadow: '5px 5px 0 var(--theme-border, #17324d)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -193,7 +193,7 @@ const S = {
   wheelPrizeName: {
     fontSize: '15px',
     fontWeight: 900,
-    color: '#17324d',
+    color: 'var(--theme-border, var(--theme-border, #17324d))',
     margin: 0,
   },
   wheelNotice: {
@@ -217,7 +217,7 @@ const S = {
   },
   spinBtn: {
     width: '100%',
-    background: '#ef8354',
+    background: 'var(--theme-accent, var(--theme-accent, #ef8354))',
     color: 'white',
     border: 'none',
     borderRadius: '16px',
@@ -240,7 +240,7 @@ const S = {
   infoBox: {
     marginTop: '20px',
     width: '100%',
-    background: '#f8f3eb',
+    background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
     border: '1px solid #e8ded0',
     borderRadius: '12px',
     padding: '14px',
@@ -252,7 +252,7 @@ const S = {
   },
   infoTitle: {
     fontWeight: 900,
-    color: '#17324d',
+    color: 'var(--theme-border, var(--theme-border, #17324d))',
     display: 'block',
     marginBottom: '6px',
   },
@@ -348,14 +348,14 @@ export default function LuckyDrawModal() {
               <div style={{
                 height: '100%',
                 width: `${pityPercent}%`,
-                background: 'linear-gradient(to right, #f7cf68, #ef8354)',
+                background: 'linear-gradient(to right, #f7cf68, var(--theme-accent, #ef8354))',
                 borderRadius: '999px',
                 transition: 'width 0.4s',
               }} />
             </div>
             <div style={S.progressFooter}>
               <span>每抽累積進度 +1</span>
-              <span style={{ color: '#ef8354' }}>滿 50 抽 100% 必出最高 +5 點金色大獎</span>
+              <span style={{ color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }}>滿 50 抽 100% 必出最高 +5 點金色大獎</span>
             </div>
           </div>
 
@@ -369,8 +369,8 @@ export default function LuckyDrawModal() {
           <div style={S.wheel}>
             {isSpinning ? (
               <div style={S.wheelInner}>
-                <Sparkles size={40} style={{ color: '#ef8354', animation: 'spin 0.8s linear infinite' }} />
-                <span style={{ fontSize: '13px', fontWeight: 900, color: '#17324d' }}>好運抽取中...</span>
+                <Sparkles size={40} style={{ color: 'var(--theme-accent, var(--theme-accent, #ef8354))', animation: 'spin 0.8s linear infinite' }} />
+                <span style={{ fontSize: '13px', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>好運抽取中...</span>
               </div>
             ) : prizeResult ? (
               <div style={{ ...S.wheelInner, padding: '10px' }}>
@@ -384,8 +384,8 @@ export default function LuckyDrawModal() {
               </div>
             ) : (
               <div style={S.wheelInner}>
-                <Gift size={38} style={{ color: '#ef8354' }} />
-                <span style={{ fontSize: '12px', fontWeight: 900, color: '#17324d' }}>點擊下方按鈕啟動</span>
+                <Gift size={38} style={{ color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
+                <span style={{ fontSize: '12px', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>點擊下方按鈕啟動</span>
                 <span style={{ fontSize: '10px', fontWeight: 700, color: '#9aa2a8' }}>50 抽必中金色大獎進行中</span>
               </div>
             )}

@@ -201,7 +201,7 @@ export default function SuperAdminConsole() {
               <select
                 value={filterActionType}
                 onChange={e => setFilterActionType(e.target.value)}
-                style={{ background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', padding: '6px 12px', fontSize: '0.85rem', fontWeight: 700 }}
+                style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', padding: '6px 12px', fontSize: '0.85rem', fontWeight: 700 }}
               >
                 <option value="ALL">全部動作日誌</option>
                 <option value="MODIFY_QUESTION">修改題目/答案</option>
@@ -245,7 +245,7 @@ export default function SuperAdminConsole() {
                           {log.actionType}
                         </span>
                       </div>
-                      <div style={{ fontSize: '0.92rem', color: '#17324d', fontWeight: 700 }}>
+                      <div style={{ fontSize: '0.92rem', color: 'var(--theme-border, var(--theme-border, #17324d))', fontWeight: 700 }}>
                         {log.details}
                       </div>
                     </div>
@@ -336,7 +336,7 @@ export default function SuperAdminConsole() {
                   value={newAdminName}
                   onChange={e => setNewAdminName(e.target.value)}
                   placeholder="例如：陳老師 (自然理化)"
-                  style={{ width: '100%', padding: '10px 12px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}
                 />
               </div>
 
@@ -349,7 +349,7 @@ export default function SuperAdminConsole() {
                   value={newAdminEmail}
                   onChange={e => setNewAdminEmail(e.target.value)}
                   placeholder="teacher@gmail.com"
-                  style={{ width: '100%', padding: '10px 12px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}
                 />
               </div>
 
@@ -362,7 +362,7 @@ export default function SuperAdminConsole() {
                   value={newAdminSpecialty}
                   onChange={e => setNewAdminSpecialty(e.target.value)}
                   placeholder="例如：國中理化、會考A++題型"
-                  style={{ width: '100%', padding: '10px 12px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}
                 />
               </div>
 

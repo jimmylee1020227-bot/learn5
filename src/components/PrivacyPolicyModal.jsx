@@ -47,10 +47,10 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
           width: '100%',
           maxWidth: '680px',
           maxHeight: '92vh',
-          background: '#fffdf9',
-          border: '3px solid #17324d',
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+          border: '3px solid var(--theme-border, #17324d)',
           borderRadius: '28px',
-          boxShadow: '10px 10px 0px #17324d',
+          boxShadow: '10px 10px 0px var(--theme-border, #17324d)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -61,8 +61,8 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
         <div 
           style={{
             padding: '24px 28px 18px',
-            borderBottom: '2.5px solid #17324d',
-            background: '#f8f3eb',
+            borderBottom: '2.5px solid var(--theme-border, #17324d)',
+            background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -75,13 +75,13 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
                 width: '48px',
                 height: '48px',
                 borderRadius: '16px',
-                background: '#17324d',
+                background: 'var(--theme-border, var(--theme-border, #17324d))',
                 color: '#f7cf68',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '2px solid #17324d',
-                boxShadow: '3px 3px 0px #ef8354',
+                border: '2px solid var(--theme-border, #17324d)',
+                boxShadow: '3px 3px 0px var(--theme-accent, #ef8354)',
                 flexShrink: 0
               }}
             >
@@ -89,7 +89,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <h2 style={{ margin: 0, fontSize: '1.28rem', fontWeight: 900, color: '#17324d' }}>
+                <h2 style={{ margin: 0, fontSize: '1.28rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                   使用者條款與個人資料保護政策
                 </h2>
                 <span 
@@ -168,7 +168,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#e0f2fe', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
                 1
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: '#17324d' }}>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                 Google 帳戶資訊存取與身分識別
               </h3>
             </div>
@@ -185,7 +185,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#fef3c7', color: '#b45309', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
                 2
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: '#17324d' }}>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                 學科做題與測驗歷程紀錄
               </h3>
             </div>
@@ -202,7 +202,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#fee2e2', color: '#b91c1c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
                 3
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: '#17324d' }}>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                 智慧錯題本與弱點加強資料
               </h3>
             </div>
@@ -218,7 +218,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#dcfce7', color: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
                 4
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: '#17324d' }}>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                 每週排行榜、積分與抽獎狀態
               </h3>
             </div>
@@ -234,7 +234,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#f3e8ff', color: '#7e22ce', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
                 5
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: '#17324d' }}>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                 打氣留言牆社群規範與防護機制
               </h3>
             </div>
@@ -251,7 +251,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#ffedd5', color: '#c2410c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
                 6
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: '#17324d' }}>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                 跨端雲端同步與本機儲存 (LocalStorage)
               </h3>
             </div>
@@ -283,8 +283,8 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
         <div 
           style={{
             padding: '18px 28px',
-            borderTop: '2.5px solid #17324d',
-            background: '#f8f3eb',
+            borderTop: '2.5px solid var(--theme-border, #17324d)',
+            background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
             display: 'flex',
             flexDirection: 'column',
             gap: '14px'
@@ -300,7 +300,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               userSelect: 'none',
               fontSize: '0.88rem',
               fontWeight: 700,
-              color: '#17324d'
+              color: 'var(--theme-border, var(--theme-border, #17324d))'
             }}
           >
             <input 
@@ -310,7 +310,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               style={{
                 width: '18px',
                 height: '18px',
-                accentColor: '#ef8354',
+                accentColor: 'var(--theme-accent, var(--theme-accent, #ef8354))',
                 cursor: 'pointer',
                 marginTop: '2px'
               }}
@@ -343,7 +343,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
                 fontWeight: 900,
                 opacity: isChecked ? 1 : 0.5,
                 cursor: isChecked ? 'pointer' : 'not-allowed',
-                boxShadow: isChecked ? '4px 4px 0px #17324d' : 'none'
+                boxShadow: isChecked ? '4px 4px 0px var(--theme-border, #17324d)' : 'none'
               }}
             >
               <Check size={18} />

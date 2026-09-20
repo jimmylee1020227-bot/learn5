@@ -77,7 +77,7 @@ export default function GoogleLoginModal() {
             onClick={handleLoginAsSuperAdmin}
             style={{ 
               padding: '16px 20px', 
-              border: '2.5px solid #17324d', 
+              border: '2.5px solid var(--theme-border, #17324d)', 
               background: '#fff7d9', 
               borderRadius: '16px',
               cursor: 'pointer',
@@ -89,7 +89,7 @@ export default function GoogleLoginModal() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{ padding: '8px', borderRadius: '50%', background: '#fff3bd', border: '1.5px solid #17324d' }}>
+              <div style={{ padding: '8px', borderRadius: '50%', background: '#fff3bd', border: '1.5px solid var(--theme-border, #17324d)' }}>
                 <Crown size={24} color="#806523" />
               </div>
               <div>
@@ -113,8 +113,8 @@ export default function GoogleLoginModal() {
 
           {/* 官方 OAuth 2.0 跳轉配置 */}
           <div className="glass-panel" style={{ padding: '18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 800, fontSize: '0.92rem', color: '#17324d', marginBottom: '8px' }}>
-              <Settings size={16} color="#ef8354" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 800, fontSize: '0.92rem', color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '8px' }}>
+              <Settings size={16} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
               官方 Google OAuth 2.0 跳轉授權設定
             </div>
             <p style={{ fontSize: '0.8rem', color: '#5b6772', marginBottom: '12px', lineHeight: 1.5, fontWeight: 600 }}>
@@ -130,10 +130,10 @@ export default function GoogleLoginModal() {
                 style={{
                   width: '100%',
                   padding: '10px 12px',
-                  background: '#f8f3eb',
+                  background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                   border: '1.5px solid #ded3c5',
                   borderRadius: 'var(--radius-sm)',
-                  color: '#17324d',
+                  color: 'var(--theme-border, var(--theme-border, #17324d))',
                   fontSize: '0.85rem',
                   fontWeight: 600
                 }}
@@ -153,7 +153,7 @@ export default function GoogleLoginModal() {
 
           {/* 一般學生 Google 信箱快速登入 */}
           <div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#17324d', marginBottom: '8px' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '8px' }}>
               🎓 學生個人 Google 帳號快速登入：
             </div>
             <form onSubmit={handleLoginAsStudent} style={{ display: 'flex', gap: '8px' }}>
@@ -165,10 +165,10 @@ export default function GoogleLoginModal() {
                 style={{
                   flex: 1,
                   padding: '10px 12px',
-                  background: '#f8f3eb',
+                  background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                   border: '1.5px solid #ded3c5',
                   borderRadius: 'var(--radius-sm)',
-                  color: '#17324d',
+                  color: 'var(--theme-border, var(--theme-border, #17324d))',
                   fontSize: '0.85rem',
                   fontWeight: 600
                 }}

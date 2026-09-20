@@ -90,10 +90,10 @@ export default function LeaderboardView() {
           padding: '30px', 
           position: 'relative', 
           overflow: 'hidden',
-          background: '#fffdf9',
-          border: '2.5px solid #17324d',
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+          border: '2.5px solid var(--theme-border, #17324d)',
           borderRadius: '28px',
-          boxShadow: '6px 6px 0px #17324d'
+          boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
@@ -102,7 +102,7 @@ export default function LeaderboardView() {
               <span className="badge badge-gold">全台國中全科競技榜</span>
               <span className="badge badge-coral">每週一 00:00 自動歸零結算</span>
             </div>
-            <h1 style={{ fontSize: '1.85rem', fontWeight: 900, letterSpacing: '-0.02em', marginBottom: '8px', color: '#17324d' }}>
+            <h1 style={{ fontSize: '1.85rem', fontWeight: 900, letterSpacing: '-0.02em', marginBottom: '8px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
               每週積分排行榜與榮譽名人堂
             </h1>
             <p style={{ color: '#5b6772', fontSize: '0.94rem', fontWeight: 600 }}>
@@ -115,8 +115,8 @@ export default function LeaderboardView() {
             style={{ 
               padding: '16px 20px', 
               borderRadius: '20px', 
-              border: '2px solid #17324d', 
-              background: '#f8f3eb',
+              border: '2px solid var(--theme-border, #17324d)', 
+              background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
               boxShadow: '4px 4px 0px #f7cf68',
               textAlign: 'right' 
             }}
@@ -124,7 +124,7 @@ export default function LeaderboardView() {
             <div style={{ fontSize: '0.8rem', color: '#806523', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', fontWeight: 800 }}>
               <Clock size={16} /> 本週榜單結算歸零倒數
             </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.45rem', fontWeight: 900, color: '#17324d', marginTop: '4px' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.45rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', marginTop: '4px' }}>
               {countdown.days}天 {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
             </div>
             <button
@@ -201,16 +201,16 @@ export default function LeaderboardView() {
           className="glass-panel" 
           style={{ 
             padding: '26px',
-            background: '#fffdf9',
-            border: '2.5px solid #17324d',
+            background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+            border: '2.5px solid var(--theme-border, #17324d)',
             borderRadius: '28px',
-            boxShadow: '6px 6px 0px #17324d'
+            boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
           }}
         >
           {board.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '50px 20px' }}>
-              <Sparkles size={48} color="#ef8354" style={{ margin: '0 auto 16px', display: 'block' }} />
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 900, color: '#17324d', marginBottom: '8px' }}>
+              <Sparkles size={48} color="var(--theme-accent, var(--theme-accent, #ef8354))" style={{ margin: '0 auto 16px', display: 'block' }} />
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '8px' }}>
                 本週全台積分榜虛位以待！
               </h3>
               <p style={{ color: '#78818a', fontSize: '0.92rem', maxWidth: '420px', margin: '0 auto 20px', lineHeight: 1.6 }}>
@@ -233,37 +233,37 @@ export default function LeaderboardView() {
                   {/* 第 2 名 (銀牌) */}
                   <div style={{ textAlign: 'center', order: 1 }}>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={board[1].avatar} alt="" style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid #17324d', background: '#dbe5ea' }} />
-                      <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#dbe5ea', color: '#58717d', border: '1.5px solid #17324d', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 900 }}>
+                      <img src={board[1].avatar} alt="" style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid var(--theme-border, #17324d)', background: '#dbe5ea' }} />
+                      <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#dbe5ea', color: '#58717d', border: '1.5px solid var(--theme-border, #17324d)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 900 }}>
                         #2
                       </span>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: '0.92rem', marginTop: '14px', color: '#17324d' }}>{board[1].displayName}</div>
+                    <div style={{ fontWeight: 800, fontSize: '0.92rem', marginTop: '14px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{board[1].displayName}</div>
                     <div style={{ color: '#58717d', fontWeight: 900, fontSize: '1.1rem' }}>{board[1].weeklyPoints} 點</div>
                   </div>
 
                   {/* 第 1 名 (置頂凸顯金牌) */}
                   <div style={{ textAlign: 'center', order: 2, transform: 'translateY(-14px)' }}>
-                    <Crown size={28} color="#ef8354" style={{ margin: '0 auto 4px' }} />
+                    <Crown size={28} color="var(--theme-accent, var(--theme-accent, #ef8354))" style={{ margin: '0 auto 4px' }} />
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={board[0].avatar} alt="" style={{ width: '80px', height: '80px', borderRadius: '50%', border: '3.5px solid #17324d', background: '#fff7d9', boxShadow: '0 0 0 3px #f7cf68' }} />
-                      <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#f7cf68', color: '#17324d', border: '1.5px solid #17324d', padding: '2px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 900 }}>
+                      <img src={board[0].avatar} alt="" style={{ width: '80px', height: '80px', borderRadius: '50%', border: '3.5px solid var(--theme-border, #17324d)', background: '#fff7d9', boxShadow: '0 0 0 3px #f7cf68' }} />
+                      <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#f7cf68', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid var(--theme-border, #17324d)', padding: '2px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 900 }}>
                         #1 領先
                       </span>
                     </div>
-                    <div style={{ fontWeight: 900, fontSize: '1.05rem', marginTop: '16px', color: '#17324d' }}>{board[0].displayName}</div>
-                    <div style={{ color: '#ef8354', fontWeight: 900, fontSize: '1.35rem' }}>{board[0].weeklyPoints} 點</div>
+                    <div style={{ fontWeight: 900, fontSize: '1.05rem', marginTop: '16px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{board[0].displayName}</div>
+                    <div style={{ color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontWeight: 900, fontSize: '1.35rem' }}>{board[0].weeklyPoints} 點</div>
                   </div>
 
                   {/* 第 3 名 (銅牌) */}
                   <div style={{ textAlign: 'center', order: 3 }}>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={board[2].avatar} alt="" style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid #17324d', background: '#efc4a5' }} />
-                      <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#efc4a5', color: '#995f3b', border: '1.5px solid #17324d', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 900 }}>
+                      <img src={board[2].avatar} alt="" style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid var(--theme-border, #17324d)', background: '#efc4a5' }} />
+                      <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#efc4a5', color: '#995f3b', border: '1.5px solid var(--theme-border, #17324d)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 900 }}>
                         #3
                       </span>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: '0.92rem', marginTop: '14px', color: '#17324d' }}>{board[2].displayName}</div>
+                    <div style={{ fontWeight: 800, fontSize: '0.92rem', marginTop: '14px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{board[2].displayName}</div>
                     <div style={{ color: '#995f3b', fontWeight: 900, fontSize: '1.1rem' }}>{board[2].weeklyPoints} 點</div>
                   </div>
 
@@ -282,10 +282,10 @@ export default function LeaderboardView() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        border: isCurrentUser ? '2px solid #ef8354' : '1.5px solid #e8ded0',
-                        background: isCurrentUser ? '#fff0e9' : '#f8f3eb',
+                        border: isCurrentUser ? '2px solid var(--theme-accent, #ef8354)' : '1.5px solid #e8ded0',
+                        background: isCurrentUser ? '#fff0e9' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                         borderRadius: '16px',
-                        boxShadow: isCurrentUser ? '3px 3px 0px #ef8354' : 'none'
+                        boxShadow: isCurrentUser ? '3px 3px 0px var(--theme-accent, #ef8354)' : 'none'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -299,11 +299,11 @@ export default function LeaderboardView() {
                           #{index + 1}
                         </div>
 
-                        <img src={player.avatar} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1.5px solid #17324d' }} />
+                        <img src={player.avatar} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1.5px solid var(--theme-border, #17324d)' }} />
 
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontWeight: 800, fontSize: '0.98rem', color: '#17324d' }}>
+                            <span style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                               {player.displayName}
                             </span>
                             {isCurrentUser && (
@@ -319,7 +319,7 @@ export default function LeaderboardView() {
                       </div>
 
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#ef8354' }}>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }}>
                           {player.weeklyPoints} <span style={{ fontSize: '0.8rem', color: '#78818a', fontWeight: 700 }}>點</span>
                         </div>
                         <div style={{ fontSize: '0.72rem', color: '#5b6772', fontWeight: 600 }}>
@@ -343,16 +343,16 @@ export default function LeaderboardView() {
               className="glass-panel" 
               style={{ 
                 padding: '24px',
-                background: '#fffdf9',
-                border: '2.5px solid #17324d',
+                background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+                border: '2.5px solid var(--theme-border, #17324d)',
                 borderRadius: '24px',
-                boxShadow: '6px 6px 0px #17324d'
+                boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1.5px solid #e8ded0', paddingBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Crown size={20} color="#ef8354" />
-                  <span style={{ fontSize: '1.1rem', fontWeight: 900, color: '#17324d' }}>
+                  <Crown size={20} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
+                  <span style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                     {fame.weekTitle}
                   </span>
                 </div>
@@ -361,19 +361,19 @@ export default function LeaderboardView() {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, minWidth: '260px' }}>
-                  <img src={fame.champion.avatar} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', border: '2px solid #17324d' }} />
+                  <img src={fame.champion.avatar} alt="" style={{ width: '56px', height: '56px', borderRadius: '50%', border: '2px solid var(--theme-border, #17324d)' }} />
                   <div>
                     <div style={{ fontSize: '0.8rem', color: '#78818a', fontWeight: 700 }}>週總冠軍霸主</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#17324d' }}>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                       {fame.champion.displayName}
                     </div>
-                    <div style={{ fontSize: '0.85rem', color: '#ef8354', fontWeight: 800 }}>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontWeight: 800 }}>
                       最終得分：{fame.champion.finalScore} 點
                     </div>
                   </div>
                 </div>
 
-                <div style={{ flex: 1, minWidth: '260px', background: '#f8f3eb', padding: '12px 16px', borderRadius: '14px', border: '1px solid #ded3c5' }}>
+                <div style={{ flex: 1, minWidth: '260px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', padding: '12px 16px', borderRadius: '14px', border: '1px solid #ded3c5' }}>
                   <div style={{ fontSize: '0.75rem', color: '#78818a', marginBottom: '4px', fontWeight: 700 }}>榮譽亞軍與季軍：</div>
                   {fame.runnersUp?.map((r, i) => (
                     <div key={i} style={{ fontSize: '0.85rem', color: '#5b6772', fontWeight: 600, padding: '2px 0' }}>

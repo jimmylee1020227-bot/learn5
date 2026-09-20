@@ -671,7 +671,7 @@ export default function AdminDashboard() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                       <span className="badge badge-fire">{rep.reason}</span>
-                      <strong style={{ color: '#17324d', fontSize: '0.95rem' }}>題號: {rep.questionId}</strong>
+                      <strong style={{ color: 'var(--theme-border, var(--theme-border, #17324d))', fontSize: '0.95rem' }}>題號: {rep.questionId}</strong>
                       <span style={{ fontSize: '0.8rem', color: '#5b6772' }}>{rep.unitName}</span>
                     </div>
                     <div style={{ fontSize: '0.88rem', color: '#5b6772', marginTop: '4px' }}>
@@ -720,7 +720,7 @@ export default function AdminDashboard() {
               <select
                 value={targetPlayerId}
                 onChange={e => setTargetPlayerId(e.target.value)}
-                style={{ width: '100%', padding: '10px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}
+                style={{ width: '100%', padding: '10px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}
               >
                 <option value="ALL">📢 全體玩家 (所有人領取)</option>
                 {players.map(p => (
@@ -739,7 +739,7 @@ export default function AdminDashboard() {
                   type="number"
                   value={pointsToGrant}
                   onChange={e => setPointsToGrant(e.target.value)}
-                  style={{ width: '100px', padding: '8px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}
+                  style={{ width: '100px', padding: '8px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}
                 />
                 <button onClick={handleGrantPoints} className="btn btn-gold" style={{ flex: 1, padding: '8px' }}>
                   確認發放點數
@@ -755,7 +755,7 @@ export default function AdminDashboard() {
                   type="number"
                   value={ticketsToGrant}
                   onChange={e => setTicketsToGrant(e.target.value)}
-                  style={{ width: '100px', padding: '8px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}
+                  style={{ width: '100px', padding: '8px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}
                 />
                 <button onClick={handleGrantTickets} className="btn btn-primary" style={{ flex: 1, padding: '8px' }}>
                   確認發放抽獎券
@@ -779,8 +779,8 @@ export default function AdminDashboard() {
           
           {/* 上半部：自訂新增兌換碼表單 */}
           <div className="glass-panel" style={{ padding: '24px' }}>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#17324d', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Plus size={18} color="#ef8354" />
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Plus size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
               建立自訂兌換碼（支援點數、抽獎券與雙倍暴擊卡）
             </h3>
 
@@ -795,7 +795,7 @@ export default function AdminDashboard() {
                     value={newCodeName}
                     onChange={e => setNewCodeName(e.target.value.toUpperCase())}
                     placeholder="例如：MATH100、AIPLUS"
-                    style={{ width: '100%', padding: '10px 12px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 800, fontFamily: 'var(--font-mono)' }}
+                    style={{ width: '100%', padding: '10px 12px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 800, fontFamily: 'var(--font-mono)' }}
                   />
                 </div>
 
@@ -806,7 +806,7 @@ export default function AdminDashboard() {
                   <select
                     value={newCodeType}
                     onChange={e => setNewCodeType(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700 }}
+                    style={{ width: '100%', padding: '10px 12px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700 }}
                   >
                     <option value="points">🏆 排行榜積分點數 (直接加分)</option>
                     <option value="lottery_ticket">🎫 幸運抽獎券 (轉盤保底)</option>
@@ -823,7 +823,7 @@ export default function AdminDashboard() {
                     value={newCodeReward}
                     onChange={e => setNewCodeReward(e.target.value)}
                     min={1}
-                    style={{ width: '100%', padding: '10px 12px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 800 }}
+                    style={{ width: '100%', padding: '10px 12px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 800 }}
                   />
                 </div>
 
@@ -835,7 +835,7 @@ export default function AdminDashboard() {
                     type="date"
                     value={newCodeExpires}
                     onChange={e => setNewCodeExpires(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700 }}
+                    style={{ width: '100%', padding: '10px 12px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700 }}
                   />
                 </div>
               </div>
@@ -849,7 +849,7 @@ export default function AdminDashboard() {
                   value={newCodeLabel}
                   onChange={e => setNewCodeLabel(e.target.value)}
                   placeholder="例如：會考數學滿分衝刺加碼禮包 (+60分)"
-                  style={{ width: '100%', padding: '10px 12px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 600 }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 600 }}
                 />
               </div>
 
@@ -869,8 +869,8 @@ export default function AdminDashboard() {
 
           {/* 下半部：目前有效兌換碼清單與刪除操作 */}
           <div className="glass-panel" style={{ padding: '24px' }}>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#17324d', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Ticket size={18} color="#ef8354" />
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Ticket size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
               目前有效兌換碼名冊 ({redemptionCodes.length} 組)
             </h3>
 
@@ -881,9 +881,9 @@ export default function AdminDashboard() {
                   style={{
                     padding: '14px 18px',
                     borderRadius: '16px',
-                    background: '#fffdf9',
-                    border: '2px solid #17324d',
-                    boxShadow: '3px 3px 0 #17324d',
+                    background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+                    border: '2px solid var(--theme-border, #17324d)',
+                    boxShadow: '3px 3px 0 var(--theme-border, #17324d)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -893,7 +893,7 @@ export default function AdminDashboard() {
                 >
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.05rem', color: '#17324d' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.05rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                         {codeItem.code}
                       </span>
                       <span className={`badge ${codeItem.type === 'multiplier' ? 'badge-fire' : codeItem.type === 'lottery_ticket' ? 'badge-coral' : 'badge-gold'}`}>
@@ -940,8 +940,8 @@ export default function AdminDashboard() {
               style={{
                 width: '100%',
                 height: '100px',
-                background: '#f8f3eb',
-                color: '#17324d',
+                background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+                color: 'var(--theme-border, var(--theme-border, #17324d))',
                 border: '1.5px solid #ded3c5',
                 borderRadius: 'var(--radius-sm)',
                 padding: '12px',
@@ -966,7 +966,7 @@ export default function AdminDashboard() {
           {/* 系統小鈴鐺通知中心公告管理 */}
           <div style={{ marginTop: '28px', borderTop: '1.5px solid #ded3c5', paddingTop: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#17324d', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Bell size={18} color="#f59e0b" />
                 學生端小鈴鐺通知公告管理 ({adminNotifications.length})
               </div>
@@ -977,7 +977,7 @@ export default function AdminDashboard() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {adminNotifications.length === 0 ? (
-                <div style={{ padding: '24px', textAlign: 'center', color: '#78818a', background: '#f8f3eb', borderRadius: '12px' }}>
+                <div style={{ padding: '24px', textAlign: 'center', color: '#78818a', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', borderRadius: '12px' }}>
                   目前無任何推播中的系統通知
                 </div>
               ) : (
@@ -985,7 +985,7 @@ export default function AdminDashboard() {
                   <div
                     key={notif.id}
                     style={{
-                      background: '#fffdf9',
+                      background: 'var(--theme-card, var(--theme-card, #fffdf9))',
                       border: '1.5px solid #ded3c5',
                       borderRadius: '14px',
                       padding: '14px 18px',
@@ -994,12 +994,12 @@ export default function AdminDashboard() {
                       justifyContent: 'space-between',
                       flexWrap: 'wrap',
                       gap: '12px',
-                      boxShadow: '1px 1px 0px #17324d'
+                      boxShadow: '1px 1px 0px var(--theme-border, #17324d)'
                     }}
                   >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '220px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 800, fontSize: '0.92rem', color: '#17324d' }}>
+                        <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                           {notif.title}
                         </span>
                         {notif.relatedCode && (
@@ -1040,7 +1040,7 @@ export default function AdminDashboard() {
           <div className="glass-panel" style={{ padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1.5px solid #ded3c5', paddingBottom: '16px', marginBottom: '20px' }}>
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#17324d', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                   <Users size={22} color="#15803d" />
                   所有學生雲端做題狀況與歷程調閱
                 </h3>
@@ -1077,11 +1077,11 @@ export default function AdminDashboard() {
             </div>
 
             {/* A-2. 全服即時做題動態串流 (Live Feed) */}
-            <div style={{ marginBottom: '20px', background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px' }}>
+            <div style={{ marginBottom: '20px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Zap size={18} color="#eab308" />
-                  <span style={{ fontWeight: 800, fontSize: '0.92rem', color: '#17324d' }}>
+                  <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                     ⚡ 全服做題即時動態串流 (Live Stream) - 即時交卷脈搏
                   </span>
                   <span className="badge badge-navy" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
@@ -1104,7 +1104,7 @@ export default function AdminDashboard() {
                       key={item.id}
                       style={{
                         minWidth: '260px',
-                        background: '#fffdf9',
+                        background: 'var(--theme-card, var(--theme-card, #fffdf9))',
                         border: '1.5px solid #ded3c5',
                         borderRadius: '12px',
                         padding: '12px 14px',
@@ -1116,7 +1116,7 @@ export default function AdminDashboard() {
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-                        <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#17324d' }}>
+                        <span style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                           👤 {item.userName || '會考同學'}
                         </span>
                         <span 
@@ -1142,7 +1142,7 @@ export default function AdminDashboard() {
                         <button
                           onClick={() => handleSelectStudentForInspection(item)}
                           className="btn btn-ghost"
-                          style={{ padding: '2px 6px', fontSize: '0.72rem', color: '#ef8354', fontWeight: 800 }}
+                          style={{ padding: '2px 6px', fontSize: '0.72rem', color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontWeight: 800 }}
                           title="調閱此學生詳細做題與錯題紀錄"
                         >
                           調閱詳解 →
@@ -1158,10 +1158,10 @@ export default function AdminDashboard() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
               
               {/* 高頻錯題類型 TOP 5 */}
-              <div style={{ background: '#fff0e9', border: '2px solid #ef8354', borderRadius: '18px', padding: '18px', boxShadow: '3px 3px 0 #17324d' }}>
+              <div style={{ background: '#fff0e9', border: '2px solid var(--theme-accent, #ef8354)', borderRadius: '18px', padding: '18px', boxShadow: '3px 3px 0 var(--theme-border, #17324d)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <span style={{ fontSize: '0.92rem', fontWeight: 900, color: '#c8643d', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <AlertTriangle size={17} color="#ef8354" />
+                    <AlertTriangle size={17} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
                     全體高頻錯題類型 TOP 5 (學生盲點)
                   </span>
                   <span style={{ fontSize: '0.74rem', color: '#78818a', fontWeight: 700 }}>
@@ -1180,7 +1180,7 @@ export default function AdminDashboard() {
                         key={item.tag} 
                         onClick={() => setQuestionSearchKeyword(item.tag)}
                         style={{
-                          background: '#fffdf9',
+                          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
                           border: '1.5px solid #ded3c5',
                           borderRadius: '12px',
                           padding: '10px 12px',
@@ -1197,7 +1197,7 @@ export default function AdminDashboard() {
                             {idx + 1}
                           </span>
                           <div>
-                            <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#17324d' }}>
+                            <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                               #{item.tag}
                             </div>
                             <div style={{ fontSize: '0.72rem', color: '#78818a' }}>
@@ -1221,7 +1221,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* 高頻精熟高正答題型 TOP 5 */}
-              <div style={{ background: '#e8f6ed', border: '2px solid #347650', borderRadius: '18px', padding: '18px', boxShadow: '3px 3px 0 #17324d' }}>
+              <div style={{ background: '#e8f6ed', border: '2px solid #347650', borderRadius: '18px', padding: '18px', boxShadow: '3px 3px 0 var(--theme-border, #17324d)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <span style={{ fontSize: '0.92rem', fontWeight: 900, color: '#15803d', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <CheckCircle2 size={17} color="#15803d" />
@@ -1243,7 +1243,7 @@ export default function AdminDashboard() {
                         key={item.tag} 
                         onClick={() => setQuestionSearchKeyword(item.tag)}
                         style={{
-                          background: '#fffdf9',
+                          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
                           border: '1.5px solid #ded3c5',
                           borderRadius: '12px',
                           padding: '10px 12px',
@@ -1260,7 +1260,7 @@ export default function AdminDashboard() {
                             {idx + 1}
                           </span>
                           <div>
-                            <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#17324d' }}>
+                            <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                               #{item.tag}
                             </div>
                             <div style={{ fontSize: '0.72rem', color: '#78818a' }}>
@@ -1291,8 +1291,8 @@ export default function AdminDashboard() {
           <div className="glass-panel" style={{ padding: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Users size={18} color="#ef8354" />
-                <span style={{ fontWeight: 800, fontSize: '0.98rem', color: '#17324d' }}>
+                <Users size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
+                <span style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                   學生名稱快篩按鈕（點選名字按鈕即切換為顯示該生所有錯題）：
                 </span>
               </div>
@@ -1308,8 +1308,8 @@ export default function AdminDashboard() {
                   style={{
                     flex: 1,
                     padding: '6px 12px',
-                    background: '#f8f3eb',
-                    color: '#17324d',
+                    background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+                    color: 'var(--theme-border, var(--theme-border, #17324d))',
                     border: '1.5px solid #ded3c5',
                     borderRadius: '10px',
                     fontSize: '0.82rem',
@@ -1328,15 +1328,15 @@ export default function AdminDashboard() {
                   setOnlyMistakes(false);
                 }}
                 style={{
-                  background: selectedStudent === 'ALL' ? '#17324d' : '#fffdf9',
-                  color: selectedStudent === 'ALL' ? '#fff' : '#17324d',
-                  border: selectedStudent === 'ALL' ? '2px solid #ef8354' : '1.5px solid #ded3c5',
+                  background: selectedStudent === 'ALL' ? 'var(--theme-border, var(--theme-border, #17324d))' : 'var(--theme-card, var(--theme-card, #fffdf9))',
+                  color: selectedStudent === 'ALL' ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))',
+                  border: selectedStudent === 'ALL' ? '2px solid var(--theme-accent, #ef8354)' : '1.5px solid #ded3c5',
                   borderRadius: '12px',
                   padding: '7px 14px',
                   fontSize: '0.82rem',
                   fontWeight: 800,
                   cursor: 'pointer',
-                  boxShadow: selectedStudent === 'ALL' ? '2px 2px 0 #ef8354' : 'none'
+                  boxShadow: selectedStudent === 'ALL' ? '2px 2px 0 var(--theme-accent, #ef8354)' : 'none'
                 }}
               >
                 全部學生 ({studentAnalytics.totalCount} 題)
@@ -1355,15 +1355,15 @@ export default function AdminDashboard() {
                       key={student.name}
                       onClick={() => handleStudentChipClick(student)}
                       style={{
-                        background: isSelected ? '#17324d' : '#fffdf9',
-                        color: isSelected ? '#f7cf68' : '#17324d',
-                        border: isSelected ? '2px solid #ef8354' : '1.5px solid #ded3c5',
+                        background: isSelected ? 'var(--theme-border, var(--theme-border, #17324d))' : 'var(--theme-card, var(--theme-card, #fffdf9))',
+                        color: isSelected ? '#f7cf68' : 'var(--theme-border, var(--theme-border, #17324d))',
+                        border: isSelected ? '2px solid var(--theme-accent, #ef8354)' : '1.5px solid #ded3c5',
                         borderRadius: '12px',
                         padding: '7px 14px',
                         fontSize: '0.82rem',
                         fontWeight: 800,
                         cursor: 'pointer',
-                        boxShadow: isSelected ? '3px 3px 0 #ef8354' : '1px 1px 0 #ded3c5',
+                        boxShadow: isSelected ? '3px 3px 0 var(--theme-accent, #ef8354)' : '1px 1px 0 #ded3c5',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px'
@@ -1374,7 +1374,7 @@ export default function AdminDashboard() {
                       <span 
                         style={{ 
                           fontSize: '0.72rem', 
-                          background: isSelected ? '#ef8354' : '#fff0e9', 
+                          background: isSelected ? 'var(--theme-accent, var(--theme-accent, #ef8354))' : '#fff0e9', 
                           color: isSelected ? '#fff' : '#c8643d', 
                           padding: '1px 6px', 
                           borderRadius: '6px', 
@@ -1390,7 +1390,7 @@ export default function AdminDashboard() {
 
             {/* 篩選狀態條 */}
             {selectedStudent !== 'ALL' && (
-              <div style={{ marginTop: '14px', padding: '10px 16px', background: '#fff0e9', border: '1.5px solid #ef8354', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ marginTop: '14px', padding: '10px 16px', background: '#fff0e9', border: '1.5px solid var(--theme-accent, #ef8354)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                 <span style={{ fontSize: '0.86rem', fontWeight: 800, color: '#c8643d' }}>
                   🎯 目前正在調閱【{selectedStudent}】的作答紀錄：{onlyMistakes ? '⚠️ 僅顯示錯題清單' : '顯示全部作答紀錄'}
                 </span>
@@ -1429,7 +1429,7 @@ export default function AdminDashboard() {
           {/* D. 查詢特定題號與錯題過濾控制列 */}
           <div className="glass-panel" style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: '280px' }}>
-              <Search size={18} color="#ef8354" />
+              <Search size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
               <input
                 type="text"
                 placeholder="查詢特定題號代碼、單元或關鍵字 (例如：Q-G8-MA-U2-0042、因式分解、浮力、時態...)"
@@ -1438,8 +1438,8 @@ export default function AdminDashboard() {
                 style={{
                   width: '100%',
                   padding: '9px 14px',
-                  background: '#f8f3eb',
-                  color: '#17324d',
+                  background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+                  color: 'var(--theme-border, var(--theme-border, #17324d))',
                   border: '1.5px solid #ded3c5',
                   borderRadius: '12px',
                   fontSize: '0.86rem',
@@ -1458,12 +1458,12 @@ export default function AdminDashboard() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               {/* 視圖切換按鈕：完整試卷 vs 單題明細 */}
-              <div style={{ display: 'flex', background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '3px', gap: '4px' }}>
+              <div style={{ display: 'flex', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '3px', gap: '4px' }}>
                 <button
                   onClick={() => setInspectionViewMode('papers')}
                   style={{
-                    background: inspectionViewMode === 'papers' ? '#17324d' : 'transparent',
-                    color: inspectionViewMode === 'papers' ? '#fff' : '#17324d',
+                    background: inspectionViewMode === 'papers' ? 'var(--theme-border, var(--theme-border, #17324d))' : 'transparent',
+                    color: inspectionViewMode === 'papers' ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))',
                     border: 'none',
                     borderRadius: '8px',
                     padding: '6px 12px',
@@ -1480,8 +1480,8 @@ export default function AdminDashboard() {
                 <button
                   onClick={() => setInspectionViewMode('logs')}
                   style={{
-                    background: inspectionViewMode === 'logs' ? '#17324d' : 'transparent',
-                    color: inspectionViewMode === 'logs' ? '#fff' : '#17324d',
+                    background: inspectionViewMode === 'logs' ? 'var(--theme-border, var(--theme-border, #17324d))' : 'transparent',
+                    color: inspectionViewMode === 'logs' ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))',
                     border: 'none',
                     borderRadius: '8px',
                     padding: '6px 12px',
@@ -1502,9 +1502,9 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => setOnlyMistakes(false)}
                     style={{
-                      background: !onlyMistakes ? '#17324d' : '#f8f3eb',
-                      color: !onlyMistakes ? '#fff' : '#17324d',
-                      border: '1.5px solid #17324d',
+                      background: !onlyMistakes ? 'var(--theme-border, var(--theme-border, #17324d))' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+                      color: !onlyMistakes ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))',
+                      border: '1.5px solid var(--theme-border, #17324d)',
                       borderRadius: '10px',
                       padding: '7px 12px',
                       fontSize: '0.78rem',
@@ -1517,7 +1517,7 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => setOnlyMistakes(true)}
                     style={{
-                      background: onlyMistakes ? '#c8643d' : '#f8f3eb',
+                      background: onlyMistakes ? '#c8643d' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                       color: onlyMistakes ? '#fff' : '#c8643d',
                       border: '1.5px solid #c8643d',
                       borderRadius: '10px',
@@ -1539,14 +1539,14 @@ export default function AdminDashboard() {
             /* 完整試卷列表呈現 */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               {isLoadingStudentHistory ? (
-                <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#17324d' }}>
-                  <RefreshCw size={32} className="animate-spin" style={{ margin: '0 auto 12px', color: '#ef8354' }} />
+                <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                  <RefreshCw size={32} className="animate-spin" style={{ margin: '0 auto 12px', color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
                   <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>正在自雲端調閱【{selectedStudent}】之完整試卷與各題作答...</div>
                 </div>
               ) : filteredQuizPapers.length === 0 ? (
                 <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#78818a' }}>
-                  <FileText size={36} style={{ margin: '0 auto 10px', opacity: 0.5, color: '#ef8354' }} />
-                  <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#17324d' }}>目前尚未調閱到符合條件的試卷</div>
+                  <FileText size={36} style={{ margin: '0 auto 10px', opacity: 0.5, color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
+                  <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>目前尚未調閱到符合條件的試卷</div>
                   <div style={{ fontSize: '0.82rem', marginTop: '4px' }}>
                     學生完成測驗並交卷後，整份考卷將自動即時封存並同步至雲端供管理員調閱。
                   </div>
@@ -1565,11 +1565,11 @@ export default function AdminDashboard() {
                     <div
                       key={paper.id || paperIndex}
                       style={{
-                        background: '#fffdf9',
-                        border: '2.5px solid #17324d',
+                        background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+                        border: '2.5px solid var(--theme-border, #17324d)',
                         borderRadius: '20px',
                         padding: '24px',
-                        boxShadow: '5px 5px 0px #17324d',
+                        boxShadow: '5px 5px 0px var(--theme-border, #17324d)',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '16px'
@@ -1590,12 +1590,12 @@ export default function AdminDashboard() {
                             </span>
                           </div>
 
-                          <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#17324d', margin: 0 }}>
+                          <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', margin: 0 }}>
                             📄 {paper.paperTitle || '國中實戰測驗評量卷'}
                           </h3>
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-                            <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#17324d' }}>
+                            <span style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                               👤 考生：{paper.userName || '匿名同學'}
                             </span>
                             <span style={{ fontSize: '0.76rem', color: '#78818a' }}>
@@ -1606,7 +1606,7 @@ export default function AdminDashboard() {
 
                         {/* 得分成績與操作按鈕 */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                          <div style={{ textAlign: 'right', background: '#f8f3eb', border: '1.5px solid #ded3c5', padding: '8px 16px', borderRadius: '14px' }}>
+                          <div style={{ textAlign: 'right', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', padding: '8px 16px', borderRadius: '14px' }}>
                             <div style={{ fontSize: '1.35rem', fontWeight: 900, color: paper.score >= 80 ? '#15803d' : paper.score >= 60 ? '#d97706' : '#b91c1c' }}>
                               {paper.score} <span style={{ fontSize: '0.8rem', color: '#78818a' }}>分</span>
                             </div>
@@ -1630,7 +1630,7 @@ export default function AdminDashboard() {
                       {/* 試卷完整題目逐題展開 (全考卷原樣詳解展示) */}
                       {isExpanded && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', paddingTop: '4px' }}>
-                          <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#17324d', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <div style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <CheckCircle2 size={16} color="#15803d" />
                             整卷題目批改與推導詳解清單（共 {paper.questions?.length || 0} 題）：
                           </div>
@@ -1643,7 +1643,7 @@ export default function AdminDashboard() {
                               <div
                                 key={q.id || qIndex}
                                 style={{
-                                  background: '#f8f3eb',
+                                  background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                                   border: isRight ? '2px solid #86efac' : '2px solid #fca5a5',
                                   borderRadius: '14px',
                                   padding: '16px',
@@ -1669,7 +1669,7 @@ export default function AdminDashboard() {
                                     }}>
                                       {qIndex + 1}
                                     </span>
-                                    <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#17324d' }}>
+                                    <span style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                                       題號：{q.questionId || q.id}
                                     </span>
                                     <span style={{ fontSize: '0.74rem', color: '#78818a' }}>
@@ -1693,7 +1693,7 @@ export default function AdminDashboard() {
                                 </div>
 
                                 {/* 題幹文字 */}
-                                <div style={{ fontSize: '0.94rem', fontWeight: 700, color: '#17324d', lineHeight: 1.7, background: '#fffdf9', padding: '12px 14px', borderRadius: '10px', border: '1px solid #ded3c5' }}>
+                                <div style={{ fontSize: '0.94rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.7, background: 'var(--theme-card, var(--theme-card, #fffdf9))', padding: '12px 14px', borderRadius: '10px', border: '1px solid #ded3c5' }}>
                                   {q.question || `【題目代碼 ${q.id}】：某題庫標準觀念評量題。`}
                                 </div>
 
@@ -1705,7 +1705,7 @@ export default function AdminDashboard() {
                                       const isChosen = isUserPick === optIdx;
                                       const isCorrectOpt = (q.answer !== undefined ? q.answer : 0) === optIdx;
 
-                                      let bg = '#fffdf9';
+                                      let bg = 'var(--theme-card, var(--theme-card, #fffdf9))';
                                       let border = '1px solid #ded3c5';
                                       let textColor = '#2d3748';
                                       let badge = null;
@@ -1743,7 +1743,7 @@ export default function AdminDashboard() {
                                             color: textColor
                                           }}
                                         >
-                                          <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: isCorrectOpt ? '#15803d' : isChosen ? '#b91c1c' : '#f8f3eb', color: (isCorrectOpt || isChosen) ? '#fff' : '#17324d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 900 }}>
+                                          <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: isCorrectOpt ? '#15803d' : isChosen ? '#b91c1c' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: (isCorrectOpt || isChosen) ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 900 }}>
                                             {letter}
                                           </span>
                                           <span>{opt}</span>
@@ -1755,8 +1755,8 @@ export default function AdminDashboard() {
                                 )}
 
                                 {/* 名師推導詳解 */}
-                                <div style={{ background: '#fffdf9', border: '1px solid #ded3c5', borderRadius: '10px', padding: '10px 14px', fontSize: '0.82rem', color: '#2d3748', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
-                                  <span style={{ fontWeight: 900, color: '#17324d', display: 'block', marginBottom: '2px' }}>
+                                <div style={{ background: 'var(--theme-card, var(--theme-card, #fffdf9))', border: '1px solid #ded3c5', borderRadius: '10px', padding: '10px 14px', fontSize: '0.82rem', color: '#2d3748', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+                                  <span style={{ fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'block', marginBottom: '2px' }}>
                                     📖 題目詳解與觀念解讀：
                                   </span>
                                   {q.explanation || '依據 108 課綱核心考點設計，按標準公式與定義運算即可得出解答。'}
@@ -1775,15 +1775,15 @@ export default function AdminDashboard() {
             /* 單題題目流水帳呈現 */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {isLoadingStudentHistory ? (
-                <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#17324d' }}>
-                  <RefreshCw size={32} className="animate-spin" style={{ margin: '0 auto 12px', color: '#ef8354' }} />
+                <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                  <RefreshCw size={32} className="animate-spin" style={{ margin: '0 auto 12px', color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
                   <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>正在自雲端即時載入【{selectedStudent}】之做題詳解...</div>
                   <div style={{ fontSize: '0.82rem', color: '#78818a', marginTop: '6px' }}>透過 Mulberry32 演算法秒級還原題幹、選項、學生答案與考點分析</div>
                 </div>
               ) : filteredPracticeLogs.length === 0 ? (
                 <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#78818a' }}>
                   <Search size={32} style={{ margin: '0 auto 10px', opacity: 0.5 }} />
-                  <div style={{ fontWeight: 800, fontSize: '1rem', color: '#17324d' }}>沒有符合條件的作答紀錄</div>
+                  <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>沒有符合條件的作答紀錄</div>
                   <div style={{ fontSize: '0.82rem', marginTop: '4px' }}>請嘗試調整搜尋關鍵字、更換學生或切換篩選條件</div>
                 </div>
               ) : (
@@ -1794,11 +1794,11 @@ export default function AdminDashboard() {
                   <div
                     key={log.id}
                     style={{
-                      background: '#fffdf9',
+                      background: 'var(--theme-card, var(--theme-card, #fffdf9))',
                       border: log.isCorrect ? '2px solid #b9ddc5' : '2px solid #efb7a6',
                       borderRadius: '18px',
                       padding: '20px',
-                      boxShadow: '4px 4px 0px #17324d',
+                      boxShadow: '4px 4px 0px var(--theme-border, #17324d)',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '14px'
@@ -1814,7 +1814,7 @@ export default function AdminDashboard() {
                         />
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontWeight: 900, fontSize: '0.98rem', color: '#17324d' }}>
+                            <span style={{ fontWeight: 900, fontSize: '0.98rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                               {log.userName || '匿名同學'}
                             </span>
                             <span style={{ fontSize: '0.74rem', color: '#78818a', fontWeight: 600 }}>
@@ -1862,7 +1862,7 @@ export default function AdminDashboard() {
 
                     {/* 標籤列 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ background: '#17324d', color: '#fff', fontSize: '0.75rem', fontWeight: 800, padding: '2px 8px', borderRadius: '6px' }}>
+                      <span style={{ background: 'var(--theme-border, var(--theme-border, #17324d))', color: '#fff', fontSize: '0.75rem', fontWeight: 800, padding: '2px 8px', borderRadius: '6px' }}>
                         題號：{log.questionId}
                       </span>
                       <span style={{ background: '#e8f0f2', color: '#48717e', fontSize: '0.75rem', fontWeight: 800, padding: '2px 8px', borderRadius: '6px' }}>
@@ -1878,7 +1878,7 @@ export default function AdminDashboard() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '6px' }}>
                         
                         {/* 題幹內容 */}
-                        <div style={{ fontSize: '0.98rem', fontWeight: 700, color: '#17324d', lineHeight: 1.8, background: '#f8f3eb', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ded3c5' }}>
+                        <div style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.8, background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ded3c5' }}>
                           {log.question || `【題目代碼 ${log.questionId}】：某題庫標準觀念評量題。`}
                         </div>
 
@@ -1890,7 +1890,7 @@ export default function AdminDashboard() {
                               const isUserPick = log.userChoice === optIdx;
                               const isRightAns = (log.answer !== undefined ? log.answer : 0) === optIdx;
 
-                              let bg = '#fffdf9';
+                              let bg = 'var(--theme-card, var(--theme-card, #fffdf9))';
                               let border = '1.5px solid #ded3c5';
                               let textColor = '#2d3748';
                               let badge = null;
@@ -1928,7 +1928,7 @@ export default function AdminDashboard() {
                                     color: textColor
                                   }}
                                 >
-                                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: isRightAns ? '#15803d' : isUserPick ? '#b91c1c' : '#f8f3eb', color: (isRightAns || isUserPick) ? '#fff' : '#17324d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.76rem', fontWeight: 900 }}>
+                                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: isRightAns ? '#15803d' : isUserPick ? '#b91c1c' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: (isRightAns || isUserPick) ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.76rem', fontWeight: 900 }}>
                                     {letter}
                                   </span>
                                   <span>{opt}</span>
@@ -1948,8 +1948,8 @@ export default function AdminDashboard() {
                         )}
 
                         {/* 名師完整詳解 */}
-                        <div style={{ background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '12px 16px', fontSize: '0.84rem', color: '#2d3748', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                          <span style={{ fontWeight: 900, color: '#17324d', display: 'block', marginBottom: '4px' }}>
+                        <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '12px 16px', fontSize: '0.84rem', color: '#2d3748', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                          <span style={{ fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'block', marginBottom: '4px' }}>
                             📖 題目完整詳解與推導步驟：
                           </span>
                           {log.explanation || '本題依據 108 課綱核心概念設計，觀念清晰，按基本定義運算即可推導出正確答案。'}
@@ -1981,7 +1981,7 @@ export default function AdminDashboard() {
               value={searchQId}
               onChange={e => setSearchQId(e.target.value)}
               placeholder="輸入題號 (例如: Q-G7-MA-U1-0001)"
-              style={{ flex: 1, padding: '10px 14px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}
+              style={{ flex: 1, padding: '10px 14px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}
             />
             <button onClick={handleInspectQuestion} className="btn btn-secondary">
               <Search size={16} /> 調閱題目
@@ -1993,7 +1993,7 @@ export default function AdminDashboard() {
             const isInspectedDeleted = !!currentOverrides[inspectedQuestion.id]?.isDeleted;
 
             return (
-              <div className="glass-panel" style={{ padding: '20px', border: isInspectedDeleted ? '2px solid #ef4444' : '2px solid #17324d' }}>
+              <div className="glass-panel" style={{ padding: '20px', border: isInspectedDeleted ? '2px solid #ef4444' : '2px solid var(--theme-border, #17324d)' }}>
                 {isInspectedDeleted && (
                   <div style={{ marginBottom: '14px', padding: '10px 14px', borderRadius: '12px', background: '#fee2e2', border: '1.5px solid #ef4444', color: '#991b1b', fontSize: '0.86rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <AlertTriangle size={18} color="#ef4444" />
@@ -2001,7 +2001,7 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#17324d', marginBottom: '12px' }}>
+                <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '12px' }}>
                   {inspectedQuestion.question}
                 </div>
 
@@ -2030,7 +2030,7 @@ export default function AdminDashboard() {
                   <textarea
                     value={editExpText}
                     onChange={e => setEditExpText(e.target.value)}
-                    style={{ width: '100%', height: '80px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', padding: '10px', fontWeight: 600 }}
+                    style={{ width: '100%', height: '80px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', padding: '10px', fontWeight: 600 }}
                   />
                 </div>
 

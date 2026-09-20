@@ -154,11 +154,11 @@ export default function CommunityWallModal({ isOpen, onClose }) {
         onClick={e => e.stopPropagation()} 
         style={{ 
           maxWidth: '640px', 
-          background: '#fffdf9',
-          border: '2.5px solid #17324d',
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+          border: '2.5px solid var(--theme-border, #17324d)',
           borderRadius: '24px',
-          boxShadow: '8px 8px 0px #17324d',
-          color: '#17324d',
+          boxShadow: '8px 8px 0px var(--theme-border, #17324d)',
+          color: 'var(--theme-border, var(--theme-border, #17324d))',
           position: 'relative'
         }}
       >
@@ -180,10 +180,10 @@ export default function CommunityWallModal({ isOpen, onClose }) {
           >
             <div 
               style={{
-                background: '#fffdf9',
-                border: '2.5px solid #17324d',
+                background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+                border: '2.5px solid var(--theme-border, #17324d)',
                 borderRadius: '20px',
-                boxShadow: '6px 6px 0px #17324d',
+                boxShadow: '6px 6px 0px var(--theme-border, #17324d)',
                 width: '100%',
                 maxWidth: '480px',
                 padding: '22px',
@@ -205,8 +205,8 @@ export default function CommunityWallModal({ isOpen, onClose }) {
               </div>
 
               {/* 被檢舉留言摘要 */}
-              <div style={{ background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '10px 14px', fontSize: '0.84rem' }}>
-                <div style={{ fontWeight: 800, color: '#17324d', marginBottom: '4px' }}>
+              <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '10px 14px', fontSize: '0.84rem' }}>
+                <div style={{ fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '4px' }}>
                   發布者：{reportingPost.userName} ({reportingPost.userSchool})
                 </div>
                 <div style={{ color: '#5b6772', fontStyle: 'italic', fontWeight: 600 }}>
@@ -221,7 +221,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
               ) : (
                 <form onSubmit={handleSubmitReport} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#17324d', display: 'block', marginBottom: '6px' }}>
+                    <label style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'block', marginBottom: '6px' }}>
                       請選擇檢舉原因：
                     </label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -235,11 +235,11 @@ export default function CommunityWallModal({ isOpen, onClose }) {
                             padding: '8px 12px',
                             borderRadius: '10px',
                             border: selectedReason === r ? '2px solid #b91c1c' : '1.5px solid #e8ded0',
-                            background: selectedReason === r ? '#fff0f0' : '#fffdf9',
+                            background: selectedReason === r ? '#fff0f0' : 'var(--theme-card, var(--theme-card, #fffdf9))',
                             cursor: 'pointer',
                             fontSize: '0.84rem',
                             fontWeight: 700,
-                            color: selectedReason === r ? '#b91c1c' : '#17324d'
+                            color: selectedReason === r ? '#b91c1c' : 'var(--theme-border, var(--theme-border, #17324d))'
                           }}
                         >
                           <input 
@@ -256,7 +256,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#17324d', display: 'block', marginBottom: '6px' }}>
+                    <label style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'block', marginBottom: '6px' }}>
                       補充說明（選填）：
                     </label>
                     <textarea
@@ -269,9 +269,9 @@ export default function CommunityWallModal({ isOpen, onClose }) {
                         padding: '8px 12px',
                         borderRadius: '10px',
                         border: '1.5px solid #ded3c5',
-                        background: '#fffdf9',
+                        background: 'var(--theme-card, var(--theme-card, #fffdf9))',
                         fontSize: '0.84rem',
-                        color: '#17324d',
+                        color: 'var(--theme-border, var(--theme-border, #17324d))',
                         outline: 'none',
                         resize: 'none'
                       }}
@@ -308,13 +308,13 @@ export default function CommunityWallModal({ isOpen, onClose }) {
           </div>
         )}
 
-        <div className="modal-header" style={{ borderBottom: '2px solid #17324d', background: '#fffdf9', padding: '18px 24px' }}>
+        <div className="modal-header" style={{ borderBottom: '2px solid var(--theme-border, #17324d)', background: 'var(--theme-card, var(--theme-card, #fffdf9))', padding: '18px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '14px', background: '#fff0e9', border: '1.5px solid #17324d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c8643d' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '14px', background: '#fff0e9', border: '1.5px solid var(--theme-border, #17324d)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c8643d' }}>
               <MessageSquareHeart size={22} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#17324d' }}>會考讀書網｜一起讀，穩穩上岸</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>會考讀書網｜一起讀，穩穩上岸</h3>
               <p style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 600 }}>
                 同學打氣留言牆・你不是一個人在戰鬥
               </p>
@@ -328,10 +328,10 @@ export default function CommunityWallModal({ isOpen, onClose }) {
         <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '24px' }}>
           
           {/* 留言發布框 */}
-          <form onSubmit={handlePost} style={{ background: '#f8f3eb', border: '1.5px solid #e8ded0', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <form onSubmit={handlePost} style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #e8ded0', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#17324d', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Sparkles size={15} color="#ef8354" /> 留下你的今天進度或加油打氣：
+              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Sparkles size={15} color="var(--theme-accent, var(--theme-accent, #ef8354))" /> 留下你的今天進度或加油打氣：
               </span>
             </div>
 
@@ -345,10 +345,10 @@ export default function CommunityWallModal({ isOpen, onClose }) {
                 style={{
                   flex: 1,
                   padding: '10px 14px',
-                  background: '#fffdf9',
+                  background: 'var(--theme-card, var(--theme-card, #fffdf9))',
                   border: '1.5px solid #ded3c5',
                   borderRadius: '12px',
-                  color: '#17324d',
+                  color: 'var(--theme-border, var(--theme-border, #17324d))',
                   fontSize: '0.9rem',
                   fontWeight: 600,
                   outline: 'none'
@@ -376,7 +376,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
               <div 
                 key={post.id} 
                 style={{ 
-                  background: '#fffdf9', 
+                  background: 'var(--theme-card, var(--theme-card, #fffdf9))', 
                   border: '1.5px solid #e8ded0', 
                   borderRadius: '16px', 
                   padding: '14px 16px',
@@ -393,7 +393,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
                       alt="avatar" 
                       style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #ded3c5' }} 
                     />
-                    <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#17324d' }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                       {post.userName}
                     </span>
                     <span style={{ fontSize: '0.72rem', color: '#78818a', fontWeight: 600 }}>
@@ -467,9 +467,9 @@ export default function CommunityWallModal({ isOpen, onClose }) {
                     <button 
                       onClick={() => handleLike(post.id)}
                       className="btn btn-ghost"
-                      style={{ padding: '4px 10px', fontSize: '0.78rem', color: '#ef8354', gap: '5px', fontWeight: 700 }}
+                      style={{ padding: '4px 10px', fontSize: '0.78rem', color: 'var(--theme-accent, var(--theme-accent, #ef8354))', gap: '5px', fontWeight: 700 }}
                     >
-                      <Heart size={14} fill="#ef8354" />
+                      <Heart size={14} fill="var(--theme-accent, var(--theme-accent, #ef8354))" />
                       為他打氣 ({post.likes || 1})
                     </button>
                   </div>
@@ -480,7 +480,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
 
         </div>
 
-        <div className="modal-footer" style={{ borderTop: '2px solid #17324d', background: '#fffdf9', padding: '14px 24px' }}>
+        <div className="modal-footer" style={{ borderTop: '2px solid var(--theme-border, #17324d)', background: 'var(--theme-card, var(--theme-card, #fffdf9))', padding: '14px 24px' }}>
           <button onClick={onClose} className="btn btn-secondary" style={{ padding: '8px 16px' }}>
             關閉
           </button>

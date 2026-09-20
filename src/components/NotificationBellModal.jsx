@@ -102,21 +102,21 @@ export default function NotificationBellModal({ isOpen, onClose }) {
         className="modal-card" 
         style={{ 
           maxWidth: '580px',
-          background: '#fffdf9',
-          border: '2.5px solid #17324d',
-          boxShadow: '10px 10px 0px #17324d',
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+          border: '2.5px solid var(--theme-border, #17324d)',
+          boxShadow: '10px 10px 0px var(--theme-border, #17324d)',
           borderRadius: '24px'
         }}
       >
         
         {/* Header */}
-        <div className="modal-header" style={{ background: '#fffdf9', borderBottom: '2px solid #17324d', padding: '18px 22px' }}>
+        <div className="modal-header" style={{ background: 'var(--theme-card, var(--theme-card, #fffdf9))', borderBottom: '2px solid var(--theme-border, #17324d)', padding: '18px 22px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: '#fff7d9', border: '2px solid #17324d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#806523' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: '#fff7d9', border: '2px solid var(--theme-border, #17324d)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#806523' }}>
               <Bell size={20} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 900, color: '#17324d' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                 站務廣播與序號空投中心
               </h3>
               <div style={{ fontSize: '0.74rem', color: '#5b6772', fontWeight: 600 }}>
@@ -126,7 +126,7 @@ export default function NotificationBellModal({ isOpen, onClose }) {
           </div>
 
           <button onClick={onClose} className="btn btn-ghost btn-icon">
-            <X size={20} color="#17324d" />
+            <X size={20} color="var(--theme-border, var(--theme-border, #17324d))" />
           </button>
         </div>
 
@@ -138,19 +138,19 @@ export default function NotificationBellModal({ isOpen, onClose }) {
         )}
 
         {/* 分頁按鈕 */}
-        <div style={{ display: 'flex', borderBottom: '2px solid #17324d', background: '#f8f3eb', padding: '10px 20px 0', gap: '8px' }}>
+        <div style={{ display: 'flex', borderBottom: '2px solid var(--theme-border, #17324d)', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', padding: '10px 20px 0', gap: '8px' }}>
           <button
             onClick={() => setActiveTab('codes')}
             style={{
               padding: '10px 18px',
               borderTopLeftRadius: '12px',
               borderTopRightRadius: '12px',
-              border: activeTab === 'codes' ? '2px solid #17324d' : '1.5px solid transparent',
-              borderBottom: activeTab === 'codes' ? '2px solid #fffdf9' : 'none',
-              background: activeTab === 'codes' ? '#fffdf9' : 'transparent',
+              border: activeTab === 'codes' ? '2px solid var(--theme-border, #17324d)' : '1.5px solid transparent',
+              borderBottom: activeTab === 'codes' ? '2px solid var(--theme-card, #fffdf9)' : 'none',
+              background: activeTab === 'codes' ? 'var(--theme-card, var(--theme-card, #fffdf9))' : 'transparent',
               fontWeight: 800,
               fontSize: '0.9rem',
-              color: activeTab === 'codes' ? '#ef8354' : '#5b6772',
+              color: activeTab === 'codes' ? 'var(--theme-accent, var(--theme-accent, #ef8354))' : '#5b6772',
               cursor: 'pointer',
               marginBottom: '-2px',
               display: 'flex',
@@ -173,12 +173,12 @@ export default function NotificationBellModal({ isOpen, onClose }) {
               padding: '10px 18px',
               borderTopLeftRadius: '12px',
               borderTopRightRadius: '12px',
-              border: activeTab === 'notices' ? '2px solid #17324d' : '1.5px solid transparent',
-              borderBottom: activeTab === 'notices' ? '2px solid #fffdf9' : 'none',
-              background: activeTab === 'notices' ? '#fffdf9' : 'transparent',
+              border: activeTab === 'notices' ? '2px solid var(--theme-border, #17324d)' : '1.5px solid transparent',
+              borderBottom: activeTab === 'notices' ? '2px solid var(--theme-card, #fffdf9)' : 'none',
+              background: activeTab === 'notices' ? 'var(--theme-card, var(--theme-card, #fffdf9))' : 'transparent',
               fontWeight: 800,
               fontSize: '0.9rem',
-              color: activeTab === 'notices' ? '#17324d' : '#5b6772',
+              color: activeTab === 'notices' ? 'var(--theme-border, var(--theme-border, #17324d))' : '#5b6772',
               cursor: 'pointer',
               marginBottom: '-2px',
               display: 'flex',
@@ -210,9 +210,9 @@ export default function NotificationBellModal({ isOpen, onClose }) {
                       style={{
                         padding: '14px 16px',
                         borderRadius: '16px',
-                        background: isClaimed ? '#f8f3eb' : '#fffdf9',
-                        border: '2px solid #17324d',
-                        boxShadow: isClaimed ? 'none' : '3px 3px 0 #17324d',
+                        background: isClaimed ? 'var(--theme-bg, var(--theme-bg, #f8f3eb))' : 'var(--theme-card, var(--theme-card, #fffdf9))',
+                        border: '2px solid var(--theme-border, #17324d)',
+                        boxShadow: isClaimed ? 'none' : '3px 3px 0 var(--theme-border, #17324d)',
                         opacity: isClaimed ? 0.75 : 1,
                         display: 'flex',
                         alignItems: 'center',
@@ -222,7 +222,7 @@ export default function NotificationBellModal({ isOpen, onClose }) {
                     >
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.98rem', color: '#17324d', letterSpacing: '0.5px' }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.98rem', color: 'var(--theme-border, var(--theme-border, #17324d))', letterSpacing: '0.5px' }}>
                             {c.code}
                           </span>
                           <span className={`badge ${c.type === 'multiplier' ? 'badge-fire' : c.type === 'lottery_ticket' ? 'badge-coral' : 'badge-gold'}`} style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
@@ -282,13 +282,13 @@ export default function NotificationBellModal({ isOpen, onClose }) {
                     style={{
                       padding: '14px 16px',
                       borderRadius: '16px',
-                      background: '#fffdf9',
-                      border: '2px solid #17324d',
-                      boxShadow: '3px 3px 0 #17324d'
+                      background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+                      border: '2px solid var(--theme-border, #17324d)',
+                      boxShadow: '3px 3px 0 var(--theme-border, #17324d)'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: 800, fontSize: '0.92rem', color: '#17324d' }}>
+                      <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                         {n.title}
                       </span>
                       <span className="badge badge-indigo" style={{ fontSize: '0.68rem' }}>
@@ -311,7 +311,7 @@ export default function NotificationBellModal({ isOpen, onClose }) {
                           onClick={() => {
                             setActiveTab('codes');
                           }}
-                          style={{ background: 'transparent', border: 'none', color: '#ef8354', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
+                          style={{ background: 'transparent', border: 'none', color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
                         >
                           前往領取序號 <ChevronRight size={13} />
                         </button>
@@ -326,7 +326,7 @@ export default function NotificationBellModal({ isOpen, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="modal-footer" style={{ background: '#f8f3eb', borderTop: '2px solid #17324d', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="modal-footer" style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', borderTop: '2px solid var(--theme-border, #17324d)', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 600 }}>
             💡 每日 00:00 留意管理員最新公告與好康序號
           </span>

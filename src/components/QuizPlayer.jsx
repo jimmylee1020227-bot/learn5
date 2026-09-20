@@ -173,6 +173,24 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'en-US';
       utterance.rate = 0.9;
+      
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        const enVoices = voices.filter(v => v.lang.startsWith('en'));
+        const premiumVoice = enVoices.find(v => 
+          v.name.includes('Google') || 
+          v.name.includes('Premium') || 
+          v.name.includes('Samantha') || 
+          v.name.includes('Siri') ||
+          v.name.includes('Daniel')
+        );
+        if (premiumVoice) {
+          utterance.voice = premiumVoice;
+        } else if (enVoices.length > 0) {
+          utterance.voice = enVoices[0];
+        }
+      }
+      
       window.speechSynthesis.speak(utterance);
     } else {
       alert('您的瀏覽器不支援語音播放功能');
@@ -187,11 +205,11 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
           ========================================================================= */}
       <header 
         style={{ 
-          background: '#fffdf9', 
-          border: '2.5px solid #17324d', 
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))', 
+          border: '2.5px solid var(--theme-border, #17324d)', 
           borderRadius: '20px', 
           padding: '14px 22px',
-          boxShadow: '5px 5px 0px #17324d',
+          boxShadow: '5px 5px 0px var(--theme-border, #17324d)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -212,7 +230,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               難度：{currentQ.difficulty === 'hard' ? '★★★ 精熟' : currentQ.difficulty === 'easy' ? '★☆☆ 基礎' : '★★☆ 核心'}
             </span>
           </div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#17324d', margin: 0 }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', margin: 0 }}>
             會考全真線上模擬作答測驗
           </h2>
         </div>
@@ -227,15 +245,15 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               alignItems: 'center', 
               gap: '6px', 
               padding: '6px 12px', 
-              background: isPaused ? '#fff0e9' : '#f8f3eb', 
-              border: '1.5px solid #17324d', 
+              background: isPaused ? '#fff0e9' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))', 
+              border: '1.5px solid var(--theme-border, #17324d)', 
               borderRadius: '12px',
               fontWeight: 800,
               fontSize: '0.9rem',
-              color: isPaused ? '#c8643d' : '#17324d'
+              color: isPaused ? '#c8643d' : 'var(--theme-border, var(--theme-border, #17324d))'
             }}
           >
-            <Clock size={16} color={isPaused ? '#ef8354' : '#17324d'} />
+            <Clock size={16} color={isPaused ? 'var(--theme-accent, var(--theme-accent, #ef8354))' : 'var(--theme-border, var(--theme-border, #17324d))'} />
             <span style={{ fontFamily: 'var(--font-mono)' }}>
               {Math.floor(secondsSpent / 60)}:{(secondsSpent % 60).toString().padStart(2, '0')}
             </span>
@@ -244,17 +262,17 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
               title={isPaused ? '繼續作答' : '暫停計時'}
             >
-              {isPaused ? <Play size={14} color="#ef8354" /> : <Pause size={14} color="#78818a" />}
+              {isPaused ? <Play size={14} color="var(--theme-accent, var(--theme-accent, #ef8354))" /> : <Pause size={14} color="#78818a" />}
             </button>
           </div>
 
           {/* 2. 字級調整按鈕 (小 / 中 / 大) */}
-          <div style={{ display: 'flex', alignItems: 'center', background: '#f8f3eb', border: '1.5px solid #17324d', borderRadius: '12px', padding: '3px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid var(--theme-border, #17324d)', borderRadius: '12px', padding: '3px' }}>
             <button
               onClick={() => setFontSize('sm')}
               style={{
                 padding: '4px 8px',
-                background: fontSize === 'sm' ? '#17324d' : 'transparent',
+                background: fontSize === 'sm' ? 'var(--theme-border, var(--theme-border, #17324d))' : 'transparent',
                 color: fontSize === 'sm' ? '#fff' : '#5b6772',
                 border: 'none',
                 borderRadius: '8px',
@@ -269,7 +287,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               onClick={() => setFontSize('md')}
               style={{
                 padding: '4px 8px',
-                background: fontSize === 'md' ? '#17324d' : 'transparent',
+                background: fontSize === 'md' ? 'var(--theme-border, var(--theme-border, #17324d))' : 'transparent',
                 color: fontSize === 'md' ? '#fff' : '#5b6772',
                 border: 'none',
                 borderRadius: '8px',
@@ -284,7 +302,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               onClick={() => setFontSize('lg')}
               style={{
                 padding: '4px 8px',
-                background: fontSize === 'lg' ? '#17324d' : 'transparent',
+                background: fontSize === 'lg' ? 'var(--theme-border, var(--theme-border, #17324d))' : 'transparent',
                 color: fontSize === 'lg' ? '#fff' : '#5b6772',
                 border: 'none',
                 borderRadius: '8px',
@@ -306,7 +324,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             <Layers size={15} />
             <span>答題卡 ({answeredCount}/{questions.length})</span>
             {flaggedCount > 0 && (
-              <span style={{ color: '#ef8354', fontWeight: 900 }}>★{flaggedCount}</span>
+              <span style={{ color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontWeight: 900 }}>★{flaggedCount}</span>
             )}
           </button>
 
@@ -341,16 +359,16 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       {isPaused && (
         <div 
           style={{ 
-            background: '#fffdf9', 
-            border: '2.5px solid #17324d', 
+            background: 'var(--theme-card, var(--theme-card, #fffdf9))', 
+            border: '2.5px solid var(--theme-border, #17324d)', 
             borderRadius: '24px', 
             padding: '60px 20px', 
             textAlign: 'center',
-            boxShadow: '6px 6px 0 #17324d'
+            boxShadow: '6px 6px 0 var(--theme-border, #17324d)'
           }}
         >
-          <Pause size={50} color="#ef8354" style={{ margin: '0 auto 16px' }} />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#17324d', marginBottom: '8px' }}>
+          <Pause size={50} color="var(--theme-accent, var(--theme-accent, #ef8354))" style={{ margin: '0 auto 16px' }} />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '8px' }}>
             測驗已暫停計時
           </h2>
           <p style={{ color: '#5b6772', fontSize: '0.95rem', marginBottom: '24px' }}>
@@ -372,8 +390,8 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       {showAnswerSheet && !isPaused && (
         <div 
           style={{ 
-            background: '#fffdf9', 
-            border: '2.5px solid #17324d', 
+            background: 'var(--theme-card, var(--theme-card, #fffdf9))', 
+            border: '2.5px solid var(--theme-border, #17324d)', 
             borderRadius: '20px', 
             padding: '18px 24px',
             boxShadow: '6px 6px 0 #f7cf68',
@@ -381,8 +399,8 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '0.95rem', color: '#17324d' }}>
-              <Layers size={18} color="#ef8354" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '0.95rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+              <Layers size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
               <span>線上答題卡（點選題號可立即跳轉至該題）</span>
             </div>
             
@@ -393,11 +411,11 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                 <span>已作答 ({answeredCount})</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#fff', border: '1.5px solid #17324d', display: 'inline-block' }} />
+                <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#fff', border: '1.5px solid var(--theme-border, #17324d)', display: 'inline-block' }} />
                 <span>未作答 ({unansweredCount})</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{ color: '#ef8354', fontSize: '0.9rem' }}>★</span>
+                <span style={{ color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontSize: '0.9rem' }}>★</span>
                 <span>標記待檢查 ({flaggedCount})</span>
               </div>
             </div>
@@ -410,9 +428,9 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               const isFlagged = flaggedQuestions[q.id];
               const isCurrent = idx === currentIndex;
 
-              let bg = '#fffdf9';
-              let text = '#17324d';
-              let border = '2px solid #17324d';
+              let bg = 'var(--theme-card, var(--theme-card, #fffdf9))';
+              let text = 'var(--theme-border, var(--theme-border, #17324d))';
+              let border = '2px solid var(--theme-border, #17324d)';
 
               if (isAnswered) {
                 bg = '#e8f6ed';
@@ -421,7 +439,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               }
 
               if (isCurrent) {
-                border = '2.5px solid #ef8354';
+                border = '2.5px solid var(--theme-accent, #ef8354)';
               }
 
               return (
@@ -442,7 +460,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                     fontSize: '0.95rem',
                     position: 'relative',
                     cursor: 'pointer',
-                    boxShadow: isCurrent ? '2px 2px 0 #ef8354' : '2px 2px 0 #17324d',
+                    boxShadow: isCurrent ? '2px 2px 0 var(--theme-accent, #ef8354)' : '2px 2px 0 var(--theme-border, #17324d)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -457,7 +475,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                         position: 'absolute', 
                         top: '-6px', 
                         right: '-5px', 
-                        background: '#ef8354', 
+                        background: 'var(--theme-accent, var(--theme-accent, #ef8354))', 
                         color: '#fff', 
                         fontSize: '0.65rem', 
                         borderRadius: '50%', 
@@ -485,11 +503,11 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       {!isPaused && (
         <main
           style={{
-            background: '#fffdf9',
-            border: '2.5px solid #17324d',
+            background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+            border: '2.5px solid var(--theme-border, #17324d)',
             borderRadius: '24px',
             padding: '28px 32px',
-            boxShadow: '6px 6px 0px #17324d',
+            boxShadow: '6px 6px 0px var(--theme-border, #17324d)',
             display: 'flex',
             flexDirection: 'column',
             gap: '24px'
@@ -500,13 +518,13 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span 
                 style={{ 
-                  background: '#17324d', 
+                  background: 'var(--theme-border, var(--theme-border, #17324d))', 
                   color: '#fff', 
                   fontWeight: 900, 
                   fontSize: '0.95rem', 
                   padding: '4px 14px', 
                   borderRadius: '10px',
-                  boxShadow: '2px 2px 0 #ef8354'
+                  boxShadow: '2px 2px 0 var(--theme-accent, #ef8354)'
                 }}
               >
                 第 {currentIndex + 1} 題 / 共 {questions.length} 題
@@ -528,8 +546,8 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                 gap: '6px',
                 padding: '6px 14px',
                 borderRadius: '12px',
-                border: flaggedQuestions[currentQ.id] ? '2px solid #ef8354' : '1.5px solid #ded3c5',
-                background: flaggedQuestions[currentQ.id] ? '#fff0e9' : '#f8f3eb',
+                border: flaggedQuestions[currentQ.id] ? '2px solid var(--theme-accent, #ef8354)' : '1.5px solid #ded3c5',
+                background: flaggedQuestions[currentQ.id] ? '#fff0e9' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                 color: flaggedQuestions[currentQ.id] ? '#c8643d' : '#5b6772',
                 fontWeight: 800,
                 fontSize: '0.82rem',
@@ -539,7 +557,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             >
               {flaggedQuestions[currentQ.id] ? (
                 <>
-                  <BookmarkCheck size={16} color="#ef8354" />
+                  <BookmarkCheck size={16} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
                   <span>已標記待檢查 (★)</span>
                 </>
               ) : (
@@ -642,7 +660,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               fontSize: activeFont.stem, 
               lineHeight: activeFont.line, 
               fontWeight: 800, 
-              color: '#17324d', 
+              color: 'var(--theme-border, var(--theme-border, #17324d))', 
               letterSpacing: '-0.01em',
               whiteSpace: 'pre-line'
             }}
@@ -669,20 +687,20 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                     padding: '14px 20px',
                     borderRadius: '16px',
                     border: isSelected 
-                      ? '2.5px solid #ef8354' 
+                      ? '2.5px solid var(--theme-accent, #ef8354)' 
                       : isEliminated 
                       ? '1.5px dashed #ded3c5' 
-                      : '2px solid #17324d',
+                      : '2px solid var(--theme-border, #17324d)',
                     background: isSelected 
                       ? '#fff0e9' 
                       : isEliminated 
                       ? '#f5f0e6' 
-                      : '#fffdf9',
+                      : 'var(--theme-card, var(--theme-card, #fffdf9))',
                     boxShadow: isSelected 
-                      ? '3px 3px 0 #ef8354' 
+                      ? '3px 3px 0 var(--theme-accent, #ef8354)' 
                       : isEliminated 
                       ? 'none' 
-                      : '3px 3px 0 #17324d',
+                      : '3px 3px 0 var(--theme-border, #17324d)',
                     cursor: isEliminated ? 'not-allowed' : 'pointer',
                     opacity: isEliminated ? 0.45 : 1,
                     transition: 'all 0.15s ease'
@@ -695,9 +713,9 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                         width: '36px', 
                         height: '36px', 
                         borderRadius: '50%', 
-                        background: isSelected ? '#ef8354' : '#f8f3eb', 
-                        color: isSelected ? '#ffffff' : '#17324d',
-                        border: '2px solid #17324d',
+                        background: isSelected ? 'var(--theme-accent, var(--theme-accent, #ef8354))' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))', 
+                        color: isSelected ? '#ffffff' : 'var(--theme-border, var(--theme-border, #17324d))',
+                        border: '2px solid var(--theme-border, #17324d)',
                         display: 'flex', 
                         alignItems: 'center', 
                         justifyContent: 'center', 
@@ -714,7 +732,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                       style={{ 
                         fontSize: activeFont.opt, 
                         fontWeight: isSelected ? 900 : 700, 
-                        color: isSelected ? '#c8643d' : '#17324d',
+                        color: isSelected ? '#c8643d' : 'var(--theme-border, var(--theme-border, #17324d))',
                         textDecoration: isEliminated ? 'line-through 2px #ef4444' : 'none',
                         lineHeight: 1.5
                       }}
@@ -736,7 +754,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                       onClick={(e) => toggleEliminate(e, optIdx)}
                       title={isEliminated ? '取消劃線排除' : '消去法：排除此選項'}
                       style={{
-                        background: isEliminated ? '#ef4444' : '#f8f3eb',
+                        background: isEliminated ? '#ef4444' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                         color: isEliminated ? '#fff' : '#78818a',
                         border: '1.5px solid #ded3c5',
                         borderRadius: '8px',
@@ -779,7 +797,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                 className="btn btn-secondary"
                 style={{ padding: '6px 14px', fontSize: '0.8rem', borderRadius: '10px' }}
               >
-                <Edit3 size={14} color="#ef8354" />
+                <Edit3 size={14} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
                 <span>{showScratchpad ? '收合計算紙' : '✏️ 線上草稿計算紙'}</span>
               </button>
             </div>
@@ -790,7 +808,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               onClick={() => setIsReportModalOpen(true)}
               style={{ background: 'none', border: 'none', color: '#78818a', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
-              <AlertTriangle size={14} color="#ef8354" />
+              <AlertTriangle size={14} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
               <span>題目有誤或超範圍？</span>
             </button>
           </div>
@@ -821,22 +839,22 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
           {showScratchpad && (
             <div 
               style={{ 
-                background: '#f8f3eb', 
-                border: '2px solid #17324d', 
+                background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', 
+                border: '2px solid var(--theme-border, #17324d)', 
                 borderRadius: '16px', 
                 padding: '14px 18px',
-                boxShadow: '3px 3px 0 #17324d',
+                boxShadow: '3px 3px 0 var(--theme-border, #17324d)',
                 animation: 'fadeIn 0.2s ease-out'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#17324d' }}>
+                <span style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                   ✏️ 本題演算草稿筆記 (隨時記錄計算過程)：
                 </span>
                 <button
                   type="button"
                   onClick={() => setScratchpadNotes('')}
-                  style={{ background: 'none', border: 'none', color: '#ef8354', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer' }}
+                  style={{ background: 'none', border: 'none', color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer' }}
                 >
                   清空筆記
                 </button>
@@ -848,11 +866,11 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                 rows={4}
                 style={{
                   width: '100%',
-                  background: '#fffdf9',
+                  background: 'var(--theme-card, var(--theme-card, #fffdf9))',
                   border: '1.5px solid #ded3c5',
                   borderRadius: '10px',
                   padding: '10px',
-                  color: '#17324d',
+                  color: 'var(--theme-border, var(--theme-border, #17324d))',
                   fontSize: '0.9rem',
                   fontFamily: 'var(--font-mono)'
                 }}
@@ -871,11 +889,11 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'space-between',
-            background: '#fffdf9',
-            border: '2.5px solid #17324d',
+            background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+            border: '2.5px solid var(--theme-border, #17324d)',
             borderRadius: '20px',
             padding: '14px 24px',
-            boxShadow: '5px 5px 0px #17324d'
+            boxShadow: '5px 5px 0px var(--theme-border, #17324d)'
           }}
         >
           {/* 上一題 */}
@@ -892,7 +910,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
           {/* 題號進度提示 */}
           <div style={{ textAlign: 'center', fontSize: '0.88rem', fontWeight: 800, color: '#5b6772' }}>
             <span>第 {currentIndex + 1} / {questions.length} 題</span>
-            <span style={{ marginLeft: '10px', color: '#17324d' }}>
+            <span style={{ marginLeft: '10px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
               (已作答 {answeredCount} 題，剩餘 {unansweredCount} 題)
             </span>
           </div>
@@ -929,16 +947,16 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             className="modal-card" 
             style={{ 
               maxWidth: '520px',
-              background: '#fffdf9',
-              border: '2.5px solid #17324d',
+              background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+              border: '2.5px solid var(--theme-border, #17324d)',
               borderRadius: '24px',
-              boxShadow: '10px 10px 0px #17324d'
+              boxShadow: '10px 10px 0px var(--theme-border, #17324d)'
             }}
           >
-            <div className="modal-header" style={{ borderBottom: '2px solid #17324d' }}>
+            <div className="modal-header" style={{ borderBottom: '2px solid var(--theme-border, #17324d)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Send size={20} color="#ef8354" />
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#17324d' }}>
+                <Send size={20} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                   確認提交並結算測驗成績
                 </h3>
               </div>
@@ -950,23 +968,23 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '18px', padding: '24px' }}>
               {/* 作答統計看板 */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', textAlign: 'center' }}>
-                <div style={{ padding: '12px', background: '#f8f3eb', border: '1.5px solid #17324d', borderRadius: '14px' }}>
+                <div style={{ padding: '12px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid var(--theme-border, #17324d)', borderRadius: '14px' }}>
                   <div style={{ fontSize: '0.75rem', color: '#5b6772', fontWeight: 700 }}>總題數</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#17324d' }}>{questions.length}</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{questions.length}</div>
                 </div>
                 <div style={{ padding: '12px', background: '#e8f6ed', border: '1.5px solid #347650', borderRadius: '14px' }}>
                   <div style={{ fontSize: '0.75rem', color: '#347650', fontWeight: 700 }}>已作答</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#347650' }}>{answeredCount}</div>
                 </div>
-                <div style={{ padding: '12px', background: unansweredCount > 0 ? '#fff0e9' : '#f8f3eb', border: unansweredCount > 0 ? '1.5px solid #ef4444' : '1.5px solid #17324d', borderRadius: '14px' }}>
+                <div style={{ padding: '12px', background: unansweredCount > 0 ? '#fff0e9' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: unansweredCount > 0 ? '1.5px solid #ef4444' : '1.5px solid var(--theme-border, #17324d)', borderRadius: '14px' }}>
                   <div style={{ fontSize: '0.75rem', color: unansweredCount > 0 ? '#ef4444' : '#5b6772', fontWeight: 700 }}>未作答</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: unansweredCount > 0 ? '#ef4444' : '#17324d' }}>{unansweredCount}</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: unansweredCount > 0 ? '#ef4444' : 'var(--theme-border, var(--theme-border, #17324d))' }}>{unansweredCount}</div>
                 </div>
               </div>
 
               {/* 翰林警示提示 */}
               {unansweredCount > 0 ? (
-                <div style={{ padding: '14px 18px', background: '#fff0e9', border: '2px solid #ef8354', borderRadius: '14px', color: '#c8643d', fontWeight: 800, fontSize: '0.9rem', lineHeight: 1.6 }}>
+                <div style={{ padding: '14px 18px', background: '#fff0e9', border: '2px solid var(--theme-accent, #ef8354)', borderRadius: '14px', color: '#c8643d', fontWeight: 800, fontSize: '0.9rem', lineHeight: 1.6 }}>
                   ⚠️ 注意：您還有 <strong>{unansweredCount}</strong> 題尚未作答！未作答題目將直接視為錯誤，強烈建議返回補答。
                 </div>
               ) : (
@@ -998,7 +1016,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                               setIsSubmitModalOpen(false);
                             }}
                             className="btn btn-secondary"
-                            style={{ padding: '5px 12px', fontSize: '0.8rem', borderColor: '#ef8354', color: '#c8643d' }}
+                            style={{ padding: '5px 12px', fontSize: '0.8rem', borderColor: 'var(--theme-accent, var(--theme-accent, #ef8354))', color: '#c8643d' }}
                           >
                             第 {idx + 1} 題 補答
                           </button>
@@ -1016,7 +1034,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
               </div>
             </div>
 
-            <div className="modal-footer" style={{ borderTop: '2px solid #17324d', padding: '16px 24px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+            <div className="modal-footer" style={{ borderTop: '2px solid var(--theme-border, #17324d)', padding: '16px 24px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button
                 onClick={() => setIsSubmitModalOpen(false)}
                 className="btn btn-secondary"
@@ -1043,8 +1061,8 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
         <div className="modal-overlay">
           <div className="modal-card" style={{ maxWidth: '500px' }}>
             <div className="modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, color: '#17324d' }}>
-                <AlertTriangle size={18} color="#ef8354" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                <AlertTriangle size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
                 <span>回報題目疑義 (題號: {currentQ.id})</span>
               </div>
               <button onClick={() => setIsReportModalOpen(false)} className="btn btn-ghost btn-icon">
@@ -1064,7 +1082,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                     <select
                       value={reportReason}
                       onChange={e => setReportReason(e.target.value)}
-                      style={{ width: '100%', padding: '10px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700 }}
+                      style={{ width: '100%', padding: '10px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700 }}
                     >
                       <option value="答案錯誤">答案或選項標示錯誤</option>
                       <option value="題目語意不清">題目語意不清或缺少條件</option>
@@ -1080,7 +1098,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                       onChange={e => setReportComment(e.target.value)}
                       rows={3}
                       placeholder="請說明你認為有疑問或需要修正的地方..."
-                      style={{ width: '100%', padding: '10px', background: '#f8f3eb', color: '#17324d', border: '1.5px solid #ded3c5', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 600 }}
+                      style={{ width: '100%', padding: '10px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 600 }}
                     />
                   </div>
 

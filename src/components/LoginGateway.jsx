@@ -18,7 +18,7 @@ export default function LoginGateway() {
         alignItems: 'center',
         justifyContent: 'center',
         padding: isMobile ? '16px 12px' : '24px 16px',
-        background: '#f8f3eb',
+        background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
         backgroundImage: `
           linear-gradient(to right, rgba(23, 50, 77, 0.04) 1px, transparent 1px),
           linear-gradient(to bottom, rgba(23, 50, 77, 0.04) 1px, transparent 1px)
@@ -30,10 +30,10 @@ export default function LoginGateway() {
         style={{
           width: '100%',
           maxWidth: '440px',
-          background: '#fffdf9',
-          border: '3px solid #17324d',
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+          border: '3px solid var(--theme-border, #17324d)',
           borderRadius: isMobile ? '24px' : '32px',
-          boxShadow: isMobile ? '6px 6px 0px #17324d' : '10px 10px 0px #17324d',
+          boxShadow: isMobile ? '6px 6px 0px var(--theme-border, #17324d)' : '10px 10px 0px var(--theme-border, #17324d)',
           padding: isMobile ? '28px 20px' : '40px 32px',
           display: 'flex',
           flexDirection: 'column',
@@ -48,20 +48,20 @@ export default function LoginGateway() {
               width: '68px', 
               height: '68px', 
               borderRadius: '22px', 
-              background: '#17324d', 
-              border: '3px solid #17324d', 
+              background: 'var(--theme-border, var(--theme-border, #17324d))', 
+              border: '3px solid var(--theme-border, #17324d)', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
               color: '#f7cf68', 
-              boxShadow: '4px 4px 0px #ef8354' 
+              boxShadow: '4px 4px 0px var(--theme-accent, #ef8354)' 
             }}
           >
             <GraduationCap size={38} />
           </div>
 
           <div>
-            <h1 style={{ margin: 0, fontSize: '1.85rem', fontWeight: 900, color: '#17324d', letterSpacing: '-0.02em' }}>
+            <h1 style={{ margin: 0, fontSize: '1.85rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', letterSpacing: '-0.02em' }}>
               會考讀書網
             </h1>
             <p style={{ margin: '6px 0 0 0', fontSize: '0.9rem', color: '#78818a', fontWeight: 600 }}>
@@ -74,7 +74,7 @@ export default function LoginGateway() {
         <div 
           style={{ 
             background: '#fff0e9', 
-            border: '1.5px solid #ef8354', 
+            border: '1.5px solid var(--theme-accent, #ef8354)', 
             borderRadius: '16px', 
             padding: '12px 14px', 
             display: 'flex', 
@@ -99,12 +99,12 @@ export default function LoginGateway() {
               width: '100%',
               padding: '16px 20px',
               background: '#ffffff',
-              color: '#17324d',
+              color: 'var(--theme-border, var(--theme-border, #17324d))',
               fontWeight: 900,
               fontSize: '1.05rem',
               borderRadius: '18px',
-              border: '2.5px solid #17324d',
-              boxShadow: '4px 4px 0px #17324d',
+              border: '2.5px solid var(--theme-border, #17324d)',
+              boxShadow: '4px 4px 0px var(--theme-border, #17324d)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -136,8 +136,8 @@ export default function LoginGateway() {
               fontWeight: 800,
               fontSize: '1rem',
               borderRadius: '18px',
-              border: '2.5px solid #17324d',
-              boxShadow: '4px 4px 0px #17324d',
+              border: '2.5px solid var(--theme-border, #17324d)',
+              boxShadow: '4px 4px 0px var(--theme-border, #17324d)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -158,7 +158,7 @@ export default function LoginGateway() {
             style={{
               width: '100%',
               padding: '14px 20px',
-              background: '#fffdf9',
+              background: 'var(--theme-card, var(--theme-card, #fffdf9))',
               color: '#06C755',
               fontWeight: 800,
               fontSize: '1rem',
@@ -177,7 +177,7 @@ export default function LoginGateway() {
             <span>聯絡管理員</span>
           </a>
 
-          <div style={{ background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '10px 14px', textAlign: 'center' }}>
+          <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', borderRadius: '12px', padding: '10px 14px', textAlign: 'center' }}>
             <span style={{ fontSize: '0.78rem', color: '#5b6772', fontWeight: 700 }}>
               💡 系統唯一登入驗證管道：使用 Google 官方授權登入，跨手機與電腦 100% 永久雲端備份做題歷程與點數。
             </span>

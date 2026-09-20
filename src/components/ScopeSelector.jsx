@@ -77,10 +77,10 @@ export default function ScopeSelector({ onStartQuiz }) {
           padding: '28px', 
           position: 'relative', 
           overflow: 'hidden',
-          background: '#fffdf9',
-          border: '2.5px solid #17324d',
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+          border: '2.5px solid var(--theme-border, #17324d)',
           borderRadius: '24px',
-          boxShadow: '6px 6px 0px #17324d'
+          boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
         }}
       >
         <div style={{ maxWidth: '850px' }}>
@@ -89,7 +89,7 @@ export default function ScopeSelector({ onStartQuiz }) {
             <span className="badge badge-gold">每單元 5000+ 題充足不重複</span>
             <span className="badge badge-emerald">答對 1 題 = 1 點排行榜積分</span>
           </div>
-          <h1 style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '8px', color: '#17324d' }}>
+          <h1 style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '8px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
             國中全科自由選題測驗工作台
           </h1>
           <p style={{ color: '#5b6772', fontSize: '0.95rem', lineHeight: 1.7, fontWeight: 600 }}>
@@ -108,17 +108,17 @@ export default function ScopeSelector({ onStartQuiz }) {
             display: 'flex', 
             flexDirection: 'column', 
             gap: '22px',
-            background: '#fffdf9',
-            border: '2.5px solid #17324d',
+            background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+            border: '2.5px solid var(--theme-border, #17324d)',
             borderRadius: '24px',
-            boxShadow: '6px 6px 0px #17324d'
+            boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
           }}
         >
           {/* 步驟 1：選擇學習年級 */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <Layers size={18} color="#ef8354" />
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#17324d' }}>步驟 1：選擇學習年級</h3>
+              <Layers size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>步驟 1：選擇學習年級</h3>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
               {GRADES.map(g => {
@@ -132,10 +132,10 @@ export default function ScopeSelector({ onStartQuiz }) {
                       padding: '12px 8px',
                       flexDirection: 'column',
                       gap: '4px',
-                      background: isSelected ? '#ef8354' : '#f8f3eb',
-                      color: isSelected ? '#fff' : '#17324d',
-                      border: '2px solid #17324d',
-                      boxShadow: isSelected ? '0 5px 0 #d76740' : '3px 3px 0 #17324d',
+                      background: isSelected ? 'var(--theme-accent, var(--theme-accent, #ef8354))' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+                      color: isSelected ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))',
+                      border: '2px solid var(--theme-border, #17324d)',
+                      boxShadow: isSelected ? '0 5px 0 #d76740' : '3px 3px 0 var(--theme-border, #17324d)',
                       transform: isSelected ? 'translateY(-2px)' : 'none'
                     }}
                   >
@@ -150,8 +150,8 @@ export default function ScopeSelector({ onStartQuiz }) {
           {/* 步驟 2：選擇複習科目 */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <BookOpen size={18} color="#ef8354" />
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#17324d' }}>步驟 2：選擇複習科目</h3>
+              <BookOpen size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>步驟 2：選擇複習科目</h3>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' }}>
               {SUBJECTS.map(s => {
@@ -162,8 +162,8 @@ export default function ScopeSelector({ onStartQuiz }) {
                     onClick={() => handleSubjectChange(s.id)}
                     style={{
                       padding: '12px 14px',
-                      border: isSelected ? '2px solid #17324d' : '1.5px solid #ded3c5',
-                      background: isSelected ? '#fff0e9' : '#f8f3eb',
+                      border: isSelected ? '2px solid var(--theme-border, #17324d)' : '1.5px solid #ded3c5',
+                      background: isSelected ? '#fff0e9' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                       color: isSelected ? '#c8643d' : '#5b6772',
                       display: 'flex',
                       alignItems: 'center',
@@ -172,11 +172,11 @@ export default function ScopeSelector({ onStartQuiz }) {
                       borderRadius: '14px',
                       fontWeight: isSelected ? 800 : 700,
                       fontSize: '0.95rem',
-                      boxShadow: isSelected ? '3px 3px 0px #ef8354' : 'none',
+                      boxShadow: isSelected ? '3px 3px 0px var(--theme-accent, #ef8354)' : 'none',
                       transition: 'all 0.16s ease'
                     }}
                   >
-                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: isSelected ? '#ef8354' : '#9aa2a8' }} />
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: isSelected ? 'var(--theme-accent, var(--theme-accent, #ef8354))' : '#9aa2a8' }} />
                     <span>{s.name}</span>
                   </button>
                 );
@@ -187,8 +187,8 @@ export default function ScopeSelector({ onStartQuiz }) {
           {/* 步驟 3：自訂 4 段難度 */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <Sliders size={18} color="#ef8354" />
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#17324d' }}>步驟 3：設定題目難度</h3>
+              <Sliders size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>步驟 3：設定題目難度</h3>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
               {DIFFICULTIES.map(d => {
@@ -199,8 +199,8 @@ export default function ScopeSelector({ onStartQuiz }) {
                     onClick={() => setSelectedDifficulty(d.id)}
                     style={{
                       padding: '10px 14px',
-                      border: isSelected ? '2px solid #17324d' : '1.5px solid #ded3c5',
-                      background: isSelected ? '#fff7d9' : '#f8f3eb',
+                      border: isSelected ? '2px solid var(--theme-border, #17324d)' : '1.5px solid #ded3c5',
+                      background: isSelected ? '#fff7d9' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'flex-start',
@@ -212,7 +212,7 @@ export default function ScopeSelector({ onStartQuiz }) {
                       transition: 'all 0.16s ease'
                     }}
                   >
-                    <span style={{ fontSize: '0.88rem', fontWeight: 800, color: isSelected ? '#806523' : '#17324d' }}>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 800, color: isSelected ? '#806523' : 'var(--theme-border, var(--theme-border, #17324d))' }}>
                       {d.badge}
                     </span>
                     <span style={{ fontSize: '0.72rem', color: isSelected ? '#9a741e' : '#78818a', fontWeight: 600 }}>
@@ -228,7 +228,7 @@ export default function ScopeSelector({ onStartQuiz }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
               <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#5b6772' }}>本次抽取題數</span>
-              <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#ef8354' }}>{questionCount} 題</span>
+              <span style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }}>{questionCount} 題</span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               {[5, 10, 15, 20, 30].map(cnt => {
@@ -242,10 +242,10 @@ export default function ScopeSelector({ onStartQuiz }) {
                       flex: 1,
                       padding: '8px 4px',
                       fontSize: '0.86rem',
-                      background: isSelected ? '#17324d' : '#f8f3eb',
-                      color: isSelected ? '#fff' : '#17324d',
-                      border: '2px solid #17324d',
-                      boxShadow: isSelected ? '2px 2px 0 #ef8354' : '2px 2px 0 #17324d'
+                      background: isSelected ? 'var(--theme-border, var(--theme-border, #17324d))' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+                      color: isSelected ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))',
+                      border: '2px solid var(--theme-border, #17324d)',
+                      boxShadow: isSelected ? '2px 2px 0 var(--theme-accent, #ef8354)' : '2px 2px 0 var(--theme-border, #17324d)'
                     }}
                   >
                     {cnt}題
@@ -264,16 +264,16 @@ export default function ScopeSelector({ onStartQuiz }) {
             padding: '26px', 
             display: 'flex', 
             flexDirection: 'column',
-            background: '#fffdf9',
-            border: '2.5px solid #17324d',
+            background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+            border: '2.5px solid var(--theme-border, #17324d)',
             borderRadius: '24px',
-            boxShadow: '6px 6px 0px #17324d'
+            boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1.5px solid #e8ded0' }}>
             <div>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#17324d', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Zap size={18} color="#ef8354" />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Zap size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
                 108 課綱單元範圍 (已選 {selectedUnitIds.length} 個)
               </h3>
               <div style={{ fontSize: '0.75rem', color: '#78818a', marginTop: '3px', fontWeight: 600 }}>
@@ -300,22 +300,22 @@ export default function ScopeSelector({ onStartQuiz }) {
                   onClick={() => toggleUnit(unit.id)}
                   style={{
                     padding: '12px 14px',
-                    border: isChecked ? '2px solid #ef8354' : '1.5px solid #ded3c5',
-                    background: isChecked ? '#fff0e9' : '#f8f3eb',
+                    border: isChecked ? '2px solid var(--theme-accent, #ef8354)' : '1.5px solid #ded3c5',
+                    background: isChecked ? '#fff0e9' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                     borderRadius: '14px',
                     display: 'flex',
                     alignItems: 'flex-start',
                     gap: '12px',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
-                    boxShadow: isChecked ? '2px 2px 0px #ef8354' : 'none'
+                    boxShadow: isChecked ? '2px 2px 0px var(--theme-accent, #ef8354)' : 'none'
                   }}
                 >
-                  <div style={{ marginTop: '2px', color: isChecked ? '#ef8354' : '#9aa2a8' }}>
+                  <div style={{ marginTop: '2px', color: isChecked ? 'var(--theme-accent, var(--theme-accent, #ef8354))' : '#9aa2a8' }}>
                     {isChecked ? <CheckSquare size={18} /> : <Square size={18} />}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: '0.92rem', color: isChecked ? '#c8643d' : '#17324d' }}>
+                    <div style={{ fontWeight: 800, fontSize: '0.92rem', color: isChecked ? '#c8643d' : 'var(--theme-border, var(--theme-border, #17324d))' }}>
                       {unit.name}
                     </div>
                     <div style={{ fontSize: '0.74rem', color: '#78818a', marginTop: '2px', fontWeight: 600 }}>

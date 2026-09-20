@@ -82,7 +82,7 @@ export default function Navbar({
   const isAdmin = checkIsAdmin(currentUser);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#e8ded0] bg-[#f8f3eb]/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[#e8ded0] bg-[var(--theme-bg, #f8f3eb)]/95 backdrop-blur-xl">
       <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
         
         {/* 左側：品牌 Logo 與每週歸零倒數看板 */}
@@ -92,14 +92,14 @@ export default function Navbar({
             style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
           >
             {/* 經典深海軍藍小方塊標章 + 珊瑚橙點 */}
-            <div style={{ position: 'relative', width: '42px', height: '42px', borderRadius: '14px', background: '#17324d', border: '2px solid #17324d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f7cf68', boxShadow: '3px 3px 0px #ef8354' }}>
+            <div style={{ position: 'relative', width: '42px', height: '42px', borderRadius: '14px', background: 'var(--theme-border, var(--theme-border, #17324d))', border: '2px solid var(--theme-border, #17324d)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f7cf68', boxShadow: '3px 3px 0px var(--theme-accent, #ef8354)' }}>
               <GraduationCap size={24} />
-              <span style={{ position: 'absolute', top: '-3px', right: '-3px', width: '9px', height: '9px', borderRadius: '50%', background: '#ef8354' }} />
+              <span style={{ position: 'absolute', top: '-3px', right: '-3px', width: '9px', height: '9px', borderRadius: '50%', background: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
             </div>
 
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '1.2rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#17324d' }}>
+                <span style={{ fontSize: '1.2rem', fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                   會考讀書網
                 </span>
                 <span className="badge badge-coral" style={{ fontSize: '0.68rem', padding: '2px 8px' }}>
@@ -114,11 +114,11 @@ export default function Navbar({
 
           {/* 每週一 00:00 歸零倒數看板 (電腦與平板版自動顯示，手機版隱藏移至首頁) */}
           {!isMobile && (
-            <div style={{ padding: '6px 14px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #ded3c5', background: '#fffdf9', boxShadow: '2px 2px 0px #17324d' }}>
-              <Clock size={14} color="#ef8354" />
+            <div style={{ padding: '6px 14px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px solid #ded3c5', background: 'var(--theme-card, var(--theme-card, #fffdf9))', boxShadow: '2px 2px 0px var(--theme-border, #17324d)' }}>
+              <Clock size={14} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
               <div style={{ fontSize: '0.74rem', color: '#5b6772', fontWeight: 700 }}>
                 週榜結算倒數：
-                <span style={{ fontFamily: 'var(--font-mono)', color: '#17324d', marginLeft: '4px', fontWeight: 900 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--theme-border, var(--theme-border, #17324d))', marginLeft: '4px', fontWeight: 900 }}>
                   {countdown.days}天 {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
                 </span>
               </div>
@@ -188,14 +188,14 @@ export default function Navbar({
               padding: '6px 12px', 
               background: '#06C755',
               color: '#ffffff',
-              border: '1.5px solid #17324d',
+              border: '1.5px solid var(--theme-border, #17324d)',
               borderRadius: '10px',
               fontWeight: 800,
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
               textDecoration: 'none',
-              boxShadow: '2px 2px 0px #17324d'
+              boxShadow: '2px 2px 0px var(--theme-border, #17324d)'
             }}
             title="加入 LINE 社群一起討論"
           >
@@ -212,7 +212,7 @@ export default function Navbar({
             style={{ 
               fontSize: '0.84rem', 
               padding: '6px 12px', 
-              background: '#fffdf9',
+              background: 'var(--theme-card, var(--theme-card, #fffdf9))',
               color: '#06C755',
               border: '1.5px solid #06C755',
               borderRadius: '10px',
@@ -274,18 +274,18 @@ export default function Navbar({
             }}
             title="查看管理員通知與可領取序號"
           >
-            <Bell size={16} color="#ef8354" />
+            <Bell size={16} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
             <span style={{ fontWeight: 800 }}>通知</span>
             {unredeemedCount > 0 && (
               <span 
                 style={{
-                  background: '#ef8354',
+                  background: 'var(--theme-accent, var(--theme-accent, #ef8354))',
                   color: '#fff',
                   fontSize: '0.65rem',
                   fontWeight: 900,
                   padding: '1px 6px',
                   borderRadius: '9999px',
-                  border: '1px solid #17324d'
+                  border: '1px solid var(--theme-border, #17324d)'
                 }}
               >
                 {unredeemedCount}
@@ -387,11 +387,11 @@ export default function Navbar({
               >
                 <Gift size={16} />
                 <span>天天抽獎</span>
-                <span style={{ background: '#17324d', color: '#f7cf68', padding: '1px 7px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 800 }}>
+                <span style={{ background: 'var(--theme-border, var(--theme-border, #17324d))', color: '#f7cf68', padding: '1px 7px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 800 }}>
                   {gameState.tickets || 0} 張
                 </span>
                 {gameState.tickets > 0 && (
-                  <span className="pulse-dot" style={{ position: 'absolute', top: '-4px', right: '-4px', width: '10px', height: '10px', background: '#ef8354', borderRadius: '50%', border: '2px solid #fffdf9' }} />
+                  <span className="pulse-dot" style={{ position: 'absolute', top: '-4px', right: '-4px', width: '10px', height: '10px', background: 'var(--theme-accent, var(--theme-accent, #ef8354))', borderRadius: '50%', border: '2px solid var(--theme-card, #fffdf9)' }} />
                 )}
               </button>
             </>
@@ -419,11 +419,11 @@ export default function Navbar({
 
           {/* Google 登入狀態區塊 */}
           {currentUser && currentUser.isGoogleBound ? (
-            <div style={{ padding: '4px 12px 4px 6px', display: 'flex', alignItems: 'center', gap: '10px', borderRadius: '30px', background: '#fffdf9', border: '2px solid #17324d', boxShadow: '2px 2px 0 #17324d' }}>
+            <div style={{ padding: '4px 12px 4px 6px', display: 'flex', alignItems: 'center', gap: '10px', borderRadius: '30px', background: 'var(--theme-card, var(--theme-card, #fffdf9))', border: '2px solid var(--theme-border, #17324d)', boxShadow: '2px 2px 0 var(--theme-border, #17324d)' }}>
               <img 
                 src={currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email)}`} 
                 alt={currentUser.displayName}
-                style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1.5px solid #17324d' }}
+                style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1.5px solid var(--theme-border, #17324d)' }}
               />
               
               {isEditingName ? (
@@ -432,7 +432,7 @@ export default function Navbar({
                     type="text" 
                     value={newNameInput} 
                     onChange={e => setNewNameInput(e.target.value)}
-                    style={{ background: '#f8f3eb', border: '1px solid #ef8354', color: '#17324d', borderRadius: '4px', padding: '3px 8px', fontSize: '0.8rem', width: '100px', fontWeight: 700 }}
+                    style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1px solid var(--theme-accent, #ef8354)', color: 'var(--theme-border, var(--theme-border, #17324d))', borderRadius: '4px', padding: '3px 8px', fontSize: '0.8rem', width: '100px', fontWeight: 700 }}
                     maxLength={16}
                     autoFocus
                   />
@@ -442,7 +442,7 @@ export default function Navbar({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#17324d', maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {currentUser.displayName}
                       </span>
                       <Edit3 size={13} style={{ cursor: 'pointer', opacity: 0.6 }} onClick={() => { setNewNameInput(currentUser.displayName); setIsEditingName(true); }} />
@@ -473,15 +473,15 @@ export default function Navbar({
                 style={{
                   padding: '8px 18px',
                   background: '#ffffff',
-                  color: '#17324d',
+                  color: 'var(--theme-border, var(--theme-border, #17324d))',
                   fontWeight: 800,
                   fontSize: '0.92rem',
                   borderRadius: '30px',
-                  boxShadow: '3px 3px 0px #17324d',
+                  boxShadow: '3px 3px 0px var(--theme-border, #17324d)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  border: '2px solid #17324d',
+                  border: '2px solid var(--theme-border, #17324d)',
                   cursor: 'pointer'
                 }}
               >

@@ -108,11 +108,11 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
       {/* 1. 翰林雲端學院風格：成績總結與會考落點診斷卡 */}
       <div 
         style={{
-          background: '#fffdf9',
-          border: '2.5px solid #17324d',
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+          border: '2.5px solid var(--theme-border, #17324d)',
           borderRadius: '24px',
           padding: '32px 28px',
-          boxShadow: '8px 8px 0px #17324d',
+          boxShadow: '8px 8px 0px var(--theme-border, #17324d)',
           display: 'flex',
           flexDirection: 'column',
           gap: '24px'
@@ -121,14 +121,14 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
         {/* 卡片標頭列 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '2px solid #ede3d5', paddingBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#17324d', color: '#f7cf68', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '3px 3px 0px #ef8354' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'var(--theme-border, var(--theme-border, #17324d))', color: '#f7cf68', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '3px 3px 0px var(--theme-accent, #ef8354)' }}>
               <Trophy size={22} />
             </div>
             <div>
-              <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#ef8354', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--theme-accent, var(--theme-accent, #ef8354))', letterSpacing: '0.05em' }}>
                 E-HANLIN DIAGNOSTIC REPORT
               </div>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#17324d', margin: 0 }}>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', margin: 0 }}>
                 翰林雲端學院｜學力診斷結算報告
               </h2>
             </div>
@@ -159,7 +159,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               alignItems: 'center',
               justifyContent: 'center',
               textAlign: 'center',
-              boxShadow: '4px 4px 0px #17324d'
+              boxShadow: '4px 4px 0px var(--theme-border, #17324d)'
             }}
           >
             <span style={{ fontSize: '0.82rem', fontWeight: 800, color: capInfo.color, letterSpacing: '0.04em' }}>
@@ -170,7 +170,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               {capInfo.grade}
             </div>
 
-            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#17324d' }}>
+            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
               {capInfo.title}
             </div>
 
@@ -182,9 +182,9 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
           {/* 右側：精準四項數據矩陣 */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
             
-            <div style={{ background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#78818a' }}>測驗總得分</span>
-              <div style={{ fontSize: '2.1rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: '#17324d', margin: '2px 0' }}>
+              <div style={{ fontSize: '2.1rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--theme-border, var(--theme-border, #17324d))', margin: '2px 0' }}>
                 {accuracy} <span style={{ fontSize: '1rem', fontWeight: 700, color: '#78818a' }}>分</span>
               </div>
               <span style={{ fontSize: '0.74rem', color: '#5b6772', fontWeight: 600 }}>
@@ -192,7 +192,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               </span>
             </div>
 
-            <div style={{ background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#78818a' }}>答對 / 總題數</span>
               <div style={{ fontSize: '2.1rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: '#15803d', margin: '2px 0' }}>
                 {correctCount} <span style={{ fontSize: '1rem', fontWeight: 700, color: '#78818a' }}>/ {totalCount}</span>
@@ -202,9 +202,9 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               </span>
             </div>
 
-            <div style={{ background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#78818a' }}>獲得週排行榜點數</span>
-              <div style={{ fontSize: '2.1rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: '#ef8354', margin: '2px 0' }}>
+              <div style={{ fontSize: '2.1rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--theme-accent, var(--theme-accent, #ef8354))', margin: '2px 0' }}>
                 +{earnedPoints}
               </div>
               <span style={{ fontSize: '0.74rem', color: '#5b6772', fontWeight: 600 }}>
@@ -212,9 +212,9 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               </span>
             </div>
 
-            <div style={{ background: '#f8f3eb', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #ded3c5', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#78818a' }}>作答總耗時</span>
-              <div style={{ fontSize: '2.1rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: '#17324d', margin: '2px 0' }}>
+              <div style={{ fontSize: '2.1rem', fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--theme-border, var(--theme-border, #17324d))', margin: '2px 0' }}>
                 {Math.floor(timeSpentSec / 60)}:{(timeSpentSec % 60).toString().padStart(2, '0')}
               </div>
               <span style={{ fontSize: '0.74rem', color: '#5b6772', fontWeight: 600 }}>
@@ -263,11 +263,11 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
       {/* 2. 翰林雲端學院特有：單元學力掌握度診斷清單 */}
       <div 
         style={{
-          background: '#fffdf9',
-          border: '2px solid #17324d',
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+          border: '2px solid var(--theme-border, #17324d)',
           borderRadius: '20px',
           padding: '24px',
-          boxShadow: '4px 4px 0px #17324d',
+          boxShadow: '4px 4px 0px var(--theme-border, #17324d)',
           display: 'flex',
           flexDirection: 'column',
           gap: '16px'
@@ -275,8 +275,8 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BarChart3 size={20} color="#ef8354" />
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#17324d', margin: 0 }}>
+            <BarChart3 size={20} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', margin: 0 }}>
               各單元概念精熟掌握度分析
             </h3>
           </div>
@@ -296,7 +296,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               <div 
                 key={item.unit}
                 style={{
-                  background: '#f8f3eb',
+                  background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                   border: '1.5px solid #ded3c5',
                   borderRadius: '14px',
                   padding: '14px 18px',
@@ -309,7 +309,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '220px', flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontWeight: 800, fontSize: '0.92rem', color: '#17324d' }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                       {item.unit}
                     </span>
                     <span 
@@ -329,7 +329,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
 
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '2px' }}>
                     {item.concepts.map(c => (
-                      <span key={c} style={{ fontSize: '0.7rem', color: '#78818a', background: '#fffdf9', padding: '1px 6px', borderRadius: '4px', border: '1px solid #ded3c5' }}>
+                      <span key={c} style={{ fontSize: '0.7rem', color: '#78818a', background: 'var(--theme-card, var(--theme-card, #fffdf9))', padding: '1px 6px', borderRadius: '4px', border: '1px solid #ded3c5' }}>
                         #{c}
                       </span>
                     ))}
@@ -343,7 +343,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                       style={{ 
                         width: `${item.accuracy}%`, 
                         height: '100%', 
-                        background: isMastered ? '#15803d' : isWeak ? '#ef8354' : '#f59e0b',
+                        background: isMastered ? '#15803d' : isWeak ? 'var(--theme-accent, var(--theme-accent, #ef8354))' : '#f59e0b',
                         borderRadius: '4px',
                         transition: 'width 0.4s ease'
                       }} 
@@ -367,11 +367,11 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
       {/* 3. 翰林雲端學院核心：答題卡題號總覽矩陣與快速篩選 */}
       <div 
         style={{
-          background: '#fffdf9',
-          border: '2px solid #17324d',
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+          border: '2px solid var(--theme-border, #17324d)',
           borderRadius: '20px',
           padding: '20px 24px',
-          boxShadow: '4px 4px 0px #17324d',
+          boxShadow: '4px 4px 0px var(--theme-border, #17324d)',
           display: 'flex',
           flexDirection: 'column',
           gap: '16px'
@@ -379,8 +379,8 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Target size={18} color="#ef8354" />
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#17324d', margin: 0 }}>
+            <Target size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', margin: 0 }}>
               作答答題卡總覽 (點擊題號立即滾動定位至詳解)
             </h3>
           </div>
@@ -390,9 +390,9 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
             <button
               onClick={() => setFilterMode('all')}
               style={{
-                background: filterMode === 'all' ? '#17324d' : '#f8f3eb',
-                color: filterMode === 'all' ? '#fff' : '#17324d',
-                border: '1.5px solid #17324d',
+                background: filterMode === 'all' ? 'var(--theme-border, var(--theme-border, #17324d))' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+                color: filterMode === 'all' ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))',
+                border: '1.5px solid var(--theme-border, #17324d)',
                 borderRadius: '8px',
                 padding: '4px 12px',
                 fontSize: '0.78rem',
@@ -405,7 +405,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
             <button
               onClick={() => setFilterMode('wrong')}
               style={{
-                background: filterMode === 'wrong' ? '#b91c1c' : '#f8f3eb',
+                background: filterMode === 'wrong' ? '#b91c1c' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                 color: filterMode === 'wrong' ? '#fff' : '#b91c1c',
                 border: '1.5px solid #b91c1c',
                 borderRadius: '8px',
@@ -420,7 +420,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
             <button
               onClick={() => setFilterMode('correct')}
               style={{
-                background: filterMode === 'correct' ? '#15803d' : '#f8f3eb',
+                background: filterMode === 'correct' ? '#15803d' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                 color: filterMode === 'correct' ? '#fff' : '#15803d',
                 border: '1.5px solid #15803d',
                 borderRadius: '8px',
@@ -450,7 +450,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                   width: '38px',
                   height: '38px',
                   borderRadius: '10px',
-                  border: isTarget ? '2.5px solid #ef8354' : '1.5px solid #17324d',
+                  border: isTarget ? '2.5px solid var(--theme-accent, #ef8354)' : '1.5px solid var(--theme-border, #17324d)',
                   background: isCorrect ? '#15803d' : isUnanswered ? '#9aa2a8' : '#c8643d',
                   color: '#fff',
                   display: 'flex',
@@ -460,7 +460,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                   fontSize: '0.76rem',
                   fontWeight: 900,
                   cursor: 'pointer',
-                  boxShadow: isTarget ? '0 0 8px #ef8354' : '2px 2px 0px #17324d',
+                  boxShadow: isTarget ? '0 0 8px var(--theme-accent, #ef8354)' : '2px 2px 0px var(--theme-border, #17324d)',
                   transform: isTarget ? 'scale(1.1)' : 'none',
                   transition: 'all 0.2s ease'
                 }}
@@ -479,8 +479,8 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
       {/* 4. 逐題翰林名師詳解列表 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', fontWeight: 900, color: '#17324d' }}>
-            <BookOpen size={20} color="#ef8354" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+            <BookOpen size={20} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
             <span>題目詳解與翰林破題思路分析</span>
           </div>
           <span style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 600 }}>
@@ -501,11 +501,11 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               id={`result-question-${idx}`}
               key={q.id || idx}
               style={{
-                background: '#fffdf9',
-                border: isHighlighted ? '2.5px solid #ef8354' : '2px solid #17324d',
+                background: 'var(--theme-card, var(--theme-card, #fffdf9))',
+                border: isHighlighted ? '2.5px solid var(--theme-accent, #ef8354)' : '2px solid var(--theme-border, #17324d)',
                 borderRadius: '20px',
                 padding: '24px',
-                boxShadow: isHighlighted ? '0 0 16px rgba(239, 131, 84, 0.3), 4px 4px 0px #17324d' : '4px 4px 0px #17324d',
+                boxShadow: isHighlighted ? '0 0 16px rgba(239, 131, 84, 0.3), 4px 4px 0px var(--theme-border, #17324d)' : '4px 4px 0px var(--theme-border, #17324d)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '16px',
@@ -515,7 +515,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               {/* 題卡標題列 */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1.5px solid #ede3d5', pb: '12px', paddingBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <span style={{ background: '#17324d', color: '#fff', padding: '4px 10px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 900 }}>
+                  <span style={{ background: 'var(--theme-border, var(--theme-border, #17324d))', color: '#fff', padding: '4px 10px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 900 }}>
                     第 {idx + 1} 題
                   </span>
                   <span style={{ background: '#e8f0f2', color: '#48717e', padding: '4px 10px', borderRadius: '8px', fontSize: '0.76rem', fontWeight: 800 }}>
@@ -549,7 +549,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               </div>
 
               {/* 題幹內容 */}
-              <div style={{ fontSize: '1.02rem', fontWeight: 700, color: '#17324d', lineHeight: 1.8 }}>
+              <div style={{ fontSize: '1.02rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.8 }}>
                 {q.question}
               </div>
 
@@ -561,7 +561,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                   const isRightAns = q.answer === optIdx;
 
                   let border = '1.5px solid #ded3c5';
-                  let bg = '#fffdf9';
+                  let bg = 'var(--theme-card, var(--theme-card, #fffdf9))';
                   let textColor = '#2d3748';
                   let badge = null;
 
@@ -603,8 +603,8 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                           width: '24px', 
                           height: '24px', 
                           borderRadius: '50%', 
-                          background: isRightAns ? '#15803d' : isUserPick ? '#b91c1c' : '#f8f3eb',
-                          color: (isRightAns || isUserPick) ? '#fff' : '#17324d',
+                          background: isRightAns ? '#15803d' : isUserPick ? '#b91c1c' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+                          color: (isRightAns || isUserPick) ? '#fff' : 'var(--theme-border, var(--theme-border, #17324d))',
                           border: '1px solid #ded3c5',
                           display: 'flex',
                           alignItems: 'center',
@@ -646,7 +646,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
               {/* 翰林名師精闢解析 */}
               <div 
                 style={{ 
-                  background: '#f8f3eb', 
+                  background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', 
                   border: '1.5px solid #ded3c5', 
                   borderRadius: '14px', 
                   padding: '16px', 
@@ -656,7 +656,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                   whiteSpace: 'pre-line'
                 }}
               >
-                <div style={{ fontWeight: 900, color: '#17324d', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   📖 翰林名師詳細解析與步驟推導：
                 </div>
                 {q.explanation}
@@ -670,11 +670,11 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
       {/* 頁尾行動按鈕 */}
       <div 
         style={{ 
-          background: '#fffdf9', 
-          border: '2px solid #17324d', 
+          background: 'var(--theme-card, var(--theme-card, #fffdf9))', 
+          border: '2px solid var(--theme-border, #17324d)', 
           borderRadius: '20px', 
           padding: '20px 24px', 
-          boxShadow: '4px 4px 0px #17324d',
+          boxShadow: '4px 4px 0px var(--theme-border, #17324d)',
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
