@@ -2028,9 +2028,10 @@ export function resolveCommunityReport(reportId, decision, operatorUser, reviewN
 
 // 取得台灣時區 (UTC+8) 當日日期字串 (YYYY-MM-DD)
 export function getTaiwanDateStr(d = new Date()) {
-  const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-  const taipei = new Date(utc + (3600000 * 8));
-  return taipei.toISOString().slice(0, 10);
+  // 將絕對時間 (UTC) 往未來推 8 小時，再強制用 ISO UTC 格式切出日期，
+  // 這樣無論使用者電腦在哪個時區，切出來的日期永遠等同於台灣的當地日期。
+  const taipeiShifted = new Date(d.getTime() + (8 * 3600000));
+  return taipeiShifted.toISOString().slice(0, 10);
 }
 
 // --- 11. 每日刷題進度目標 (Daily Practice Goal - 跨裝置 100% 同步保全版) ---
