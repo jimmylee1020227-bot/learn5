@@ -29,9 +29,8 @@ for (const file of jsFiles) {
     stringArray: true,
     stringArrayEncoding: ['base64', 'rc4'],
     stringArrayThreshold: 0.8,
-    splitStrings: true,
-    splitStringsChunkLength: 5,
-    transformObjectKeys: true,
+    splitStrings: false,
+    transformObjectKeys: false,
     unicodeEscapeSequence: false,
     disableConsoleOutput: false
   });
