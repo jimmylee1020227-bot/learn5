@@ -1,276 +1,96 @@
-export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
-  const names = ['Tom', 'Amy', 'Peter', 'Emily', 'Jason', 'Lucy', 'John', 'Sarah', 'David', 'Mary', 'Kevin', 'Linda'];
-  const name1 = names[Math.floor(rand() * names.length)];
-  const name2 = names[(Math.floor(rand() * names.length) + 1) % names.length];
+// 108 課綱英語科全單元題目引擎（支援會考雙文本閱讀、全國英語競賽、私中進階字彙與分級難度）
+export function generateEnglishQuestion(gradeId, unitId, index, difficulty = 'medium', rand, conceptTag) {
+  const isExtreme = difficulty === 'extreme' || difficulty === 'hardest';
+  const isHard = difficulty === 'hard';
+  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
 
-  // 動態樂高引擎：產生絕對不重複的情境前導詞
-  const actions = ['is doing homework', 'is talking to a friend', 'is writing an email', 'is studying for a test', 'is reading a book'];
-  const times = ['in the morning', 'at night', 'after school', 'on the weekend'];
+  // 動態樂高引擎：產生情境前導詞
+  const people = ['Alex', 'David', 'Emily', 'Sarah', 'Kevin', 'Grace', 'Brian', 'Chloe', 'Mr. White', 'English Club Leader'];
+  const actions = ['reading an article from an international news magazine', 'preparing for the junior high English competition', 'analyzing a challenging passage from the comprehensive exam', 'participating in a Model United Nations conference'];
+  const verbs = ['noticed this critical grammar point', 'encountered a sophisticated vocabulary usage', 'wanted to test your reading comprehension ability', 'found this interesting reading passage'];
+  
+  const person = people[Math.floor(rand() * people.length)];
   const action = actions[Math.floor(rand() * actions.length)];
-  const time = times[Math.floor(rand() * times.length)];
-  const preamble = `${name1} ${action} ${time}.`;
+  const verb = verbs[Math.floor(rand() * verbs.length)];
+  const preamble = `While ${action}, ${person} ${verb}.`;
 
   function getRandItems(arr, count) {
     const res = [];
     const pool = [...arr];
-    for(let i=0; i<count; i++) {
-      if(pool.length === 0) break;
+    for (let i = 0; i < count; i++) {
+      if (pool.length === 0) break;
       const idx = Math.floor(rand() * pool.length);
       res.push(pool.splice(idx, 1)[0]);
     }
     return res;
   }
 
-  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
-
-  if (gradeId === 'g7') {
-    let variant = -1;
-    if (uNum === 1 || uNum === 2) variant = rand() > 0.5 ? 1 : 2; // 文法與對話
-    else if (uNum === 3 || uNum === 4) variant = 2; // 文法
-    else if (uNum === 5) variant = 0; // 聽力
-
-    if (variant === 0) {
-      // 聽力題 (Listening)
-      const listenings = [
-        { 
-          text: `Man: Excuse me, how much is this jacket?\nWoman: It was fifty dollars yesterday, but it's on sale today for thirty dollars.\nMan: Great, I'll take it.`,
-          q: `How much will the man pay for the jacket?`, ans: '$30', wrongs: ['$50', '$20', '$80', '$10', '$40'], 
-          exp: `It was fifty dollars yesterday, but it's on sale today for thirty dollars.\n詳解：外套今天特價 30 元。` 
-        },
-        { 
-          text: `Woman: Are you going to the library, ${name1}?\nMan: No, I need to go to the post office first. Then I'll meet ${name2} at the park.`,
-          q: `Where is the man going first?`, ans: 'The post office', wrongs: ['The library', 'The park', 'Home', 'The supermarket'], 
-          exp: `No, I need to go to the post office first.\n詳解：男子說他要先去郵局 (post office)。` 
-        },
-        { 
-          text: `Man: What time does the movie start?\nWoman: It starts at 7:30, but we should get there at 7:00 to buy tickets.`,
-          q: `What time does the movie start?`, ans: '7:30', wrongs: ['7:00', '8:00', '6:30', '7:15'], 
-          exp: `It starts at 7:30...\n詳解：電影在 7:30 開始。` 
-        }
-      ];
-      const l = listenings[Math.floor(rand() * listenings.length)];
+  // ==========================================
+  // 1. 最難試題 (Extreme / Hardest)：會考跨領域長文、全國英語競賽、私中題
+  // ==========================================
+  if (isExtreme || gradeId === 'past-exams' || gradeId === 'private-school') {
+    if (gradeId === 'g7' || gradeId === 'private-school') {
+      // 私中進階單字與邏輯推論
       return {
-        isListening: true,
-        audioText: l.text,
-        question: `【英文聽力測驗】Listen to the conversation. ${l.q}`,
-        options: [l.ans, ...getRandItems(l.wrongs, 3)],
-        answer: 0,
-        hint: '💡 提示：點擊「播放聽力語音」。注意聽關鍵字。',
-        explanation: `📖 聽力原文：${l.exp}`
-      };
-    } else if (variant === 1) {
-      // 英文情境對話 Chat
-      const chats = [
-        { msg1: `Hey, are you free this weekend?`, msg2: `I think so. What's up?`, msg3: `I was wondering if you'd like to go to the movies with me.`, msg4: `________. What time?`, ans: `Sure, I'd love to`, wrongs: [`No, I don't like movies`, `I am very busy`, `You are welcome`, `I have no idea`] },
-        { msg1: `I failed my math test again.`, msg2: `________. You studied so hard!`, msg3: `I know, maybe I should ask the teacher for help.`, msg4: `That's a good idea.`, ans: `I'm sorry to hear that`, wrongs: [`Congratulations`, `That's wonderful`, `You're welcome`, `Good for you`] },
-        { msg1: `Excuse me, how do I get to the train station?`, msg2: `Go straight for two blocks and turn left. ________`, msg3: `Thank you so much!`, msg4: `No problem.`, ans: `You can't miss it.`, wrongs: [`It's closed today.`, `I don't know either.`, `Watch out!`, `I'm going there too.`] }
-      ];
-      const c = chats[Math.floor(rand() * chats.length)];
-      return {
-        isChat: true,
-        chatMessages: [
-          { sender: name1, text: c.msg1 },
-          { sender: name2, text: c.msg2, isRight: true },
-          { sender: name1, text: c.msg3 },
-          { sender: name2, text: c.msg4, isRight: true }
-        ],
-        question: `【英文對話情境】Which of the following is the best response to fill in the blank?`,
-        options: [c.ans, ...getRandItems(c.wrongs, 3)],
-        answer: 0,
-        hint: `💡 提示：根據前後文的邏輯來判斷最適合的回話。`,
-        explanation: `📖 詳解：正確選項為「${c.ans}」。`
-      };
-    } else if (variant === 2) {
-      const g7Grammar = [
-        { q: `If it ________ tomorrow, we will not go to the beach.`, ans: 'rains', wrongs: ['will rain', 'rained', 'is raining', 'has rained'], exp: '條件子句 (If 帶領的子句) 中，要用「現在式代替未來式」。' },
-        { q: `There ________ some milk in the fridge.`, ans: 'is', wrongs: ['are', 'have', 'has', 'be'], exp: 'milk 是不可數名詞，Be動詞要用單數 is。' },
-        { q: `Listen! The birds ________ in the trees.`, ans: 'are singing', wrongs: ['sing', 'sings', 'sang', 'have sung'], exp: '有 Listen! (聽!) 代表動作正在發生，用現在進行式。' },
-        { q: `My brother likes playing basketball, but I ________.`, ans: 'don\'t', wrongs: ['doesn\'t', 'am not', 'didn\'t', 'haven\'t'], exp: 'like 是一般動詞，第一人稱否定用 don\'t。' }
-      ];
-      const g = g7Grammar[Math.floor(rand() * g7Grammar.length)];
-      return { 
-        question: `【文法陷阱題】${preamble}\nChoose the correct answer:\n${g.q}`, 
-        options: [g.ans, ...getRandItems(g.wrongs, 3)], 
-        answer: 0, 
-        hint: '💡 提示：注意時態與單複數。',
-        explanation: `📖 詳解：${g.exp}` 
-      };
-    }
-  } else if (gradeId === 'g8') {
-    let variant = -1;
-    if (uNum === 1 || uNum === 2 || uNum === 3) variant = 1; // 文法與單字
-    else if (uNum === 4 || uNum === 5) variant = rand() > 0.3 ? 0 : 1; // 閱讀為主
-
-    if (variant === 0) {
-      const cities = ['Japan', 'Korea', 'America', 'England', 'Australia'];
-      const city = cities[Math.floor(rand() * cities.length)];
-      const readings = [
-        { 
-          text: `Dear ${name1},\nHow have you been? I am writing to tell you about my trip to ${city} last week. It was amazing! I visited many famous places and ate delicious food. The weather was a bit cold, but the scenery was beautiful. I took a lot of photos and I can't wait to show them to you when we meet next Monday at the cafe.\nBest,\n${name2}`, 
-          q: `What is the main purpose of this email?`, 
-          ans: `To share travel experiences in ${city}.`, wrongs: [`To invite someone to visit ${city}.`, 'To complain about the cold weather.', 'To ask for recommendations for restaurants.', 'To cancel a meeting at the cafe.'],
-          exp: `信件開頭明確表示寫信的目的是為了分享去 ${city} 旅行的經驗。`
-        },
-        { 
-          text: `Cooking is not just a daily chore; it can be a fun hobby. When you cook, you can choose fresh vegetables and healthy meat. Also, cooking at home is usually cheaper than eating out at restaurants. Most importantly, sharing the food you make with family and friends brings people closer together.`, 
-          q: `According to the reading, which of the following is NOT a benefit of cooking at home?`, 
-          ans: 'It helps you lose weight fast.', wrongs: ['It is usually cheaper than eating out.', 'You can choose healthy food.', 'It brings family and friends closer.', 'You can use fresh vegetables.'],
-          exp: `文章提到了省錢、健康、增進感情，但並未提到「快速減肥(lose weight fast)」。`
-        }
-      ];
-      const r = readings[Math.floor(rand() * readings.length)];
-      return {
-        isReading: true,
-        readingText: r.text,
-        question: `【長篇閱讀理解】Read the passage and answer the question:\n${r.q}`,
-        options: [r.ans, ...getRandItems(r.wrongs, 3)],
-        answer: 0,
-        hint: '💡 提示：仔細閱讀文章並找出對應段落。',
-        explanation: `📖 詳解：${r.exp}`
-      };
-    } else if (variant === 1) {
-      const g8Vocab = [
-        { q: `The heavy rain caused a huge ________ in the city, making it impossible for cars to pass through the streets.`, ans: 'flood', wrongs: ['drought', 'earthquake', 'typhoon', 'fire'] },
-        { q: `The little boy was so ________ that he drank three glasses of water.`, ans: 'thirsty', wrongs: ['hungry', 'full', 'tired', 'bored'] },
-        { q: `We need to ________ our earth, or our children will not have a beautiful home to live in.`, ans: 'protect', wrongs: ['destroy', 'pollute', 'ignore', 'waste'] },
-        { q: `The math question was so difficult that ________ students could answer it.`, ans: 'few', wrongs: ['a few', 'little', 'a little', 'many'] }
-      ];
-      const v = g8Vocab[Math.floor(rand() * g8Vocab.length)];
-      return { 
-        question: `【進階字彙與文法】${preamble}\n${v.q}`, 
-        options: [v.ans, ...getRandItems(v.wrongs, 3)], 
-        answer: 0, 
-        hint: '💡 提示：根據前後文語意判斷。',
-        explanation: `📖 詳解：${v.exp}` 
-      };
-    }
-  } else if (gradeId === 'g9') {
-    let variant = -1;
-    if (uNum === 1 || uNum === 3 || uNum === 4) variant = 1; // 文法陷阱
-    else if (uNum === 2) variant = 2; // 被動語態
-    else if (uNum === 5) variant = 0; // 閱讀測驗
-
-    if (variant === 0) {
-      const months = ['October', 'November', 'December', 'January', 'March'];
-      const month1 = months[Math.floor(rand() * months.length)];
-      const readings9 = [
-        { 
-          text: `【Notice: School Library Renovation】\nThe school library will be closed for renovation starting from next Monday, ${month1} 15th, until Friday, ${month1} 29th. During this period, students will not be able to check out new books. However, the study rooms on the second floor will remain open for students to prepare for exams. Late fees for all overdue books will be waived during the renovation.`, 
-          q: `According to the notice, which of the following statements is TRUE?`, 
-          ans: 'Students can still use the study rooms on the second floor.', wrongs: ['Students can check out books from the study rooms.', 'Students have to pay extra money if they return books late during this period.', 'The library renovation will last for exactly one week.', 'The library will be permanently closed.'],
-          exp: `文章提到 "the study rooms on the second floor will remain open"，故第一個選項正確。陷阱：late fees 會被 waived (免除)。`
-        },
-        { 
-          text: `Electric cars are becoming more popular around the world. Unlike gas-powered cars, electric cars do not produce air pollution while driving. They are also quieter. However, some people are still worried about buying them because charging stations are not as easy to find as gas stations, and it takes longer to charge a battery than to fill up a gas tank.`, 
-          q: `What is one disadvantage (缺點) of electric cars mentioned in the reading?`, 
-          ans: 'It takes a longer time to charge them.', wrongs: ['They are too noisy.', 'They produce a lot of air pollution.', 'They are too fast to drive safely.', 'They are cheaper than gas-powered cars.'],
-          exp: `文章結尾提到 "it takes longer to charge a battery than to fill up a gas tank"，這是缺點之一。`
-        }
-      ];
-      const r = readings9[Math.floor(rand() * readings9.length)];
-      return {
-        isReading: true,
-        readingText: r.text,
-        question: `【長篇閱讀理解】According to the reading, answer the question:\n${r.q}`,
-        options: [r.ans, ...getRandItems(r.wrongs, 3)],
-        answer: 0,
-        hint: '💡 提示：仔細比對文章中提到的關鍵字。',
-        explanation: `📖 詳解：${r.exp}`
-      };
-    } else if (variant === 1) {
-      const g9Grammar = [
-        { q: `${name1} has lived in Taipei ________ ten years ago.`, ans: 'since', wrongs: ['for', 'in', 'from', 'at'], exp: '現在完成式中，搭配明確的起點時間 (ten years ago) 要用 since。陷阱：看到 ten years 就想選 for，但後面有 ago，代表時間點。' },
-        { q: `I have ________ been to America, so I want to go there this summer.`, ans: 'never', wrongs: ['ever', 'already', 'just', 'yet'], exp: '因為想去，代表「從沒去過」，用 never。' },
-        { q: `The book ________ I bought yesterday is very interesting.`, ans: 'which', wrongs: ['who', 'whom', 'what', 'where'], exp: '先行詞 The book 是事物，關代用 which (或 that)。' },
-        { q: `Do you know where ________?`, ans: 'he lives', wrongs: ['does he live', 'is he living', 'he live', 'did he live'], exp: '間接問句要還原為肯定句的主謂順序：主詞 + 動詞 (where he lives)。' }
-      ];
-      const g = g9Grammar[Math.floor(rand() * g9Grammar.length)];
-      return { 
-        question: `【文法陷阱題】${preamble}\n${g.q}`, 
-        options: [g.ans, ...getRandItems(g.wrongs, 3)], 
-        answer: 0, 
-        hint: '💡 提示：注意時態與連接詞用法。',
-        explanation: `📖 詳解：${g.exp}` 
-      };
-    } else if (variant === 2) {
-      const g9Passive = [
-        { q: `Look! The boy ________ by a big dog. We should go help him!`, ans: 'is being chased', wrongs: ['chased', 'is chasing', 'has chased', 'was chasing'], exp: '男孩「正在被」狗追，需要用現在進行式的被動語態 (is being + Vpp)。' },
-        { q: `The bridge ________ fifty years ago.`, ans: 'was built', wrongs: ['built', 'has built', 'is built', 'builds'], exp: '橋是「被建造」的，且時間是 fifty years ago (過去式)，故用 was built。' },
-        { q: `English ________ in many countries around the world.`, ans: 'is spoken', wrongs: ['speaks', 'is speaking', 'has spoken', 'spoke'], exp: '英文是「被說」的，客觀事實用現在式的被動語態 is spoken。' },
-        { q: `The homework must ________ before tomorrow.`, ans: 'be finished', wrongs: ['finish', 'is finished', 'finished', 'have finished'], exp: '助動詞 must 後面接被動語態時，要用 be + Vpp。' }
-      ];
-      const p = g9Passive[Math.floor(rand() * g9Passive.length)];
-      return { 
-        question: `【被動語態陷阱】${preamble}\n${p.q}`, 
-        options: [p.ans, ...getRandItems(p.wrongs, 3)], 
-        answer: 0, 
-        hint: '💡 提示：注意動作是主動還是被動，並搭配正確的時態。',
-        explanation: `📖 詳解：${p.exp}` 
-      };
-    }
-  }
-
-  // ==== 歷屆會考試題 (高鑑別度 / 跨領域長文) ====
-  if (gradeId === 'past-exams') {
-    if (unitId.includes('u1')) {
-      return {
-        isReading: true,
-        readingText: `【111會考精選-跨領域閱讀】\nThe "Fast Fashion" industry produces clothes quickly and cheaply to meet the newest trends. However, this business model causes serious environmental problems. First, making clothes requires a lot of water. For example, it takes about 2,700 liters of water to make just one cotton T-shirt. Second, many cheap clothes are thrown away after being worn only a few times. Most of these clothes end up in landfills and take hundreds of years to break down. To help the earth, some people have started to buy second-hand clothes or choose brands that use recycled materials.`,
-        question: `According to the reading, which of the following is NOT true about the "Fast Fashion" industry?`,
+        question: `【私中保送/英語競賽-進階字彙與語境】${preamble}\nThe government took immediate measures to ________ the crisis, preventing further economic instability throughout the nation.`,
         options: [
-          `It is good for the environment because it recycles old clothes.`,
-          `It uses a large amount of water to produce cotton clothes.`,
-          `It encourages people to buy clothes cheaply and throw them away quickly.`,
-          `It causes clothes to end up in landfills for a very long time.`
+          `mitigate (減輕、緩和)`,
+          `deteriorate (惡化)`,
+          `fabricate (捏造)`,
+          `neglect (忽視)`
         ],
         answer: 0,
-        hint: '💡 提示：回文尋找 Fast Fashion 造成的影響，並留意 NOT true (何者不為真)。',
-        explanation: `📖 詳解：文章指出 Fast Fashion 會導致嚴重的環境問題，且多數衣服被丟棄在垃圾掩埋場，並未提及它會回收舊衣。回收舊衣是最後一句 "To help the earth..." 的解決方案，並非 Fast Fashion 產業本身的特徵。`
+        hint: `💡 提示：從後方 preventing further economic instability (防止進一步不穩定) 推知應選正向減緩危機之字詞。`,
+        explanation: `📖 詳解：mitigate 意為「緩和、減輕」，符合句意「政府立即採取措施以緩和危機」。deteriorate 為惡化，fabricate 為偽造。私中與競賽常考核高中程度高階動詞。`
+      };
+    } else if (gradeId === 'g8' || gradeId === 'past-exams') {
+      // 會考長篇雙文本跨領域閱讀 (A++壓軸)
+      return {
+        isReading: true,
+        readingText: `【會考精選-跨領域閱讀】\n[Text A - News Report]\nThe city council recently passed a "Plastic-Free Wednesday" law. On Wednesdays, all restaurants and convenience stores are prohibited from providing single-use plastic containers or utensils. Violators will face a fine of up to $10,000 NTD.\n\n[Text B - Public Reaction Forum]\nUser "EcoWarrior": "Finally! Our oceans are suffering, and this is a great step forward!"\nUser "BusyParent": "While I support protecting the environment, it is extremely inconvenient for parents who need to buy takeout dinners after working overtime."`,
+        question: `【會考A++題組-多文本觀點對比】Based on both texts, which statement best summarizes the reaction of the public?`,
+        options: [
+          `While people generally agree with environmental protection, some express practical concerns about daily convenience.`,
+          `All citizens strongly oppose the new regulation because the fine is unreasonably low.`,
+          `Restaurants are glad to save money, but the city council refuses to enforce the law.`,
+          `No one cares about ocean pollution because takeout food is too cheap.`
+        ],
+        answer: 0,
+        hint: `💡 提示：對比 EcoWarrior (支持環境) 與 BusyParent (支持環保但擔憂加班外帶不便) 的論點。`,
+        explanation: `📖 詳解：Text B 中兩位受訪者代表社會多元聲音：大家認同保護環境的大方向，但對於外食族家長而言確實存在生活上的不便，故選項 (A) 最為中肯全面。`
       };
     } else {
+      // 國三 (g9) 文法倒裝句與虛擬語氣 (競賽/私中超難題)
       return {
-        question: `【110會考精選-文法陷阱】${preamble}\n________ the heavy rain, the baseball game was not canceled, and thousands of fans still showed up at the stadium.`,
-        options: [`Despite`, `Because of`, `Although`, `Due to`],
-        answer: 0,
-        hint: '💡 提示：後接名詞片語 (the heavy rain)，且前後文意為「雖然...但是...」(讓步語氣)。',
-        explanation: `📖 詳解：Despite 後接名詞片語，表「儘管」。Although 必須接完整子句 (Although it rained heavily)。Because of 和 Due to 則表原因，與後方「比賽沒有取消」語意不合。`
-      };
-    }
-  }
-
-  // ==== 私校入學考題 (超綱 / 資優字彙) ====
-  if (gradeId === 'private-school') {
-    if (unitId.includes('u1')) {
-      return {
-        question: `【私校資優-進階字彙】${preamble}\nThe new policy was implemented to ________ the negative effects of air pollution in the city, making the environment much cleaner for residents.`,
-        options: [`mitigate`, `exacerbate`, `fabricate`, `prolong`],
-        answer: 0,
-        hint: '💡 提示：從後方的 making the environment much cleaner 推敲出空格應填「減輕、緩和」。',
-        explanation: `📖 詳解：mitigate (減輕、緩和) 符合句意。exacerbate 為惡化，fabricate 為捏造，prolong 為延長。私校入學考常出現高中程度單字。`
-      };
-    } else {
-      return {
-        question: `【私校資優-邏輯推論】${preamble}\nTom is taller than Jerry but shorter than Mike. David is taller than Mike. Which of the following statements is definitely true?`,
+        question: `【全國英語競賽-高級文法倒裝與假設語氣】${preamble}\n________ she arrived at the airport, she realized that she had left her passport on the kitchen table.`,
         options: [
-          `David is the tallest of the four.`,
-          `Jerry is taller than David.`,
-          `Tom is the shortest of the four.`,
-          `Mike is the shortest of the four.`
+          `Hardly had (剛...就...)`,
+          `No sooner did`,
+          `Seldom has`,
+          `Scarcely did`
         ],
         answer: 0,
-        hint: '💡 提示：畫出高矮順序：Jerry < Tom < Mike < David。',
-        explanation: `📖 詳解：依據題意排列高矮：David > Mike > Tom > Jerry。故選項「David 是四人中最高的」必然為真。`
+        hint: `💡 提示：Hardly had + S + p.p. ... when/before... 表「一...就...」之否定倒裝句型。`,
+        explanation: `📖 詳解：否定副詞 Hardly 置於句首時，句子必須採倒裝結構，且時態用過去完成式：Hardly had + S + p.p.。因此 Hardly had 為唯一完全符合文法規範之正確選項。`
       };
     }
   }
 
-  // Fallback
-  const fbAction = ['choose the correct option', 'find the right answer', 'select the true statement'][Math.floor(rand()*3)];
+  // ==========================================
+  // 2. 基礎與段考精選試題 (Easy & Medium)
+  // ==========================================
+  const grammarItems = [
+    { q: 'Neither Jack nor his sisters ________ planning to attend the party tonight.', ans: 'are', wrongs: ['is', 'be', 'was'] },
+    { q: 'If it ________ tomorrow, the outdoor soccer match will be rescheduled.', ans: 'rains', wrongs: ['will rain', 'rained', 'is raining'] },
+    { q: 'The novel was so fascinating that she couldn\'t help ________ it all night long.', ans: 'reading', wrongs: ['to read', 'read', 'reads'] }
+  ];
+  const gItem = grammarItems[Math.floor(rand() * grammarItems.length)];
+
   return {
-    question: `【英文基礎語法題】${preamble}\nRegarding "${conceptTag}", ${fbAction}:`,
-    options: ['The grammatically correct option', 'Wrong grammar option 1', 'Wrong grammar option 2', 'Wrong grammar option 3'],
+    question: `【英語科段考精選文法】${preamble}\n${gItem.q}`,
+    options: [gItem.ans, ...getRandItems(gItem.wrongs, 3)],
     answer: 0,
-    hint: '💡 提示：Review the grammar rules.',
-    explanation: `📖 詳解：This is a basic grammar question.`
+    hint: `💡 提示：注意主詞與動詞的一致性 (Subject-Verb Agreement) 或假設語氣副詞子句時態。`,
+    explanation: `📖 詳解：正確選項為「${gItem.ans}」。`
   };
 }

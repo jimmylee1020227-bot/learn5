@@ -114,11 +114,15 @@ export default function SuperAdminConsole() {
   // 一鍵清除所有測資
   const handlePurgeData = () => {
     if (window.confirm('確定要清除所有測試作答紀錄、歷史名人堂與排行榜測試資料嗎？系統將重設為乾淨正式版狀態。')) {
-      purgeAllTestData();
-      setAdmins(getAdminsList());
-      setAuditLogs(getAuditLogs(currentUser));
-      alert('已成功清除所有測資！系統已恢復為純淨正式投入使用版本。');
-      window.location.reload();
+      try {
+        purgeAllTestData(currentUser);
+        setAdmins(getAdminsList());
+        setAuditLogs(getAuditLogs(currentUser));
+        alert('已成功清除所有測資！系統已恢復為純淨正式投入使用版本。');
+        window.location.reload();
+      } catch (err) {
+        alert(err.message);
+      }
     }
   };
 

@@ -476,12 +476,12 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
         </div>
       </div>
 
-      {/* 4. 逐題翰林名師詳解列表 */}
+      {/* 4. 逐題名師詳解列表 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
             <BookOpen size={20} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
-            <span>題目詳解與翰林破題思路分析</span>
+            <span>題目詳解與破題思路分析</span>
           </div>
           <span style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 600 }}>
             目前顯示：{filterMode === 'wrong' ? '僅看錯題' : filterMode === 'correct' ? '僅看答對' : '全部題型'}（共 {filteredList.length} 題）
@@ -622,7 +622,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                 })}
               </div>
 
-              {/* 翰林解題關鍵（破題思路） */}
+              {/* 解題關鍵（破題思路） */}
               {q.hint && (
                 <div 
                   style={{ 
@@ -637,13 +637,13 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                   }}
                 >
                   <div style={{ fontWeight: 900, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    💡 翰林思路點撥（解題破題關鍵）：
+                    💡 思路點撥（解題破題關鍵）：
                   </div>
                   {q.hint}
                 </div>
               )}
 
-              {/* 翰林名師精闢解析 */}
+              {/* 名師精闢解析 */}
               <div 
                 style={{ 
                   background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', 
@@ -657,7 +657,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                 }}
               >
                 <div style={{ fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  📖 翰林名師詳細解析與步驟推導：
+                  📖 詳細解析與步驟推導：
                 </div>
                 {q.explanation}
               </div>

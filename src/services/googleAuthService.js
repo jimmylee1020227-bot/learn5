@@ -3,11 +3,13 @@ import { SUPER_ADMIN_EMAIL, getAdminsList, fetchCloudAdminsList } from './cloudS
 
 const STORAGE_GOOGLE_CLIENT_ID = 'studyhub_google_client_id';
 
-const HARDCODED_GOOGLE_CLIENT_ID = '1033868027938-tudq6nuvo7onc3rc7i7b4lr8pgohv6oa.apps.googleusercontent.com';
-
 export function getGoogleClientId() {
-  // 優先用 .env，再用 hardcode；不從 localStorage 讀取（避免舊快取造成 mismatch）
-  return import.meta.env.VITE_GOOGLE_CLIENT_ID || HARDCODED_GOOGLE_CLIENT_ID;
+  // 僅從環境變數讀取，不使用硬編碼預設值（防止 Client ID 被釣魚冒用）
+  const envId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  if (!envId) {
+    console.warn('[Auth] 未設定 VITE_GOOGLE_CLIENT_ID 環境變數，Google 登入將無法正常運作。');
+  }
+  return envId || '';
 }
 
 export function setGoogleClientId(clientId) {

@@ -376,7 +376,9 @@ export function setJson(key, value) {
 }
 
 // 清除所有歷史測資（重設為直接上線標準狀態，刪除全部測試數據）
-export function purgeAllTestData() {
+// 安全防護：僅限 super_admin 呼叫
+export function purgeAllTestData(operatorUser) {
+  assertSuperAdminPermission(operatorUser, '清除全部測資');
   const keysToRemove = [
     'practice_history',
     'mistake_notebook',
@@ -403,6 +405,14 @@ export function purgeAllTestData() {
     }
   });
   setJson('admins_list', INITIAL_ADMINS);
+
+  logAuditEvent({
+    operatorId: operatorUser?.id || 'unknown',
+    operatorName: operatorUser?.displayName || '未知',
+    operatorRole: operatorUser?.role || 'unknown',
+    actionType: 'PURGE_ALL_DATA',
+    details: '總管理員執行了全站測資清除'
+  });
 }
 
 // 監聽跨視窗與當前視窗即時同步事件
@@ -1855,22 +1865,41 @@ export function getCommunityPosts() {
   return posts.filter(p => !deletedSet.has(p.id));
 }
 
+// 社群留言速率限制器：每位使用者 30 秒內最多發 5 則
+const communityPostRateLimiter = new Map();
+
 export function addCommunityPost({ authorId, userName, userSchool, message }) {
   if (!message || typeof message !== 'string' || message.trim().length < 3) {
     throw new Error('請至少輸入 3 個字以上的打氣心語喔！');
   }
+
+  // 速率限制檢查
+  const rateLimitKey = authorId || 'guest';
+  const now = Date.now();
+  const history = communityPostRateLimiter.get(rateLimitKey) || [];
+  const recent = history.filter(t => now - t < 30000);
+  if (recent.length >= 5) {
+    throw new Error('發文太頻繁！請稍候 30 秒再試。');
+  }
+  recent.push(now);
+  communityPostRateLimiter.set(rateLimitKey, recent);
+
   const cleanMsg = message.trim().slice(0, 200).replace(/[<>'"/\\`]/g, '');
   const cleanName = (userName || '讀書夥伴').trim().slice(0, 20).replace(/[<>'"/\\`]/g, '');
   const cleanSchool = (userSchool || '108課綱戰友').trim().slice(0, 30).replace(/[<>'"/\\`]/g, '');
 
   const posts = getCommunityPosts();
+  const postId = typeof crypto !== 'undefined' && crypto.randomUUID
+    ? 'post_' + crypto.randomUUID()
+    : 'post_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
   const newPost = {
-    id: 'post_' + Date.now(),
+    id: postId,
     authorId: authorId || 'guest',
     userName: cleanName || '讀書夥伴',
     userSchool: cleanSchool || '108課綱戰友',
     message: cleanMsg,
-    likes: 1,
+    likes: 0,
+    likedBy: [],
     timestamp: new Date().toISOString()
   };
   // FIFO 滾動視窗：最多保留 100 筆最新留言，杜絕塞爆 localStorage
@@ -1879,11 +1908,19 @@ export function addCommunityPost({ authorId, userName, userSchool, message }) {
   return newPost;
 }
 
-export function likeCommunityPost(postId) {
+export function likeCommunityPost(postId, userId) {
   const posts = getCommunityPosts();
   const post = posts.find(p => p.id === postId);
   if (post) {
-    post.likes = (post.likes || 0) + 1;
+    // 防重投票：檢查該使用者是否已按過讚
+    const likedBy = Array.isArray(post.likedBy) ? post.likedBy : [];
+    const voterId = userId || 'anonymous';
+    if (likedBy.includes(voterId)) {
+      return posts; // 已按過讚，不重複計算
+    }
+    likedBy.push(voterId);
+    post.likedBy = likedBy;
+    post.likes = likedBy.length;
     setJson('community_posts', posts);
   }
   return posts;

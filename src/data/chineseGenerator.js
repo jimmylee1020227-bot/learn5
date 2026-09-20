@@ -1,24 +1,13 @@
-export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
+// 108 課綱國文全單元題目引擎（支援會考壓軸、語文競賽、私中超難試題與分級難度）
+export function generateChineseQuestion(gradeId, unitId, index, difficulty = 'medium', rand, conceptTag) {
+  const isExtreme = difficulty === 'extreme' || difficulty === 'hardest';
+  const isHard = difficulty === 'hard';
   const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
-  
-  let globalVariant = Math.floor(rand() * 4);
-  let forceGradeVariant = false;
-
-  if (gradeId === 'g7') {
-    if (uNum === 1) { globalVariant = 3; forceGradeVariant = false; } // 六書
-    else if (uNum === 3) { globalVariant = -1; forceGradeVariant = true; } // 韻文/國學
-  } else if (gradeId === 'g8') {
-    if (uNum === 3) { globalVariant = -1; forceGradeVariant = true; } // 四大句型/修辭
-  } else if (gradeId === 'g9') {
-    if (uNum === 1) { globalVariant = -1; forceGradeVariant = true; } // 文意
-    else if (uNum === 2) { globalVariant = -1; forceGradeVariant = true; } // 題辭
-  }
-
 
   // 動態樂高引擎：產生絕對不重複的情境前導詞
-  const people = ['小明', '阿華', '建國', '美美', '志明', '春嬌', '大雄', '胖虎', '小夫', '靜香', '國文老師', '班長'];
-  const actions = ['在寫作文時', '閱讀課外讀物時', '幫同學檢查作業時', '參加語文競賽時', '在圖書館看書時', '準備段考時'];
-  const verbs = ['發現了一個容易寫錯的字', '遇到了一個成語', '對一個國學常識產生了疑惑', '不確定以下哪個說法是對的'];
+  const people = ['小明', '阿華', '建國', '美美', '志明', '春嬌', '大雄', '胖虎', '小夫', '靜香', '國文科召集人', '語文競賽選手'];
+  const actions = ['在研讀歷屆會考字音字形與古文時', '參加全國語文競賽字音字形決賽時', '進行文白對讀深層文意推敲時', '探討古代散文與詩詞美學時', '準備私中資優保送測驗時'];
+  const verbs = ['發現了這道極具鑑別度的題目', '歸納出以下容易混淆的語文盲點', '提出這題請大家仔細推敲', '特別提醒大家留意陷阱'];
   
   const person = people[Math.floor(rand() * people.length)];
   const action = actions[Math.floor(rand() * actions.length)];
@@ -28,236 +17,131 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
   function getRandItems(arr, count) {
     const res = [];
     const pool = [...arr];
-    for(let i=0; i<count; i++) {
-      if(pool.length === 0) break;
+    for (let i = 0; i < count; i++) {
+      if (pool.length === 0) break;
       const idx = Math.floor(rand() * pool.length);
       res.push(pool.splice(idx, 1)[0]);
     }
     return res;
   }
 
-  // 通用錯別字與字音字形 (適用全科)
-  if (globalVariant === 0) {
-    const typos = [
-      { text: '「莘莘」學子', correct: 'ㄕㄣ', wrong: 'ㄒㄧㄣ' },
-      { text: '「垂涎」三尺', correct: 'ㄒㄧㄢˊ', wrong: 'ㄧㄢˊ' },
-      { text: '「塑」膠', correct: 'ㄙㄨˋ', wrong: 'ㄕㄨㄛˋ' },
-      { text: '「尷尬」', correct: 'ㄍㄢ ㄍㄚˋ', wrong: 'ㄐㄧㄢ ㄐㄧㄝˋ' },
-      { text: '「罹」難', correct: 'ㄌㄧˊ', wrong: 'ㄌㄨㄛˊ' },
-      { text: '「齟齬」', correct: 'ㄐㄩˇ ㄩˇ', wrong: 'ㄗㄨˇ ㄨˇ' },
-      { text: '「緋」聞', correct: 'ㄈㄟ', wrong: 'ㄈㄟˇ' },
-      { text: '「痙攣」', correct: 'ㄐㄧㄥˋ ㄌㄨㄢˊ', wrong: 'ㄐㄧㄥ ㄌㄨㄢˊ' },
-      { text: '「邂逅」', correct: 'ㄒㄧㄝˋ ㄏㄡˋ', wrong: 'ㄒㄧㄝˋ ㄍㄡˋ' },
-      { text: '「稗」官野史', correct: 'ㄅㄞˋ', wrong: 'ㄅㄟ' },
-      { text: '「潸」然淚下', correct: 'ㄕㄢ', wrong: 'ㄙㄢ' },
-      { text: '「鍥」而不捨', correct: 'ㄑㄧㄝˋ', wrong: 'ㄑㄧˋ' },
-      { text: '「否」極泰來', correct: 'ㄆㄧˇ', wrong: 'ㄈㄡˇ' },
-      { text: '「暴虎馮」河', correct: 'ㄆㄧㄥˊ', wrong: 'ㄈㄥˊ' },
-      { text: '「造詣」', correct: 'ㄧˋ', wrong: 'ㄓˇ' }
-    ];
-    // Pick 1 target, and 3 random wrong options from other targets to mix it up
-    const target = typos[Math.floor(rand() * typos.length)];
-    const otherWrongs = getRandItems(typos.filter(t => t !== target), 3).map(t => t.wrong);
-    
-    return {
-      question: `【字音字形測驗】${preamble}\n請選出下列詞語「」中文字的正確讀音：\n${target.text}`,
-      options: [target.correct, target.wrong, ...otherWrongs].slice(0, 4),
-      answer: 0,
-      hint: '💡 提示：請注意部首與偏旁的發音差異。',
-      explanation: `📖 詳解：「${target.text}」正確讀音為 ${target.correct}。`
-    };
-  } else if (globalVariant === 1) {
-    const correctWords = ['破釜沉舟', '名列前茅', '按部就班', '防微杜漸', '無精打采', '一籌莫展', '名副其實', '甘拜下風', '出其不意', '草菅人命', '不辨菽麥', '趨之若鶩', '鋌而走險', '按圖索驥', '發憤圖強'];
-    const wrongWords = ['破斧沉舟', '名烈前茅', '按步就班', '防微度漸', '無精打彩', '一愁莫展', '名符其實', '甘敗下風', '出奇不意', '草管人命', '不辯菽麥', '趨之若騖', '挺而走險', '按圖索記', '發奮圖強'];
-    
-    const isAskCorrect = rand() > 0.5;
-    if (isAskCorrect) {
-      const ans = getRandItems(correctWords, 1)[0];
-      const wrongs = getRandItems(wrongWords, 3);
-      return {
-        question: `【錯別字陷阱】${preamble}\n下列四個選項中，何者「沒有」錯別字？`,
-        options: [ans, ...wrongs],
-        answer: 0,
-        hint: '💡 提示：仔細辨認字形，找出唯一正確的。',
-        explanation: `📖 詳解：正確用字為「${ans}」。`
-      };
+  // ==========================================
+  // 1. 最難試題 (Extreme / Hardest)：會考歷屆深度、私中、語文競賽題
+  // ==========================================
+  if (isExtreme || gradeId === 'past-exams' || gradeId === 'private-school') {
+    if (gradeId === 'g7' || gradeId === 'private-school') {
+      if (uNum === 1) {
+        // 六書造字深層辨析 (語文競賽)
+        return {
+          question: `【語文競賽/私中-六書原則深度鑑別】${preamble}\n漢字造字原則中，「本無其字，依聲託事」為「假借」；「以事為名，取譬相成」為「形聲」。下列「」中的字，何者全部屬於「形聲字」？`,
+          options: [
+            `「鳩」佔「鵲」巢、「江」畔「飄」零`,
+            `「休」養生「息」、「森」林繁「茂」`,
+            `「日」月「星」辰、「上」下「甘」苦`,
+            `「武」功「信」用、「刀」劍「刃」芒`
+          ],
+          answer: 0,
+          hint: `💡 提示：形聲字由「形符（表義）」與「聲符（表音）」組成。鳩(鳥/九)、鵲(鳥/昔)、江(水/工)、飄(風/票)皆是。`,
+          explanation: `📖 詳解：\n選項(A)中的「鳩、鵲、江、飄」皆由形符與聲符組成，皆為形聲字。\n(B)休、息、森為會意字。\n(C)日、月為象形字；上、下、刃、甘為指事字。\n(D)武、信為會意字。`
+        };
+      } else if (uNum === 3) {
+        // 絕句律詩格律平仄押韻對仗 (會考A++題)
+        return {
+          isReading: true,
+          readingText: `【詩詞格律鑑賞】\n杜甫《登高》節錄：\n「無邊落木蕭蕭下，不盡長江滾滾來。\n萬里悲秋常作客，百年多病獨登臺。」`,
+          question: `【會考經典-格律與對仗深度分析】${preamble}\n關於杜甫這首詩的格律與修辭特色，下列敘述何者完全正確？`,
+          options: [
+            `「無邊落木」對「不盡長江」，「萬里悲秋」對「百年多病」，詞性音律對仗極其工整`,
+            `這是一首五言排律，全詩句句押韻，完全不限平水韻`,
+            `詩中的「蕭蕭」與「滾滾」為雙聲連綿詞，屬於誇飾修辭`,
+            `第三句與第四句有嚴格的平仄互換，但文意屬於反諷嘲弄`
+          ],
+          answer: 0,
+          hint: `💡 提示：律詩頷聯、頸聯必須對仗，名詞對名詞、形容詞對形容詞、數量詞對數量詞。`,
+          explanation: `📖 詳解：杜甫《登高》被譽為古今七律第一，頷聯「無邊落木蕭蕭下，不盡長江滾滾來」與頸聯「萬里悲秋常作客，百年多病獨登臺」對仗極其精準嚴整，詞性完備，音律沉鬱頓挫。`
+        };
+      } else {
+        // 語文競賽高階字音字形
+        return {
+          question: `【全國語文競賽-高難度字形辨正】${preamble}\n下列各組詞語中，何者「完全沒有」錯別字？`,
+          options: [
+            `趨之若鶩／整飭紀律／草菅人命／名列前茅`,
+            `趨之若鶩／整飾紀律／草管人命／名列前矛`,
+            `趨之若騖／整飭紀律／草菅人命／名列前矛`,
+            `趨之若鶩／整飭紀律／草奸人命／名列前茅`
+          ],
+          answer: 0,
+          hint: `💡 提示：「鶩」為野鴨（如鴨成群奔赴）；「飭」為整頓健全；「菅」為野草。`,
+          explanation: `📖 詳解：\n(A)全對。\n注意：「趨之若鶩」不可作「騖」（奔馳）；「整飭」指整頓使之嚴明；「草菅人命」指把人命當成野草菅茅。`
+        };
+      }
+    } else if (gradeId === 'g8' || gradeId === 'past-exams') {
+      if (uNum === 2) {
+        // 世說新語名士風範文言深層理解 (會考壓軸)
+        return {
+          isReading: true,
+          readingText: `【世說新語·德行】\n「荀巨伯遠看友疾，值胡賊攻郡。友謂巨伯曰：『吾今死矣，子可去！』巨伯曰：『遠來相視，子令吾去，敗義以求生，豈荀巨伯所行邪！』賊濟，謂巨伯曰：『大軍至，一郡盡空，汝何男子，而敢獨止？』巨伯曰：『友有疾，不忍委之，寧以我身代友之命。』賊相謂曰：『我輩無義之人，而入有義之國！』遂班師而還，一郡並獲全。」`,
+          question: `【會考素養-文意批判思考】${preamble}\n根據上文，胡賊最終「遂班師而還」的最根本原因為何？`,
+          options: [
+            `被荀巨伯捨生取義的高尚人格感化，自慚殘暴無義而退兵`,
+            `懷疑郡城內設有埋伏，不敢輕舉妄動`,
+            `同情巨伯朋友身患重病，擔心傳染疫疾`,
+            `巨伯答應替賊軍籌措糧餉以保全城百姓`
+          ],
+          answer: 0,
+          hint: `💡 提示：注意賊人所言「我輩無義之人，而入有義之國」。`,
+          explanation: `📖 詳解：盜賊見荀巨伯寧可犧牲自己亦不願背棄朋友，大受感動並反省「我輩無義之人，而入有義之國」，因而撤軍回國，展現出「德化」之力量。`
+        };
+      } else {
+        // 國學常識與四大奇書/史書體例 (私中/競賽)
+        return {
+          question: `【私中保送考-國學常識四庫與史書體例】${preamble}\n關於中國古代典籍之分類與體例，下列敘述何者完全正確？`,
+          options: [
+            `司馬遷《史記》為紀傳體通史之祖，上起黃帝，下迄漢武帝`,
+            `司馬光《資治通鑑》為紀傳體斷代史，專錄三國至五代史事`,
+            `《世說新語》屬於經部，為探討儒家心性之經典`,
+            `《三國演義》與《水滸傳》在《四庫全書》中被收錄於史部`
+          ],
+          answer: 0,
+          hint: `💡 提示：《資治通鑑》為編年體；小說不入四庫或入子部小說家類；世說新語為筆記小說。`,
+          explanation: `📖 詳解：\n(A)正確。《史記》首創紀傳體（本紀、世家、列傳等），且為通史。\n(B)《資治通鑑》為「編年體通史」，上起周威烈王，下迄後周。\n(C)《世說新語》屬子部小說家類。\n(D)章回通俗演義小說在四庫全書中大多不收錄，即使收錄亦歸子部。`
+        };
+      }
     } else {
-      const ans = getRandItems(wrongWords, 1)[0];
-      const rights = getRandItems(correctWords, 3);
-      return {
-        question: `【錯別字陷阱】${preamble}\n下列四個選項中，何者「有」錯別字？`,
-        options: [ans, ...rights],
-        answer: 0,
-        hint: '💡 提示：找出含有錯別字的選項。',
-        explanation: `📖 詳解：含有錯別字的是「${ans}」。`
-      };
-    }
-  } else if (globalVariant === 2) {
-    const idiomData = [
-      { q: '處境極為危險', ans: '盲人瞎馬', wrongs: ['老馬識途', '走馬看花', '指鹿為馬', '馬到成功', '千軍萬馬'] },
-      { q: '罪狀極多', ans: '罄竹難書', wrongs: ['汗牛充棟', '學富五車', '浩如煙海', '博古通今'] },
-      { q: '帶有「貶義」的行為', ans: '推波助瀾', wrongs: ['見義勇為', '雪中送炭', '錦上添花', '成人之美'] },
-      { q: '做事沒有條理', ans: '雜亂無章', wrongs: ['井井有條', '一絲不苟', '按部就班', '有條不紊'] },
-      { q: '目光短淺', ans: '井底之蛙', wrongs: ['高瞻遠矚', '真知灼見', '洞若觀火', '明察秋毫'] },
-      { q: '做事有始無終', ans: '半途而廢', wrongs: ['持之以恆', '堅持不懈', '始終如一', '鍥而不捨'] },
-      { q: '力量微小，無濟於事', ans: '杯水車薪', wrongs: ['九牛一毛', '微不足道', '滄海一粟', '蚍蜉撼樹'] }
-    ];
-    const item = idiomData[Math.floor(rand() * idiomData.length)];
-    const w = getRandItems(item.wrongs, 3);
-    return {
-      question: `【成語應用測驗】${preamble}\n用來比喻或形容「${item.q}」的成語是下列何者？`,
-      options: [item.ans, ...w],
-      answer: 0,
-      hint: '💡 提示：思考成語背後的典故。',
-      explanation: `📖 詳解：答案是「${item.ans}」。`
-    };
-  } else if (globalVariant === 3) {
-    const chars = ['江', '河', '湖', '海', '松', '柏', '梅', '櫻', '桐', '楓'];
-    const ch = chars[Math.floor(rand() * chars.length)];
-    const names = getRandItems(people, 2);
-    
-    return {
-      isChat: true,
-      chatMessages: [
-        { sender: names[0], text: `請問「${ch}」這個字是什麼造字法則啊？` },
-        { sender: names[1], text: '有一半表示意思，另一半表示聲音，這很明顯是________。' }
-      ],
-      question: `【六書討論】根據上述對話，空格中應該填入哪一種六書造字法則？`,
-      options: ['形聲', '象形', '會意', '指事'],
-      answer: 0,
-      hint: '💡 提示：一半表形，一半表音。',
-      explanation: `📖 詳解：形聲字由形符與聲符組成。`
-    };
-  }
-
-  // 根據年級區分國學常識
-  if (gradeId === 'g7') {
-    let variant = Math.floor(rand() * 2);
-    if (uNum === 3) variant = 0;
-    
-    if (variant === 0) {
-      const qs = [
-        { q: '絕句的格律', opts: ['不要求必須對仗', '必須對仗', '每首八句', '一韻到底不可押韻', '字數沒有限制'] },
-        { q: '律詩的格律', opts: ['頷聯與頸聯必須對仗', '不要求對仗', '每首四句', '可以隨意換韻', '首聯必須對仗'] },
-        { q: '古體詩的格律', opts: ['字數句數不限，不嚴格平仄', '必須嚴格平仄', '必須對仗', '每首固定四句', '一定要押平聲韻'] },
-        { q: '宋詞的格律', opts: ['須依詞牌填寫，句式長短不一', '每句字數必須相同', '完全不押韻', '不需要詞牌', '只能寫國家大事'] }
-      ];
-      const q = qs[Math.floor(rand() * qs.length)];
-      return {
-        question: `【韻文常識】${preamble}\n關於「${q.q}」，下列敘述何者正確？`,
-        options: [q.opts[0], ...getRandItems(q.opts.slice(1), 3)],
-        answer: 0,
-        hint: '💡 提示：回想唐詩宋詞的基本格律規定。',
-        explanation: `📖 詳解：正確特徵為：${q.opts[0]}。`
-      };
-    } else {
-      const writers = [
-        { name: '李白', style: '浪漫主義', alias: '詩仙' },
-        { name: '杜甫', style: '社會寫實', alias: '詩聖' },
-        { name: '白居易', style: '平易近人', alias: '詩魔' },
-        { name: '王維', style: '詩中有畫', alias: '詩佛' },
-        { name: '蘇軾', style: '豪放派詞人', alias: '東坡居士' }
-      ];
-      const w = writers[Math.floor(rand() * writers.length)];
-      const wrongs = writers.filter(x => x !== w).map(x => x.style + '，被稱為' + x.alias);
-      return {
-        question: `【國學常識】${preamble}\n下列關於「${w.name}」的敘述，何者正確？`,
-        options: [w.style + '，被稱為' + w.alias, ...getRandItems(wrongs, 3)],
-        answer: 0,
-        hint: '💡 提示：回憶作者的稱號與寫作風格。',
-        explanation: `📖 詳解：${w.name}的特色為${w.style}，被稱為${w.alias}。`
-      };
-    }
-  } else if (gradeId === 'g8') {
-    let variant = Math.floor(rand() * 2);
-    if (variant === 0) {
-      const s = [
-        { t: '判斷句', ex: '蓮，花之君子者也。' },
-        { t: '敘事句', ex: '故人西辭黃鶴樓。' },
-        { t: '有無句', ex: '宅邊有五柳樹。' },
-        { t: '表態句', ex: '牡丹之愛，宜乎眾矣。' },
-        { t: '判斷句', ex: '交友是一件有益的事。' },
-        { t: '敘事句', ex: '微風吹過水面。' }
-      ];
-      const q = s[Math.floor(rand() * s.length)];
-      const otherTypes = ['判斷句', '敘事句', '有無句', '表態句'].filter(x => x !== q.t);
-      return {
-        question: `【中文四大句型】${preamble}\n文句：「${q.ex}」在語法上屬於下列哪一種句型？`,
-        options: [q.t, ...getRandItems(otherTypes, 3)],
-        answer: 0,
-        hint: `💡 提示：分析句中核心謂語。`,
-        explanation: `📖 詳解：這是一句典型的「${q.t}」。`
-      };
-    } else {
-      const r = [
-        { r: '轉化', ex: '春風在樹枝上跳舞。' },
-        { r: '排比', ex: '朋友是依靠，是燈塔，是爐火。' },
-        { r: '誇飾', ex: '安靜得連針掉在地上都聽得見。' },
-        { r: '頂真', ex: '青青河畔草，草色入簾青。' },
-        { r: '映襯', ex: '不在乎天長地久，只在乎曾經擁有。' },
-        { r: '譬喻', ex: '時間像流水一樣逝去。' }
-      ];
-      const q = r[Math.floor(rand() * r.length)];
-      const otherRhetorics = ['轉化', '排比', '誇飾', '頂真', '映襯', '譬喻'].filter(x => x !== q.r);
-      return {
-        question: `【語文修辭技巧判讀】${preamble}\n文句：「${q.ex}」主要運用了何種修辭技巧？`,
-        options: [q.r, ...getRandItems(otherRhetorics, 3)],
-        answer: 0,
-        hint: `💡 提示：觀察句子的結構與意象。`,
-        explanation: `📖 詳解：運用了「${q.r}」。`
-      };
-    }
-  } else if (gradeId === 'g9') {
-    let variant = Math.floor(rand() * 2);
-    if (uNum === 1) variant = 0;
-    else if (uNum === 2) variant = 1;
-
-    if (variant === 0) {
-      const quotes = [
-        { text: '學而不思則罔，思而不學則殆。', ans: '強調學習與思考必須並重。' },
-        { text: '三人行，必有我師焉。', ans: '強調隨時向他人學習。' },
-        { text: '己所不欲，勿施於人。', ans: '強調同理心與推己及人。' },
-        { text: '任重而道遠。', ans: '形容責任重大，路途遙遠。' }
-      ];
-      const wrongs = ['要多讀書', '要孝順父母', '要忠心為國', '要愛護動物', '要節約用水', '要尊敬師長'];
-      const q = quotes[Math.floor(rand() * quotes.length)];
+      // 國三 (g9) 文白對讀與文化思辨
       return {
         isReading: true,
-        readingText: `【文言語譯與理解】\n子曰：「${q.text}」`,
-        question: `【文意推敲】${preamble}\n孔子這段話最主要的涵義是強調什麼？`,
-        options: [q.ans, ...getRandItems(wrongs, 3)],
+        readingText: `【跨文本思辨】\n文本甲：孟子曰：「生，亦我所欲也；義，亦我所欲也。二者不可得兼，舍生而取義者也。」\n文本乙：司馬遷：「人固有一死，或重於泰山，或輕於鴻毛，用之所趨異也。」`,
+        question: `【會考A++題組-生命價值觀比較】${preamble}\n綜合比較甲、乙兩段選文的核心精神，下列分析何者最為精闢？`,
+        options: [
+          `兩者皆肯定生命的價值不在於肉體長短，而在於是否堅守道德信念與實現崇高理想`,
+          `孟子認為生命與義理絕對無法共存；司馬遷則認為生命價值取決於官位高低`,
+          `孟子主張激進殉道；司馬遷則認為任何形式的死亡都無可奈何`,
+          `兩者皆批判世人貪生怕死，認為所有人都應隨時選擇自我了結以明志`
+        ],
         answer: 0,
-        hint: '💡 提示：仔細閱讀文言文的字面意思。',
-        explanation: `📖 詳解：${q.ans}`
-      };
-    } else {
-      const cards = [
-        { occ: '結婚', ans: '琴瑟和鳴', w: ['弄瓦之喜', '松柏長青', '華佗再世', '喬木鶯遷'] },
-        { occ: '生女', ans: '弄瓦之喜', w: ['弄璋之喜', '琴瑟和鳴', '高山流水', '百年好合'] },
-        { occ: '生男', ans: '弄璋之喜', w: ['弄瓦之喜', '琴瑟和鳴', '松柏長青', '之子于歸'] },
-        { occ: '高壽', ans: '松柏長青', w: ['百年好合', '華佗再世', '弄瓦之喜', '琴瑟和鳴'] },
-        { occ: '醫院開業', ans: '華佗再世', w: ['松柏長青', '喬木鶯遷', '百年好合', '弄瓦之喜'] },
-        { occ: '搬家', ans: '喬木鶯遷', w: ['松柏長青', '華佗再世', '琴瑟和鳴', '弄璋之喜'] }
-      ];
-      const q = cards[Math.floor(rand() * cards.length)];
-      const occName = ['小華', '大明', '志明', '春嬌', '阿建'][Math.floor(rand() * 5)];
-      return {
-        question: `【應用文題辭】${occName}的朋友遇到「${q.occ}」的喜事，想送個禮物，卡片上寫哪一個題辭最合適？`,
-        options: [q.ans, ...getRandItems(q.w, 3)],
-        answer: 0,
-        hint: '💡 提示：針對場合選擇適合的題辭。',
-        explanation: `📖 詳解：【${q.occ}】最適合使用「${q.ans}」。`
+        hint: `💡 提示：抓出兩文對「死」的判斷標準：「義」與「重於泰山」。`,
+        explanation: `📖 詳解：孟子強調道德氣節高於生物生命（捨生取義）；司馬遷則以死亡的意義與價值區分輕重（死得其所）。兩者皆主張生命價值由崇高信念決定。`
       };
     }
   }
 
-  // Fallback
-  const fbText = ['請問這句話是正確的嗎？', '下列關於這單元的說法何者無誤？', '針對這個觀念，哪個選項是對的？'][Math.floor(rand() * 3)];
+  // ==========================================
+  // 2. 基礎與段考精選試題 (Easy & Medium)
+  // ==========================================
+  const idioms = [
+    { text: '「滄海一粟」比喻：', ans: '人在天地之間極其渺小', wrongs: ['大海中的特產', '種植農作物的辛勞', '比喻寶物極其珍貴'] },
+    { text: '「世外桃源」常用來借指：', ans: '風景秀麗且遠離塵囂的理想安樂境地', wrongs: ['賣水果的好地方', '險峻難行的高山谷地', '古代神話中的地府'] },
+    { text: '「負荊請罪」的典故主角是：', ans: '廉頗向藺相如謝罪', wrongs: ['諸葛亮向劉備請罪', '荊軻刺秦王失敗', '項羽向劉邦認錯'] },
+    { text: '「班門弄斧」比喻：', ans: '在行家面前賣弄本領，不知自量', wrongs: ['木匠技藝非常精湛', '在魯班門前練習砍柴', '批評工匠手藝粗劣'] }
+  ];
+  const qItem = idioms[Math.floor(rand() * idioms.length)];
+
   return {
-    question: `【國文素養題】${preamble}\n關於單元「${conceptTag}」，${fbText}`,
-    options: ['符合單元核心旨意的敘述', '常見誤解一', '常見誤解二', '常見誤解三'],
+    question: `【成語典故與語意】${preamble}\n${qItem.text}`,
+    options: [qItem.ans, ...getRandItems(qItem.wrongs, 3)],
     answer: 0,
-    hint: '💡 提示：回憶課本定義。',
-    explanation: `📖 詳解：這是一道動態核心素養題。`
+    hint: `💡 提示：回想成語由來與文化語境。`,
+    explanation: `📖 詳解：正確選項為「${qItem.ans}」。`
   };
 }

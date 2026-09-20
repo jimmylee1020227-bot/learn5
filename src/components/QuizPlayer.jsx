@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { useAuth } from '../context/AuthContext';
 import { submitQuestionReport } from '../services/cloudStorage';
 import { 
@@ -32,13 +33,13 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({}); // { [qId]: optionIndex }
   
-  // 翰林特色功能：標記待檢查 (Flagged for Review ★)
+  // 特色功能：標記待檢查 (Flagged for Review ★)
   const [flaggedQuestions, setFlaggedQuestions] = useState({}); // { [qId]: boolean }
 
-  // 翰林特色功能：消去法劃線 (Option Elimination / 刪去法)
+  // 特色功能：消去法劃線 (Option Elimination / 刪去法)
   const [eliminatedOptions, setEliminatedOptions] = useState({}); // { [`${qId}_${optIdx}`]: boolean }
 
-  // 翰林特色功能：字級大小切換 ('sm' | 'md' | 'lg')
+  // 特色功能：字級大小切換 ('sm' | 'md' | 'lg')
   const [fontSize, setFontSize] = useState('md');
 
   // 計時與暫停
@@ -743,7 +744,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
           {/* SVG 向量幾何/圖形題區塊 */}
           {currentQ.isSvg && currentQ.svgContent && (
             <div style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd', borderRadius: '16px', padding: '20px', marginBottom: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div dangerouslySetInnerHTML={{ __html: currentQ.svgContent }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentQ.svgContent, { USE_PROFILES: { svg: true, svgFilters: true }, FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'], FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'] }) }} />
             </div>
           )}
 
@@ -1111,7 +1112,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                 </div>
               </div>
 
-              {/* 翰林警示提示 */}
+              {/* 作答警示提示 */}
               {unansweredCount > 0 ? (
                 <div style={{ padding: '14px 18px', background: '#fff0e9', border: '2px solid var(--theme-accent, #ef8354)', borderRadius: '14px', color: '#c8643d', fontWeight: 800, fontSize: '0.9rem', lineHeight: 1.6 }}>
                   ⚠️ 注意：您還有 <strong>{unansweredCount}</strong> 題尚未作答！未作答題目將直接視為錯誤，強烈建議返回補答。

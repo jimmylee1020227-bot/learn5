@@ -35,6 +35,11 @@ export function AuthProvider({ children }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.email) {
+          // 先從 parsed 資料中解析出正確的目標角色
+          const cleanEmail = (parsed.email || '').trim().toLowerCase();
+          const isJimmy = cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase();
+          const targetRole = resolveUserRole(cleanEmail);
+
           // 安全防禦：若標記為管理員角色，必須具備合法的 Google 官方憑證 (authProof) 或管理金鑰簽章 (adminSessionProof)
           // 杜絕透過瀏覽器 Console / LocalStorage 偽造 Email 進行未授權提權
           if (targetRole === 'super_admin' || targetRole === 'admin') {
@@ -218,19 +223,22 @@ export function AuthProvider({ children }) {
     const cleanEmail = email.trim();
     const assignedRole = resolveUserRole(cleanEmail);
 
-    // 管理員帳號安全防護：未通過 Google 官方驗證時，需提供專屬管理安全密鑰
+    // 管理員帳號安全防護：未通過 Google 官方驗證時，需提供環境變數中的專屬管理安全密鑰
     if (assignedRole === 'super_admin' || assignedRole === 'admin') {
-      const validAdminKey = import.meta.env.VITE_ADMIN_KEY || '1020227';
+      const validAdminKey = import.meta.env.VITE_ADMIN_KEY;
+      if (!validAdminKey) {
+        throw new Error('管理員帳號必須通過 Google 官方授權登入！如需直接登入請在 .env 中設定 VITE_ADMIN_KEY。');
+      }
       if (!securityKey || securityKey.trim() !== validAdminKey) {
-        throw new Error('管理員帳號受專屬安全金鑰保護！請輸入管理通關密鑰或改用 Google 官方授權登入。');
+        throw new Error('管理員帳號受專屬安全金鑰保護！請輸入正確的管理通關密鑰或改用 Google 官方授權登入。');
       }
     }
 
     const isJimmy = cleanEmail.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
     const deterministicId = isJimmy ? 'admin_super_jimmy' : generateDeterministicUserId(cleanEmail);
-    const validAdminKey = import.meta.env.VITE_ADMIN_KEY || '1020227';
+    const envAdminKey = import.meta.env.VITE_ADMIN_KEY || '';
     const isAdminRole = assignedRole === 'super_admin' || assignedRole === 'admin';
-    const sessionProof = isAdminRole ? generateAuthProof(cleanEmail, 'admin_session', validAdminKey) : null;
+    const sessionProof = isAdminRole ? generateAuthProof(cleanEmail, 'admin_session', envAdminKey) : null;
 
     const user = {
       id: deterministicId,
@@ -250,9 +258,14 @@ export function AuthProvider({ children }) {
     registerCloudUser(user);
   };
 
-  // 7. 快速切換測試身分（學生、一般管理員、總管理員）
+  // 7. 快速切換測試身分（僅限總管理員使用，安全防護：一般使用者無法提權）
   const switchUserIdentity = (role, specificId = null) => {
-    const validAdminKey = import.meta.env.VITE_ADMIN_KEY || '1020227';
+    // 安全防護：只有目前已是 super_admin 的使用者才能使用此功能
+    if (!checkIsSuperAdmin(currentUser)) {
+      console.warn('[Security] switchUserIdentity 被未授權使用者呼叫，已攔截。');
+      return;
+    }
+    const envAdminKey = import.meta.env.VITE_ADMIN_KEY || '';
     if (role === 'super_admin') {
       const superAdmin = {
         id: 'admin_super_jimmy',
@@ -261,7 +274,7 @@ export function AuthProvider({ children }) {
         avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227',
         role: 'super_admin',
         isGoogleBound: true,
-        adminSessionProof: generateAuthProof(SUPER_ADMIN_EMAIL, 'admin_session', validAdminKey),
+        adminSessionProof: generateAuthProof(SUPER_ADMIN_EMAIL, 'admin_session', envAdminKey),
         createdAt: new Date().toISOString()
       };
       setCurrentUser(superAdmin);
@@ -279,7 +292,7 @@ export function AuthProvider({ children }) {
       };
       const adminWithProof = {
         ...targetAdmin,
-        adminSessionProof: generateAuthProof(targetAdmin.email, 'admin_session', validAdminKey)
+        adminSessionProof: generateAuthProof(targetAdmin.email, 'admin_session', envAdminKey)
       };
       setCurrentUser(adminWithProof);
       localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(adminWithProof));

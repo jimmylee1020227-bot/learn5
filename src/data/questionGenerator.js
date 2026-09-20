@@ -166,17 +166,52 @@ export function generateQuizSet({ subjectId, gradeId, unitIds, difficulty = 'med
   const validUnits = unitIds.length > 0 ? unitIds : (CURRICULUM_UNITS[subjectId]?.[gradeId] || []).map(u => u.id);
   if (validUnits.length === 0) return [];
 
+  // 「最難」模式：額外注入會考題 / 私中題 / 競賽題
+  const examGradeIds = ['past-exams', 'private-school'];
+  const isHardest = difficulty === 'hardest' || difficulty === 'extreme';
+
+  // 收集可用的考試級別單元
+  let examUnits = [];
+  if (isHardest) {
+    examGradeIds.forEach(eg => {
+      const units = CURRICULUM_UNITS[subjectId]?.[eg] || [];
+      examUnits = examUnits.concat(units.map(u => ({ gradeId: eg, unitId: u.id })));
+    });
+  }
+
   const usedQuestionIds = new Set(excludeIds);
-  const usedQuestionTexts = new Set(); // 確保不會出現文字完全一樣但 ID 不同的重複題
+  const usedQuestionTexts = new Set();
   let attempts = 0;
-  const maxAttempts = count * 35;
+  const maxAttempts = count * 40;
   const overrides = typeof getQuestionOverrides === 'function' ? getQuestionOverrides() : {};
+
+  // 根據難度調整 index 範圍（越難越大範圍，取得更多不同題目變體）
+  const indexRange = {
+    easy: 2000,
+    medium: 5000,
+    hard: 8000,
+    extreme: 15000,
+    hardest: 15000
+  };
+  const maxIndex = indexRange[difficulty] || 5000;
 
   while (quizSet.length < count && attempts < maxAttempts) {
     attempts++;
-    const unitId = validUnits[Math.floor(Math.random() * validUnits.length)];
-    const questionIndex = Math.floor(Math.random() * 5000) + 1;
-    let q = generateQuestion(subjectId, gradeId, unitId, questionIndex, difficulty);
+
+    let targetGradeId = gradeId;
+    let unitId;
+
+    // 最難模式 (extreme/hardest)：高達 60% 機率直接派發會考歷屆題與私中/競賽題！
+    if (isHardest && examUnits.length > 0 && rand_simple() < 0.6) {
+      const examEntry = examUnits[Math.floor(rand_simple() * examUnits.length)];
+      targetGradeId = examEntry.gradeId;
+      unitId = examEntry.unitId;
+    } else {
+      unitId = validUnits[Math.floor(Math.random() * validUnits.length)];
+    }
+
+    const questionIndex = Math.floor(Math.random() * maxIndex) + 1;
+    let q = generateQuestion(subjectId, targetGradeId, unitId, questionIndex, difficulty);
 
     if (overrides[q.id]?.isDeleted) {
       continue;
@@ -201,4 +236,9 @@ export function generateQuizSet({ subjectId, gradeId, unitIds, difficulty = 'med
   }
 
   return quizSet;
+}
+
+// 簡易隨機數（非題目種子，僅用於選擇題庫分配）
+function rand_simple() {
+  return Math.random();
 }

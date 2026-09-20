@@ -109,7 +109,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
     const last = lastLikeRef.current.get(postId) || 0;
     if (now - last < 800) return;
     lastLikeRef.current.set(postId, now);
-    const updated = likeCommunityPost(postId);
+    const updated = likeCommunityPost(postId, currentUser?.id || 'guest');
     setPosts([...updated]);
   };
 

@@ -3,31 +3,37 @@
     ".read": false,
     ".write": false,
     "studyhub": {
-      ".read": true,
+      ".read": false,
       ".write": false,
+
       "global_settings": {
         ".read": true,
-        ".write": "newData.exists()"
+        ".write": "newData.exists() && newData.hasChildren()"
       },
+
       "admins_list": {
         ".read": true,
-        ".write": "newData.exists()"
+        ".write": "newData.exists() && newData.hasChildren()"
       },
+
       "audit_logs": {
         ".read": true,
-        ".write": "newData.exists()"
+        ".write": "newData.exists() && newData.hasChildren()"
       },
+
       "studyhub_weekly_leaderboard": {
         ".read": true,
         ".write": "newData.exists()"
       },
+
       "leaderboard_players": {
         ".read": true,
         "$userId": {
           ".read": true,
-          ".write": "newData.exists()"
+          ".write": "newData.exists() && newData.hasChild('userId') && newData.child('userId').val() === $userId"
         }
       },
+
       "ticket_grants": {
         ".read": true,
         "$userId": {
@@ -38,65 +44,130 @@
           }
         }
       },
+
       "studyhub_hall_of_fame": {
         ".read": true,
         ".write": "newData.exists()"
       },
+
       "recent_practice_stream": {
         ".read": true,
         ".write": "newData.exists()"
       },
+
       "user_registry": {
-        ".read": true,
-        ".write": "newData.exists()"
+        ".read": false,
+        "$userId": {
+          ".read": true,
+          ".write": "newData.exists() && newData.hasChild('id') && newData.child('id').val() === $userId"
+        }
       },
+
       "admin_notifications": {
         ".read": true,
         ".write": "newData.exists()"
       },
+
       "redemption_codes": {
-        ".read": true,
-        ".write": "newData.exists()"
+        ".read": false,
+        ".write": "newData.exists() && newData.hasChildren()"
       },
+
       "question_overrides": {
         ".read": true,
         ".write": "newData.exists()"
       },
+
       "question_reports": {
         ".read": true,
         ".write": "newData.exists()"
       },
+
       "site_issue_reports": {
         ".read": true,
         ".write": "newData.exists()"
       },
+
       "community_posts": {
         ".read": true,
         ".write": "newData.exists()"
       },
+
       "deleted_community_post_ids": {
         ".read": true,
         ".write": "newData.exists()"
       },
-      "support_chats": {
+
+      "community_reports": {
         ".read": true,
         ".write": "newData.exists()"
       },
+
+      "support_chats": {
+        ".read": false,
+        "$chatId": {
+          ".read": true,
+          ".write": "newData.exists()"
+        }
+      },
+
       "quiz_papers": {
-        ".read": true,
+        ".read": false,
         "$paperId": {
           ".read": true,
           ".write": "newData.exists()"
         }
       },
+
       "redeemed_ledger": {
-        ".read": true,
+        ".read": false,
         "$redeemId": {
           ".read": true,
           ".write": "!data.exists() && newData.exists()"
         }
       },
-      "$userScopedKey": {
+
+      "deleted_notifications": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+
+      "deleted_redemption_codes": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+
+      "practice_history_$userId": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+
+      "mistake_notebook_$userId": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+
+      "user_quiz_papers_$userId": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+
+      "studyhub_game_state_$userId": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+
+      "redeemed_history_$userId": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+
+      "daily_stats_$rest": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+
+      "privacy_consent_$userId": {
         ".read": true,
         ".write": "newData.exists()"
       }

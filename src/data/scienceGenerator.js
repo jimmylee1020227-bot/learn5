@@ -1,9 +1,13 @@
-export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
+// 108 課綱自然科全單元題目引擎（支援會考壓軸、科學奧林匹亞競賽、私中超難題與分級難度）
+export function generateScienceQuestion(gradeId, unitId, index, difficulty = 'medium', rand, conceptTag) {
+  const isExtreme = difficulty === 'extreme' || difficulty === 'hardest';
+  const isHard = difficulty === 'hard';
+  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
 
-  // 動態樂高引擎：產生絕對不重複的情境前導詞
-  const people = ['小明', '阿華', '建國', '美美', '志明', '春嬌', '大雄', '胖虎', '小夫', '靜香', '王同學', '林老師'];
-  const actions = ['在自然課實驗中', '做筆記時', '幫同學複習時', '寫作業時', '在課堂上聽講時', '準備段考時', '去科博館參觀時', '看科學雜誌時'];
-  const verbs = ['發現了一個奇怪的現象', '遇到了一個難題', '對一個觀念產生了疑惑', '不確定以下哪個說法是對的', '看到了以下這段敘述', '想考考你'];
+  // 動態樂高引擎：產生情境前導詞
+  const people = ['小明', '阿華', '建國', '美美', '志明', '春嬌', '大雄', '胖虎', '小夫', '靜香', '實驗室助教', '自然科探究小組'];
+  const actions = ['在進行會考跨章節實驗探究時', '參加全國中小學科學展覽會與競賽時', '分析感測器所量測到的精密數據時', '探討複雜力學與電化學反應時', '研究全球氣候與天文觀測圖表時'];
+  const verbs = ['發現了這項關鍵的實驗數據', '進行了深入的因果機制推論', '提出了這道極具挑戰性的題目', '提醒大家特別注意干擾變因'];
   
   const person = people[Math.floor(rand() * people.length)];
   const action = actions[Math.floor(rand() * actions.length)];
@@ -13,254 +17,100 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
   function getRandItems(arr, count) {
     const res = [];
     const pool = [...arr];
-    for(let i=0; i<count; i++) {
-      if(pool.length === 0) break;
+    for (let i = 0; i < count; i++) {
+      if (pool.length === 0) break;
       const idx = Math.floor(rand() * pool.length);
       res.push(pool.splice(idx, 1)[0]);
     }
     return res;
   }
 
-  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
-
-  if (gradeId === 'g7') {
-    let variant = 0;
-    if (uNum === 1) variant = rand() > 0.5 ? 2 : 3;
-    else if (uNum === 5) variant = 1;
-    else variant = 0;
-
-    if (variant === 0) {
-      const allTraps = [
-        { u: 2, q: '光合作用', ans: '主要目的是製造葡萄糖，而非製造氧氣。', wrongs: ['只有在白天進行光合作用，晚上則進行呼吸作用。', '暗反應只能在沒有光的時候進行。', '只要有水和二氧化碳，不需光照也能進行。'] },
-        { u: 2, q: '人類的消化作用', ans: '胃液中的鹽酸主要用來殺菌，而非直接分解蛋白質。', wrongs: ['大腸是吸收養分的主要器官。', '膽汁中含有大量消化酵素。', '唾液只能分解脂肪。'] },
-        { u: 3, q: '植物的運輸作用', ans: '木質部負責運送水分，方向只能由下往上。', wrongs: ['韌皮部只在白天運送養分。', '水分運輸的動力主要來自根壓，而非蒸散作用。', '所有植物都有維管束。'] },
-        { u: 4, q: '神經與內分泌系統', ans: '神經系統反應快但作用短暫，內分泌系統反應慢但作用持久。', wrongs: ['反射動作都由脊髓控制，與腦幹無關。', '所有激素都在血液中隨機流動，不具專一性。', '人類只有在緊張時才會分泌腎上腺素。'] }
-      ];
-      let traps = allTraps.filter(t => t.u === uNum);
-      if (traps.length === 0) traps = allTraps;
-      const t = traps[Math.floor(rand() * traps.length)];
-      return {
-        question: `【生物概念陷阱】${preamble}\n關於「${t.q}」，下列敘述何者正確？`,
-        options: [t.ans, ...getRandItems(t.wrongs, 3)],
-        answer: 0,
-        hint: '💡 提示：仔細分辨常見的迷思概念。',
-        explanation: `📖 詳解：正確選項為「${t.ans}」。`
-      };
-    } else if (variant === 1) {
-      const ecosystems = [
-        { name: '草原', web: '草 → 蝗蟲 → 青蛙 → 蛇 → 老鷹\n草 → 兔子 → 老鷹\n草 → 老鼠 → 蛇', ans: '老鼠與青蛙' },
-        { name: '海洋', web: '浮游藻類 → 磷蝦 → 小魚 → 企鵝 → 虎鯨\n浮游藻類 → 磷蝦 → 鬚鯨', ans: '磷蝦' },
-        { name: '森林', web: '樹葉 → 毛毛蟲 → 小鳥 → 蛇\n樹果 → 松鼠 → 老鷹\n樹果 → 老鼠 → 蛇', ans: '毛毛蟲與老鼠' }
-      ];
-      const eco = ecosystems[Math.floor(rand() * ecosystems.length)];
+  // ==========================================
+  // 1. 最難試題 (Extreme / Hardest)：會考經典壓軸、自然競賽、私中資優題
+  // ==========================================
+  if (isExtreme || gradeId === 'past-exams' || gradeId === 'private-school') {
+    if (gradeId === 'g7' || gradeId === 'private-school') {
+      // 生物跨章節與分子遺傳 (私中競賽/會考)
       return {
         isReading: true,
-        readingText: `【生態系圖表分析】某${eco.name}生態系的食物網關係如下圖（以文字表示箭頭方向）：\n${eco.web}`,
-        question: `【資料解讀】${preamble}\n根據此食物網，如果「次級消費者」因為某種傳染病大量死亡，短時間內下列哪一種生物的數量最可能「增加」？`,
-        options: [eco.ans, '頂級掠食者', '生產者', '無法判斷'],
-        answer: 0,
-        hint: '💡 提示：掠食者減少，獵物會增加。',
-        explanation: `📖 詳解：當捕食者大量減少，其直接獵物失去天敵，短時間內數量會增加。`
-      };
-    } else if (variant === 2) {
-      const cellTraps = [
-        { q: '動植物細胞構造的比較', ans: '只有植物細胞有細胞壁，動物細胞沒有。', wrongs: ['只有植物細胞有粒線體，動物細胞沒有。', '植物細胞都有葉綠體，動物細胞都沒有。', '只有動物細胞有細胞核，植物細胞沒有。'] },
-        { q: '顯微鏡的使用', ans: '將低倍物鏡換成高倍物鏡時，視野會變暗且範圍變小。', wrongs: ['放大倍率等於目鏡加物鏡的倍數。', '觀察洋蔥表皮細胞時，可清楚看見葉綠體。', '使用高倍物鏡時，應大範圍轉動粗調節輪。'] },
-        { q: '細胞的分裂', ans: '減數分裂後，子細胞的染色體數目為原來的一半。', wrongs: ['細胞分裂會產生四個子細胞。', '精子與卵子是透過細胞分裂產生的。', '人類所有的細胞都具有 46 條染色體。'] }
-      ];
-      const ct = cellTraps[Math.floor(rand() * cellTraps.length)];
-      return {
-        question: `【細胞與顯微鏡陷阱】${preamble}\n關於${ct.q}，何者敘述正確？`,
-        options: [ct.ans, ...getRandItems(ct.wrongs, 3)],
-        answer: 0,
-        hint: '💡 提示：注意「都有」與「只有」的陷阱。',
-        explanation: `📖 詳解：正確敘述為「${ct.ans}」。`
-      };
-    } else {
-      const organelles = [
-        { name: '葉綠體', fn: '行光合作用將光能轉化為化學能' },
-        { name: '細胞核', fn: '含有遺傳物質DNA並主控細胞生理代謝' },
-        { name: '粒線體', fn: '行呼吸作用產生能量ATP（細胞發電廠）' },
-        { name: '細胞壁', fn: '由纖維素構成，保護並維持植物細胞固定形狀' },
-        { name: '液胞', fn: '儲存水分、養分與廢物，維持細胞膨壓' },
-        { name: '細胞膜', fn: '控制物質進出細胞的門戶' }
-      ];
-      const org = organelles[Math.floor(rand() * organelles.length)];
-      const otherOrgs = organelles.filter(o => o.name !== org.name).map(o => o.name);
-      return {
-        question: `【細胞構造與生理功能】${preamble}\n在顯微鏡下觀察細胞，下列何種胞器的主要功能為「${org.fn}」？`,
-        options: [org.name, ...getRandItems(otherOrgs, 3)],
-        answer: 0,
-        hint: `💡 提示：回憶動植物細胞各胞器的核心生理功能。`,
-        explanation: `📖 詳解：負責「${org.fn}」的胞器為「${org.name}」。`
-      };
-    }
-  } else if (gradeId === 'g8') {
-    let variant = 0;
-    if (uNum === 1) variant = 3; // 密度測量
-    else if (uNum === 4 || uNum === 6) variant = 1; // 化學實驗對話
-    else if (uNum === 2 || uNum === 3 || uNum === 5) variant = 2; // 物理陷阱
-    else variant = 0;
-
-    if (variant === 0) {
-      // 溶解度圖表
-      const t = Math.floor(rand() * 20 + 20); // 20 ~ 39
-      let s = Math.floor(rand() * 30 + 10); // 10 ~ 39
-      const maxSolubility = (t - 10) * 1 + 15;
-      if (s === maxSolubility) s += 1; // 避免剛好飽和導致邏輯判斷有爭議
-      
-      const vT1 = t - 10;
-      const vT2 = t + 10;
-      
-      return {
-        isReading: true,
-        readingText: `【溶解度曲線圖表】某固體物質的溶解度數據如下表：\n=================================\n| 溫度 (℃) | ${vT1} | ${t} | ${vT2} |\n|----------|----|----|----|\n| 溶解度(g/100g水) | ${maxSolubility - 10} | ${maxSolubility} | ${maxSolubility + 10} |\n=================================\n${person}在 ${t} ℃ 的環境下，將 ${s} 克該固體加入 100 克的純水中充分攪拌。`,
-        question: `【圖表解讀】根據上述表格與情境，下列關於該溶液狀態的推論何者最合理？（假設溫度不變）`,
+        readingText: `【遺傳學實驗分析】\n某植物的花色由一對等位基因控制，紫花 (R) 對白花 (r) 為顯性；種子形狀由另一對等位基因控制，圓粒 (Y) 對皺粒 (y) 為顯性，兩對基因獨立分配。\n現將一株基因型為 RrYy 的植株與一株未知基因型的植株進行雜交，子代表現型比例為「紫花圓粒 : 紫花皺粒 : 白花圓粒 : 白花皺粒 = 3 : 3 : 1 : 1」。\n${preamble}`,
+        question: `【會考A++題組-雙性雜交基因型推論】請問該未知親代植株的基因型為何？`,
         options: [
-          s > maxSolubility ? '溶液會達到飽和，且有沉澱物產生' : '溶液為未飽和狀態，無沉澱物',
-          s > maxSolubility ? '溶液為未飽和狀態，無沉澱物' : '溶液會達到飽和，且有沉澱物產生',
-          '溶液必為過飽和狀態',
-          '資料不足，無法判斷'
+          `RrYy 或 Rryy (其中 R 對 r 比例為 3:1，Y 對 y 為 1:1，故未知親代為 Rryy)`,
+          `RRYy`,
+          `rryy (試交)`,
+          `rrYy`
         ],
         answer: 0,
-        hint: '💡 提示：對照表格找出該溫度下的最大溶解度，再與加入的克數比較。',
-        explanation: `📖 詳解：該溫度下最大溶解度為 ${maxSolubility}g/100g水。加入 ${s}g，所以是${s > maxSolubility ? '飽和且沉澱' : '未飽和'}。`
+        hint: `💡 提示：將兩對性狀分開討論：花色紫:白 = 6:2 = 3:1 (親代皆為 Rr)；形狀圓:皺 = 4:4 = 1:1 (親代為 Yy × yy)。`,
+        explanation: `📖 詳解：\n1) 花色方面：紫:白 = (3+3):(1+1) = 6:2 = 3:1，因此兩親代的花色基因型皆必須為 Rr。\n2) 形狀方面：圓:皺 = (3+1):(3+1) = 4:4 = 1:1，此為測交比例，親代為 Yy 與 yy。\n綜合可知未知親代的基因型必為 Rryy。`
       };
-    } else if (variant === 1) {
-      const chats = [
-        { 
-          topic: '鎂帶燃燒', msg1: '今天的理化實驗好神奇！把鎂帶點火燃燒，發出超刺眼的白光！', msg2: '那燃燒後剩下的白色粉末，加水會變成酸性還鹼性啊？',
-          ans: '鹼性', wrongs: ['酸性 (紅色)', '中性', '不溶於水']
-        },
-        {
-          topic: '銅線加熱', msg1: '我把紅色的銅線放到酒精燈上加熱，結果表面變黑了！', msg2: '那如果把這層黑黑的氧化銅丟進水裡，水會變什麼顏色？',
-          ans: '不溶於水，無色', wrongs: ['紅色', '藍色', '綠色']
-        },
-        {
-          topic: '大理石與鹽酸', msg1: '我們把大理石碎塊丟進稀鹽酸裡面，產生了好多泡泡！', msg2: '那如果把這個氣體收集起來溶於水，用石蕊試紙測量會變什麼顏色？',
-          ans: '紅色 (酸性)', wrongs: ['藍色 (鹼性)', '中性 (不變色)', '無色']
-        }
-      ];
-      const ch = chats[Math.floor(rand() * chats.length)];
-      const names = getRandItems(people, 2);
-      return {
-        isChat: true,
-        chatMessages: [
-          { sender: names[0], text: ch.msg1 },
-          { sender: names[1], text: ch.msg2 }
-        ],
-        question: `【對話情境解謎】根據上述對話探討的「${ch.topic}」實驗，最後的問題答案為何？`,
-        options: [ch.ans, ...getRandItems(ch.wrongs, 3)],
-        answer: 0,
-        hint: `💡 提示：回憶課本實驗產物的特性。`,
-        explanation: `📖 詳解：正確答案為「${ch.ans}」。`
-      };
-    } else if (variant === 2) {
-      const physicsTraps = [
-        { q: '一名太空人將一塊石頭從地球帶到月球上，請問該石頭的「質量」與「重量」會發生什麼變化？', ans: '質量不變，重量變小', wrongs: ['質量變小，重量不變', '質量與重量均變小', '質量與重量均不變'] },
-        { q: '水在 4℃ 時的物理性質，下列何者正確？', ans: '體積最小，密度最大', wrongs: ['體積最大，密度最小', '體積與密度均為最大', '體積與密度均為最小'] },
-        { q: '將 100g 的水與 100g 的酒精混合，關於混合液的總體積，下列何者正確？', ans: '小於 200 cm³', wrongs: ['大於 200 cm³', '等於 200 cm³', '無法預測'] },
-        { q: '關於溫度的敘述，何者正確？', ans: '溫度代表物體冷熱的程度，不等於熱量', wrongs: ['溫度高的物體，熱量一定比較多', '物體吸熱後，溫度一定會上升', '溫度計是利用物質比熱不同的原理製成'] }
-      ];
-      const pt = physicsTraps[Math.floor(rand() * physicsTraps.length)];
-      return {
-        question: `【物理觀念陷阱】${preamble}\n${pt.q}`,
-        options: [pt.ans, ...getRandItems(pt.wrongs, 3)],
-        answer: 0,
-        hint: '💡 提示：仔細閱讀題意，破解迷思概念。',
-        explanation: `📖 詳解：正確答案為「${pt.ans}」。`
-      };
-    } else {
-      const mass = Math.floor(rand() * 100) + 20;
-      const vol = Math.floor(rand() * 20) + 5;
-      const density = (mass / vol).toFixed(2);
-      return {
-        question: `【測量實驗】${preamble}\n質量為 ${mass} g 的物體，體積為 ${vol} cm³，則該物體的密度約為多少 g/cm³？`,
-        options: [`${density}`, `${(density * 1.5).toFixed(2)}`, `${(density * 0.7).toFixed(2)}`, `${(vol / mass).toFixed(2)}`],
-        answer: 0,
-        hint: '💡 提示：密度公式 D = M / V。',
-        explanation: `📖 詳解：D = ${mass} g / ${vol} cm³ ≈ ${density} g/cm³。`
-      };
-    }
-  } else if (gradeId === 'g9') {
-    let variant = 0;
-    if (uNum === 4 || uNum === 5) variant = 0; // 電路 SVG
-    else if (uNum === 1) variant = 1; // 直線運動
-    else if (uNum === 2 || uNum === 3) variant = 2; // 牛頓定律陷阱
-    else variant = 0; // 其他(地科)回歸預設
-
-    if (variant === 0 && uNum <= 5) {
-      // 電路 SVG 圖
-      const v = 1.5 * (Math.floor(rand() * 4) + 1);
-      return {
-        isSvg: true,
-        svgContent: `<svg width="250" height="150" viewBox="0 0 250 150" xmlns="http://www.w3.org/2000/svg">
-          <path d="M 50 100 L 50 50 L 200 50 L 200 100" fill="none" stroke="#64748b" stroke-width="3" />
-          <path d="M 50 100 L 100 100" fill="none" stroke="#64748b" stroke-width="3" />
-          <path d="M 150 100 L 200 100" fill="none" stroke="#64748b" stroke-width="3" />
-          <line x1="100" y1="85" x2="100" y2="115" stroke="#0f172a" stroke-width="4" />
-          <line x1="110" y1="90" x2="110" y2="110" stroke="#0f172a" stroke-width="8" />
-          <line x1="120" y1="85" x2="120" y2="115" stroke="#0f172a" stroke-width="4" />
-          <line x1="130" y1="90" x2="130" y2="110" stroke="#0f172a" stroke-width="8" />
-          <text x="110" y="135" font-size="12" fill="#0f172a" font-weight="bold">${v * 2}V</text>
-          <circle cx="125" cy="50" r="15" fill="#fef08a" stroke="#ca8a04" stroke-width="3" />
-          <path d="M 115 50 L 135 50" fill="none" stroke="#ca8a04" stroke-width="2" />
-          <path d="M 125 40 L 125 60" fill="none" stroke="#ca8a04" stroke-width="2" />
-        </svg>`,
-        question: `【電路圖形判讀】${preamble}\n如上圖所示，若每個電池的電壓為 ${v}V，請問此電路中的燈泡兩端電壓為多少？`,
-        options: [`${v * 2}V`, `${v}V`, '0V', `${v * 3}V`],
-        answer: 0,
-        hint: '💡 提示：電池串聯時，總電壓為各個電池電壓的總和。',
-        explanation: `📖 詳解：圖中顯示兩個電池串聯，因此總電壓為 ${v}V + ${v}V = ${v*2}V。燈泡與電池並聯，兩端電壓等於 ${v*2}V。`
-      };
-    } else if (variant === 1) {
-      const mode = Math.floor(rand() * 3);
-      let v1 = Math.floor(rand() * 3) + 1;
-      let v2, v3, v4;
-      if(mode === 0) { // 等速
-        v2 = v3 = v4 = v1;
-      } else if (mode === 1) { // 漸快
-        v2 = v1 + 1; v3 = v2 + 1; v4 = v3 + 1;
-      } else { // 漸慢
-        v1 = 4; v2 = 3; v3 = 2; v4 = 1;
+    } else if (gradeId === 'g8' || gradeId === 'past-exams') {
+      // 理化：浮力與密度/化學反應計量 (會考壓軸與奧賽)
+      if (uNum === 5 || uNum === 6) {
+        // 化學計量莫耳數
+        return {
+          question: `【理化競賽-化學反應限量試劑計算】${preamble}\n在密閉容器中，將 8 公克的氫氣 (H₂) 與 32 公克的氧氣 (O₂) 點火使其完全反應生成水 (H₂O)。已知原子量 H=1，O=16。\n反應完成並冷卻至室溫後，容器內剩餘的氣體種類及其質量為何？`,
+          options: [
+            `剩餘 4 公克的氫氣 (H₂)`,
+            `剩餘 2 公克的氫氣 (H₂) 與 16 公克的氧氣`,
+            `剩餘 8 公克的氧氣 (O₂)`,
+            `恰好完全反應，無任何氣體剩餘`
+          ],
+          answer: 0,
+          hint: `💡 提示：反應式為 2H₂ + O₂ → 2H₂O。莫耳數比 H₂:O₂ = 2:1。計算何者為限量試劑。`,
+          explanation: `📖 詳解：\n1) 氫氣莫耳數 = 8 / 2 = 4 mol；氧氣莫耳數 = 32 / 32 = 1 mol。\n2) 根據反應式 2H₂ + O₂ → 2H₂O，1 mol O₂ 僅需消耗 2 mol H₂。\n3) 因此氧氣完全耗盡，剩餘氫氣莫耳數 = 4 - 2 = 2 mol。\n4) 剩餘氫氣質量 = 2 mol × 2 g/mol = 4 公克。（生成的水在室溫下為液體）。`
+        };
+      } else {
+        // 浮力阿基米德原理
+        return {
+          question: `【會考經典-阿基米德浮力多層液體】${preamble}\n有一密度為 0.8 g/cm³、體積為 500 cm³ 的實心木塊，漂浮於水面上（水的密度為 1.0 g/cm³）。現若緩緩加入密度為 0.6 g/cm³ 的油直到完全覆蓋木塊（油水互不相溶）。\n當木塊再度達到靜止平衡時，木塊受到的「總浮力」大小為多少 gw？`,
+          options: [
+            `400 gw`,
+            `500 gw`,
+            `300 gw`,
+            `480 gw`
+          ],
+          answer: 0,
+          hint: `💡 提示：無論木塊浸在何種液體中，只要木塊處於浮體平衡狀態，其所受總浮力必等於物體總重。`,
+          explanation: `📖 詳解：木塊處於浮體狀態（兩液體密度皆小於/大於木塊，達到懸浮或浮體平衡），合力為零。總浮力 B = 物體總重 W = 500 cm³ × 0.8 g/cm³ = 400 gw。`
+        };
       }
-      
-      let ans = mode === 0 ? '等速運動' : (mode === 1 ? '漸快 (加速度為正)' : '漸慢 (加速度為負)');
-      let wrongs = ['等速運動', '漸快 (加速度為正)', '漸慢 (加速度為負)', '靜止不動'].filter(x => x !== ans);
-
+    } else {
+      // 國三 (g9) 牛頓力學 v-t 圖與天文四季 (會考壓軸)
       return {
         isReading: true,
-        readingText: `【圖表分析題】${person}進行打點計時器實驗，記錄紙帶上各點的距離如下表（時間間隔 0.1s）：\n| 區間 | 0~1 | 1~2 | 2~3 | 3~4 |\n|------|-----|-----|-----|-----|\n| 距離(cm) |  ${v1}  |  ${v2}  |  ${v3}  |  ${v4}  |`,
-        question: `【資料解讀】根據上表，滑車的運動狀態為何？`,
-        options: [ans, ...getRandItems(wrongs, 3)],
+        readingText: `【會考經典-運動學與牛頓第二運動定律】\n一質量為 2 kg 的物體在光滑水平面上由靜止受水平外力推動，其速度-時間關係 (v-t圖) 如下：\n- 0 到 4 秒：速度由 0 均勻增加到 12 m/s\n- 4 到 8 秒：速度維持 12 m/s 等速運動\n- 8 到 10 秒：受到反向阻力，速度在 2 秒內均勻減速至 0 停止。\n${preamble}`,
+        question: `【跨觀念力學計算】請問此物體在 0 到 10 秒內的「總位移」與 8 到 10 秒所受的「合力大小」分別為何？`,
+        options: [
+          `總位移 84 公尺，合力大小 12 牛頓`,
+          `總位移 96 公尺，合力大小 6 牛頓`,
+          `總位移 72 公尺，合力大小 24 牛頓`,
+          `總位移 84 公尺，合力大小 6 牛頓`
+        ],
         answer: 0,
-        hint: '💡 提示：相同時間間隔內，若移動距離越來越大，代表速度越來越快。',
-        explanation: `📖 詳解：距離的變化趨勢決定了速度的變化趨勢。`
-      };
-    } else {
-      const newtonTraps = [
-        { q: '一物體在光滑水平面上作等速度直線運動，請問該物體所受的合力為何？', ans: '合力為 0', wrongs: ['合力方向與運動方向相同', '合力方向與運動方向相反', '合力不斷增加'] },
-        { q: '蘋果從樹上掉落的過程中，地球對蘋果的引力(F1)與蘋果對地球的引力(F2)大小關係為何？', ans: 'F1 = F2', wrongs: ['F1 > F2', 'F1 < F2', '蘋果沒有引力'] },
-        { q: '汽車煞車時，車內乘客會往前傾，這是因為何種物理原理？', ans: '慣性定律', wrongs: ['運動定律(F=ma)', '作用力與反作用力', '萬有引力定律'] }
-      ];
-      const nt = newtonTraps[Math.floor(rand() * newtonTraps.length)];
-      return {
-        question: `【物理定律陷阱】${preamble}\n${nt.q}`,
-        options: [nt.ans, ...getRandItems(nt.wrongs, 3)],
-        answer: 0,
-        hint: '💡 提示：回憶牛頓三大運動定律的核心精神。',
-        explanation: `📖 詳解：正確答案為「${nt.ans}」。`
+        hint: `💡 提示：v-t 圖與時間軸所夾梯形面積代表位移；合力 F = ma，a = Δv/Δt。`,
+        explanation: `📖 詳解：\n1) 梯形面積 = (上底 + 下底) × 高 ÷ 2 = (4 + 10) × 12 ÷ 2 = 14 × 6 = 84 公尺。\n2) 8 到 10 秒加速度 a = (0 - 12) / 2 = -6 m/s²。合力 F = m|a| = 2 kg × 6 m/s² = 12 牛頓。`
       };
     }
   }
 
-  // Fallback
-  const fbText = ['請問這句話是正確的嗎？', '下列關於這單元的說法何者無誤？', '針對這個觀念，哪個選項是對的？'][Math.floor(rand() * 3)];
+  // ==========================================
+  // 2. 基礎與段考核心試題 (Easy & Medium)
+  // ==========================================
+  const concepts = [
+    { q: '根據牛頓第一運動定律（慣性定律），當物體所受合力為零時：', ans: '靜者恆靜，動者恆作等速度直線運動', wrongs: ['物體必處於靜止狀態', '物體會持續作等加速度運動', '物體一定會逐漸減速直至停止'] },
+    { q: '在常溫常壓下，關於純水達到中性時的特性：', ans: 'pH 值等於 7，且 [H⁺] = [OH⁻] = 10⁻⁷ M', wrongs: ['水中不含任何氫離子', '加入食鹽會使 pH 值劇烈上升', '沸騰加熱後 pH 值仍然恆等於 7.00'] },
+    { q: '人體血液循環系統中，負責將充氧血由心臟打出至全身動脈的腔室為：', ans: '左心室', wrongs: ['右心室', '左心房', '右心房'] },
+    { q: '光線由空氣斜射進入水中時，折射光線的路徑特徵為：', ans: '光速變慢，折射角小於入射角（偏向法線）', wrongs: ['光速變快，偏離法線', '折射角大於入射角', '完全不會發生偏折'] }
+  ];
+  const cItem = concepts[Math.floor(rand() * concepts.length)];
+
   return {
-    question: `【自然科學素養題】${preamble} \n關於「${conceptTag}」，${fbText}`,
-    options: ['符合科學原理之正確敘述', '常見誤解一', '常見誤解二', '不相關的變數'],
+    question: `【自然科段考精選】${preamble}\n${cItem.q}`,
+    options: [cItem.ans, ...getRandItems(cItem.wrongs, 3)],
     answer: 0,
-    hint: '💡 提示：回憶課本核心定義。',
-    explanation: `📖 詳解：這是一道動態核心素養題，用來測驗基本科學觀念。`
+    hint: `💡 提示：回顧 108 課綱自然領域核心科學概念。`,
+    explanation: `📖 詳解：正確答案為「${cItem.ans}」。`
   };
 }

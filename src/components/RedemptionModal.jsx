@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
-import { redeemCode, getRedemptionCodes } from '../services/cloudStorage';
+import { redeemCode } from '../services/cloudStorage';
 import { Ticket, Sparkles, CheckCircle2, AlertCircle, X, ArrowRight, Gift } from 'lucide-react';
 
 export default function RedemptionModal({ isOpen, onClose }) {
@@ -14,7 +14,6 @@ export default function RedemptionModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const availableCodes = getRedemptionCodes();
 
   const handleRedeem = (codeToUse) => {
     const targetCode = (codeToUse || inputCode).trim();
@@ -148,40 +147,16 @@ export default function RedemptionModal({ isOpen, onClose }) {
                 </div>
               )}
 
-              {/* 官方限時推薦兌換碼 (動態支援管理員新增之自訂序號) */}
+              {/* 兌換說明提示 */}
               <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1.5px solid #e8ded0', borderRadius: '16px', padding: '14px' }}>
                 <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#5b6772', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Sparkles size={14} color="var(--theme-accent, var(--theme-accent, #ef8354))" /> 官方福利序號（點擊直接填入兌換）：
+                  <Sparkles size={14} color="var(--theme-accent, var(--theme-accent, #ef8354))" /> 兌換碼取得方式：
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto' }}>
-                  {availableCodes.map(codeItem => (
-                    <div 
-                      key={codeItem.code}
-                      onClick={() => { setInputCode(codeItem.code); handleRedeem(codeItem.code); }}
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between', 
-                        padding: '10px 14px', 
-                        background: 'var(--theme-card, var(--theme-card, #fffdf9))', 
-                        borderRadius: '10px', 
-                        cursor: 'pointer', 
-                        border: '1.5px dashed #ded3c5',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{codeItem.code}</span>
-                        <span className={`badge ${codeItem.type === 'multiplier' ? 'badge-fire' : codeItem.type === 'lottery_ticket' ? 'badge-coral' : 'badge-gold'}`} style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
-                          {codeItem.type === 'multiplier' ? '🔥 雙倍狂暴' : codeItem.type === 'lottery_ticket' ? '🎫 抽獎券' : '🏆 積分'}
-                        </span>
-                      </div>
-                      <span style={{ fontSize: '0.78rem', color: '#5b6772', fontWeight: 700 }}>
-                        {codeItem.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '0.78rem', color: '#78818a', fontWeight: 600, lineHeight: 1.8 }}>
+                  <li>關注管理員公告與社群活動取得專屬序號</li>
+                  <li>每組序號每位同學限兌換一次</li>
+                  <li>兌換碼可獲得排行榜積分、幸運抽獎券或限時雙倍加成</li>
+                </ul>
               </div>
             </>
           )}
