@@ -171,19 +171,19 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
       }
     };
 
-    // 4. 偵測切換瀏覽器分頁
-    const handleVisibilityChange = () => {
-      if (document.hidden && !isSubmitModalOpen) {
-        handleCheatViolation('切換至其他分頁');
-      }
-    };
+    // 4. 偵測切換瀏覽器分頁 (已關閉)
+    // const handleVisibilityChange = () => {
+    //   if (document.hidden && !isSubmitModalOpen) {
+    //     handleCheatViolation('切換至其他分頁');
+    //   }
+    // };
 
-    // 5. 偵測視窗失焦（例如點擊跳出至其他軟體）
-    const handleBlur = () => {
-      if (!document.hidden && !isSubmitModalOpen) {
-        handleCheatViolation('跳出測驗視窗');
-      }
-    };
+    // 5. 偵測視窗失焦（例如點擊跳出至其他軟體） (已關閉)
+    // const handleBlur = () => {
+    //   if (!document.hidden && !isSubmitModalOpen) {
+    //     handleCheatViolation('跳出測驗視窗');
+    //   }
+    // };
 
     // 6. 全螢幕狀態同步
     const handleFullscreenChange = () => {
@@ -193,16 +193,16 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
     window.addEventListener('contextmenu', handleContextMenu);
     window.addEventListener('copy', handleCopy);
     window.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleBlur);
+    // document.addEventListener('visibilitychange', handleVisibilityChange);
+    // window.addEventListener('blur', handleBlur);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
 
     return () => {
       window.removeEventListener('contextmenu', handleContextMenu);
       window.removeEventListener('copy', handleCopy);
       window.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleBlur);
+      // document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // window.removeEventListener('blur', handleBlur);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
   }, [isSubmitModalOpen, questions, userAnswers, secondsSpent]);
