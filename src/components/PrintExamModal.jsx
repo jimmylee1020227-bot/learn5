@@ -1,22 +1,31 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { 
   Printer, 
-  Download, 
   ExternalLink, 
   FileText, 
   X, 
   CheckCircle, 
-  BookOpen, 
-  Share2, 
-  Layers,
-  Sparkles
+  Layers
 } from 'lucide-react';
 import MathText from './MathText';
+import { generateQuizSet } from '../data/questionGenerator';
 
 export const MANUS_EXAM_DOWNLOAD_URL = 'https://examcommunit-mdqeyikj.manus.space/';
 
 export default function PrintExamModal({ isOpen, onClose, currentQuestions = [] }) {
-  const [includeExplanations, setIncludeExplanations] = useState(true);
+  // 自動偵測或預設產生 10 題教育部標準會考題庫
+  const finalQuestions = useMemo(() => {
+    if (currentQuestions && currentQuestions.length > 0) {
+      return currentQuestions;
+    }
+    return generateQuizSet({
+      gradeId: 'g8',
+      subjectId: 'math',
+      unitIds: ['g8-m-u1', 'g8-m-u2', 'g8-m-u3', 'g8-m-u4'],
+      difficulty: 'medium',
+      count: 10
+    });
+  }, [currentQuestions]);
 
   if (!isOpen) return null;
 
@@ -157,20 +166,8 @@ export default function PrintExamModal({ isOpen, onClose, currentQuestions = [] 
             </div>
 
             <p style={{ margin: 0, fontSize: '0.84rem', color: '#5b6772', lineHeight: 1.6 }}>
-              將目前選取或正在進行的題庫（共 {currentQuestions.length > 0 ? currentQuestions.length : 10} 題）自動排版為教育部會考雙欄紙本試卷，附准考證號、姓名欄位與標準答案解析，點擊即可直接列印或另存為 PDF。
+              將目前選取或正在進行的題庫（共 {finalQuestions.length} 題）自動排版為教育部會考雙欄紙本試卷，附准考證號、姓名欄位與標準答案解析，點擊即可直接列印或另存為 PDF。
             </p>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', cursor: 'pointer' }}>
-                <input 
-                  type="checkbox" 
-                  checked={includeExplanations} 
-                  onChange={e => setIncludeExplanations(e.target.checked)} 
-                  style={{ width: '16px', height: '16px' }}
-                />
-                卷末附詳細名師解析與破題思維
-              </label>
-            </div>
 
             <button
               type="button"
@@ -179,16 +176,21 @@ export default function PrintExamModal({ isOpen, onClose, currentQuestions = [] 
               style={{
                 width: '100%',
                 padding: '12px 18px',
-                fontSize: '0.92rem',
+                fontSize: '0.95rem',
                 borderRadius: '12px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                fontWeight: 800
+                fontWeight: 800,
+                background: '#fff',
+                color: 'var(--theme-border, #17324d)',
+                border: '2px solid var(--theme-border, #17324d)',
+                boxShadow: '3px 3px 0 var(--theme-border, #17324d)',
+                cursor: 'pointer'
               }}
             >
-              <Printer size={16} />
+              <Printer size={18} />
               <span>啟動 A4 紙本考卷格式列印 / 另存 PDF</span>
             </button>
           </div>
@@ -219,6 +221,10 @@ export default function PrintExamModal({ isOpen, onClose, currentQuestions = [] 
       {/* 列印專用隱藏區域 (Print Media Stylesheet & DOM) */}
       <style>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 12mm 12mm;
+          }
           body * {
             visibility: hidden !important;
           }
@@ -230,50 +236,73 @@ export default function PrintExamModal({ isOpen, onClose, currentQuestions = [] 
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            padding: 15mm 15mm !important;
+            padding: 0 !important;
             background: #ffffff !important;
             color: #000000 !important;
-            font-family: "Noto Serif TC", "Songti TC", "SimSun", serif !important;
+            font-family: "Times New Roman", "Songti TC", "Noto Serif TC", serif !important;
             display: block !important;
           }
-          .no-print {
-            display: none !important;
+          .exam-two-column {
+            column-count: 2 !important;
+            column-gap: 12mm !important;
+            column-rule: 1px solid #222222 !important;
           }
-          .page-break {
-            page-break-before: always !important;
+          .exam-q-item {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            margin-bottom: 15px !important;
           }
         }
       `}</style>
 
-      {/* A4 紙本列印容器 (僅列印時顯示) */}
+      {/* A4 紙本列印容器 (僅列印時顯示，雙欄教育部會考規格) */}
       <div id="printable-exam-paper" style={{ display: 'none' }}>
-        <div style={{ textAlign: 'center', borderBottom: '2.5px solid #000', paddingBottom: '12px', marginBottom: '16px' }}>
-          <h1 style={{ fontSize: '20pt', fontWeight: 900, margin: '0 0 6px 0' }}>
-            108 課綱國中教育會考全真模擬紙本評量卷
+        {/* 試卷頭部資訊 */}
+        <div style={{ textAlign: 'center', borderBottom: '2.5px solid #000', paddingBottom: '10px', marginBottom: '12px' }}>
+          <div style={{ fontSize: '11pt', fontWeight: 700, letterSpacing: '2px', marginBottom: '2px' }}>
+            教育部 108 課綱國中教育會考模擬評量
+          </div>
+          <h1 style={{ fontSize: '18pt', fontWeight: 900, margin: '0 0 8px 0', letterSpacing: '1px' }}>
+            學力檢測全真紙本試卷
           </h1>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11pt', fontWeight: 700, margin: '8px 0 0' }}>
-            <span>班級：___________</span>
-            <span>座號：_______</span>
-            <span>姓名：_______________</span>
-            <span>得分：___________</span>
+          
+          {/* 准考證號碼與考生個人資訊欄位 */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10pt', fontWeight: 700, padding: '4px 0', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>准考證號碼：</span>
+              <div style={{ display: 'flex', gap: '3px' }}>
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} style={{ width: '18px', height: '22px', border: '1.5px solid #000', textAlign: 'center', fontSize: '10pt', lineHeight: '20px' }}></div>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <span>班級：___________</span>
+              <span>座號：_______</span>
+              <span>姓名：_______________</span>
+              <span>得分：___________</span>
+            </div>
           </div>
         </div>
 
-        <div style={{ fontSize: '10pt', color: '#333', marginBottom: '14px', borderBottom: '1px dashed #666', paddingBottom: '8px' }}>
-          ※ 作答說明：本試卷共 {currentQuestions.length} 題，均為四選一單一選擇題，請詳讀題意後將正確選項代碼填入題目空格中。
+        {/* 作答說明提示 */}
+        <div style={{ fontSize: '9pt', color: '#111', marginBottom: '12px', border: '1px solid #333', padding: '5px 10px', background: '#fafafa', lineHeight: 1.4 }}>
+          <strong>【作答說明】</strong>本試卷共 {finalQuestions.length} 題，均為四選一單一選擇題，請詳讀題意後選出一個最適當的答案。計算過程請多加利用試卷空白處，並將各題答案填入卷末標準答案卡中。
         </div>
 
-        {/* 題目列表 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {currentQuestions.map((q, qIdx) => (
-            <div key={q.id || qIdx} style={{ fontSize: '11pt', lineHeight: 1.6, pageBreakInside: 'avoid' }}>
-              <div style={{ fontWeight: 800, marginBottom: '6px' }}>
-                ({qIdx + 1}) 【{q.conceptTag || '素養題'}】{q.question}
+        {/* 雙欄教育部會考題目排版 */}
+        <div className="exam-two-column">
+          {finalQuestions.map((q, qIdx) => (
+            <div key={q.id || qIdx} className="exam-q-item" style={{ fontSize: '10.5pt', lineHeight: 1.55 }}>
+              <div style={{ fontWeight: 800, marginBottom: '5px' }}>
+                <span>({qIdx + 1}) </span>
+                <MathText text={q.question} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', paddingLeft: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px', paddingLeft: '10px' }}>
                 {q.options?.map((opt, oIdx) => (
-                  <div key={oIdx}>
-                    ({['A', 'B', 'C', 'D'][oIdx]}) {opt}
+                  <div key={oIdx} style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ fontWeight: 700 }}>({['A', 'B', 'C', 'D'][oIdx]})</span>
+                    <span><MathText text={opt} /></span>
                   </div>
                 ))}
               </div>
@@ -281,30 +310,33 @@ export default function PrintExamModal({ isOpen, onClose, currentQuestions = [] 
           ))}
         </div>
 
-        {/* 答案卷與詳解 */}
-        {includeExplanations && (
-          <div className="page-break" style={{ marginTop: '30px', paddingTop: '16px', borderTop: '2px solid #000' }}>
-            <h2 style={{ fontSize: '14pt', fontWeight: 900, textAlign: 'center', marginBottom: '12px' }}>
-              標準答案與名師詳解分析
-            </h2>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '16px', background: '#f5f5f5', padding: '10px', border: '1px solid #ccc' }}>
-              {currentQuestions.map((q, qIdx) => (
-                <span key={qIdx} style={{ fontWeight: 800, fontSize: '10pt', minWidth: '45px' }}>
-                  {qIdx + 1}. {['A', 'B', 'C', 'D'][q.answer]}
-                </span>
-              ))}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {currentQuestions.map((q, qIdx) => (
-                <div key={qIdx} style={{ fontSize: '9.5pt', lineHeight: 1.5, pageBreakInside: 'avoid', borderBottom: '1px dotted #ccc', paddingBottom: '8px' }}>
-                  <strong>第 {qIdx + 1} 題（標準答案：{['A', 'B', 'C', 'D'][q.answer]}）</strong>
-                  {q.hint && <div>💡 思路：{q.hint}</div>}
-                  <div>📖 詳解：{q.explanation}</div>
-                </div>
-              ))}
-            </div>
+        {/* 卷末標準答案卡速查表 */}
+        <div style={{ marginTop: '20px', paddingTop: '10px', borderTop: '2px solid #000', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+          <div style={{ fontSize: '10.5pt', fontWeight: 900, textAlign: 'center', marginBottom: '6px' }}>
+            —— 108 課綱國中教育會考 標準答案卡速查 ——
           </div>
-        )}
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '10pt' }}>
+            <thead>
+              <tr style={{ background: '#f5f5f5' }}>
+                <th style={{ border: '1px solid #000', padding: '4px 6px' }}>題號</th>
+                {finalQuestions.map((_, i) => (
+                  <th key={i} style={{ border: '1px solid #000', padding: '4px 6px' }}>{i + 1}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={{ border: '1px solid #000', padding: '5px 6px', fontWeight: 800, background: '#fafafa' }}>標準答案</td>
+                {finalQuestions.map((q, i) => (
+                  <td key={i} style={{ border: '1px solid #000', padding: '5px 6px', fontWeight: 900, fontSize: '11pt' }}>
+                    {['A', 'B', 'C', 'D'][q.answer]}
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
       </div>
 
     </div>
