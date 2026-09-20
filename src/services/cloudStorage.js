@@ -1651,7 +1651,7 @@ export function getGlobalSettings() {
   return getJson('global_settings', {
     global2xActive: false,
     activeBroadcast: {
-      message: '🎉 歡迎來到 108 課綱國中全科學習網！每題答對得 1 點，每週一 00:00 排行榜歸零，祝學習進步！',
+      message: '🎉 歡迎來到 學習網！每題答對得 1 點，每週一 00:00 排行榜歸零，祝學習進步！',
       sender: '系統總部',
       timestamp: new Date().toISOString()
     }

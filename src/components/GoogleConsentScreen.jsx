@@ -57,7 +57,7 @@ export default function GoogleConsentScreen({ isOpen, onClose }) {
             選擇帳戶
           </h2>
           <p style={{ fontSize: '0.92rem', color: '#5f6368' }}>
-            以繼續前往「<strong>108 課綱全科學習網</strong>」
+            以繼續前往「<strong>學習網</strong>」
           </p>
         </div>
 

@@ -188,7 +188,7 @@ export default function LegalCenterModal({ isOpen, onClose, initialTab = 'privac
           {activeTab === 'terms' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '4px 0' }}>一、服務條款之認知與接受</h3>
-              <p>歡迎使用「108 課綱國中全科學習網」（以下簡稱本平台）。當您使用本平台所提供之任何服務時，即表示您已充分閱讀、理解並同意接受本服務條款之所有規範。</p>
+              <p>歡迎使用「學習網」（以下簡稱本平台）。當您使用本平台所提供之任何服務時，即表示您已充分閱讀、理解並同意接受本服務條款之所有規範。</p>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>二、使用者行為規範與違約限制</h3>
               <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
                 <li>嚴禁以自動化腳本、爬蟲、外掛軟體進行非正常頻率之作答、洗榜或干擾伺服器運作。</li>

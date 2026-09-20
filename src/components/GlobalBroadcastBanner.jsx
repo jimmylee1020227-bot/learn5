@@ -83,7 +83,7 @@ export default function GlobalBroadcastBanner() {
       id: 'default_tip',
       isFire: false,
       tag: '🎯 會考衝刺',
-      text: '歡迎來到 108 課綱全科學習網！每日登入做題累積點數，每週一結算爭奪全校榮譽榜！'
+      text: '歡迎來到 學習網！每日登入做題累積點數，每週一結算爭奪全校榮譽榜！'
     });
   }
 
