@@ -9,8 +9,15 @@ export default function GlobalBroadcastBanner() {
   const [isDismissed, setIsDismissed] = useState(false);
   const [lastDismissedBroadcast, setLastDismissedBroadcast] = useState('');
   const [latestNotif, setLatestNotif] = useState(null);
+  const [currentTime, setCurrentTime] = useState(getRealTime());
 
   const broadcast = globalSettings?.activeBroadcast;
+
+  // Live ticking clock
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(getRealTime()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // 監聽雲端系統通知變動
   useEffect(() => {
@@ -133,7 +140,7 @@ export default function GlobalBroadcastBanner() {
       {/* 右側時間標籤與收合按鈕 */}
       <div className="marquee-right-actions">
         <span className="marquee-time-tag">
-          {new Date(broadcast?.timestamp || getRealTime()).toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit' })}
+          {new Date(currentTime).toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
         </span>
 
         <button
