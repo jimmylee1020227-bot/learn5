@@ -675,8 +675,9 @@ export default function AdminDashboard() {
                       <strong style={{ color: 'var(--theme-border, var(--theme-border, #17324d))', fontSize: '0.95rem' }}>題號: {rep.questionId}</strong>
                       <span style={{ fontSize: '0.8rem', color: '#5b6772' }}>{rep.unitName}</span>
                     </div>
-                    <div style={{ fontSize: '0.88rem', color: '#5b6772', marginTop: '4px' }}>
-                      同學說明：{rep.comment || '（無補充備註）'}
+                    <div style={{ fontSize: '0.88rem', color: '#5b6772', marginTop: '4px', display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
+                      <span style={{ whiteSpace: 'nowrap' }}>同學說明：</span>
+                      <MathText text={rep.comment || '（無補充備註）'} />
                     </div>
                     <div style={{ fontSize: '0.72rem', color: '#78818a', marginTop: '4px' }}>
                       回報者：{rep.reporterName} ・ 時間：{new Date(rep.timestamp).toLocaleString()}
@@ -1013,7 +1014,7 @@ export default function AdminDashboard() {
                         </span>
                       </div>
                       <p style={{ margin: 0, fontSize: '0.84rem', color: '#4a5568', fontWeight: 600 }}>
-                        {notif.message}
+                        <MathText text={notif.message} />
                       </p>
                     </div>
 
