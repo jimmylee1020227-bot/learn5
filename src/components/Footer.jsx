@@ -5,10 +5,8 @@ import {
   FileText, 
   Cookie, 
   Scale, 
-  Building2, 
+
   Mail, 
-  Phone, 
-  MapPin, 
   ExternalLink, 
   CheckCircle2,
   Heart,
@@ -156,38 +154,28 @@ export default function Footer({ onOpenLegalModal }) {
             </ul>
           </div>
 
-          {/* 欄位 3：公司與法定營運組織資料 (防範法律風險，完整公開真實資料) */}
+          {/* 欄位 3：網站經營與聯絡管道 (個人非營利教育專案) */}
           <div>
             <h3 style={{ fontSize: '0.98rem', fontWeight: 900, margin: '0 0 14px 0', color: 'var(--theme-border, #17324d)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Building2 size={16} color="var(--theme-accent, #ef8354)" />
-              營運主體與法定聯絡資料
+              <Mail size={16} color="var(--theme-accent, #ef8354)" />
+              網站經營與聯絡管道
             </h3>
             <div style={{ fontSize: '0.84rem', color: '#475569', lineHeight: 1.8, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div><strong>營運主體：</strong>108課綱國中全科學習網營運維護團隊</div>
-              <div><strong>官方立案編號：</strong>TW-EDU-2026-108K</div>
-              <div><strong>個人資料保護長 (DPO)：</strong>Jimmy Lee (李老師)</div>
+              <div><strong>營運屬性：</strong>個人獨立教育科技非營利公益專案</div>
+              <div><strong>維護團隊：</strong>108 課綱國中全科學習網維護小組</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Mail size={13} color="var(--theme-accent, #ef8354)" />
-                <span><strong>法務與隱私信箱：</strong><a href="mailto:privacy@studyhub.tw" style={{ color: 'var(--theme-border, #17324d)', textDecoration: 'underline' }}>privacy@studyhub.tw</a></span>
+                <span><strong>問題回報與建議：</strong><a href="https://github.com/jimmylee1020227-bot/learn5/issues" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--theme-border, #17324d)', textDecoration: 'underline' }}>GitHub Issues</a></span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Mail size={13} color="var(--theme-accent, #ef8354)" />
-                <span><strong>客服與題目疑義：</strong><a href="mailto:service@studyhub.tw" style={{ color: 'var(--theme-border, #17324d)', textDecoration: 'underline' }}>service@studyhub.tw</a></span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Phone size={13} color="var(--theme-accent, #ef8354)" />
-                <span><strong>客服專線：</strong>+886-2-2388-1080 (09:00~18:00)</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                <MapPin size={13} color="var(--theme-accent, #ef8354)" style={{ flexShrink: 0, marginTop: '4px' }} />
-                <span><strong>通訊處：</strong>台北市中正區重慶南路一段 122 號 5 樓 (重慶教育大樓)</span>
+              <div style={{ marginTop: '4px', fontSize: '0.8rem', color: '#64748b' }}>
+                💡 本站由教育熱心人士個人自主維護，無營利行為、不設收費項目，歡迎教師與學生交流指正。
               </div>
             </div>
           </div>
 
         </div>
 
-        {/* 下層：無障礙檢驗標章、準據法管轄說明與版權宣告 */}
+        {/* 下層：準據法管轄說明與版權宣告 */}
         <div 
           style={{
             paddingTop: '24px',
@@ -202,19 +190,12 @@ export default function Footer({ onOpenLegalModal }) {
           }}
         >
           <div>
-            © 2024 - {currentYear} 108 課綱國中全科學習網 (StudyHub Taiwan). All Rights Reserved. 版權所有 翻印必究
+            © 2024 - {currentYear} 108 課綱國中全科學習網 (StudyHub Taiwan). 非營利教育公益專案
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
             <span>準據法：中華民國法令</span>
-            <span>第一審管轄法院：臺灣臺北地方法院</span>
-            <button
-              type="button"
-              onClick={() => onOpenLegalModal('company')}
-              style={{ background: 'none', border: 'none', padding: 0, color: '#64748b', textDecoration: 'underline', cursor: 'pointer', fontSize: '0.8rem' }}
-            >
-              檢視完整立案登記與執照
-            </button>
+            <span>管轄法院：臺灣臺北地方法院</span>
           </div>
         </div>
 

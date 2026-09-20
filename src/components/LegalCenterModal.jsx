@@ -7,7 +7,6 @@ import {
   DollarSign, 
   ExternalLink, 
   AlertTriangle, 
-  Building2, 
   X, 
   Check, 
   Info,
@@ -27,7 +26,7 @@ export default function LegalCenterModal({ isOpen, onClose, initialTab = 'privac
     { id: 'refund', label: '退款與免費政策', icon: DollarSign },
     { id: 'disclaimer', label: '免責與風險聲明', icon: AlertTriangle },
     { id: 'copyright', label: '圖片與智財權', icon: Scale },
-    { id: 'company', label: '組織立案資料', icon: Building2 }
+
   ];
 
   return (
@@ -280,27 +279,7 @@ export default function LegalCenterModal({ isOpen, onClose, initialTab = 'privac
             </div>
           )}
 
-          {/* 8. 公司立案資料 */}
-          {activeTab === 'company' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ background: '#f8fafc', border: '2px solid var(--theme-border, #17324d)', borderRadius: '16px', padding: '18px 22px' }}>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--theme-border, #17324d)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Building2 size={20} color="var(--theme-accent, #ef8354)" />
-                  營運主體與法定登錄資訊
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', fontSize: '0.86rem' }}>
-                  <div><strong>營運主體：</strong>108課綱國中全科學習網營運維護團隊</div>
-                  <div><strong>官方立案編號：</strong>TW-EDU-2026-108K</div>
-                  <div><strong>負責人 / 隱私長 (DPO)：</strong>Jimmy Lee (李老師)</div>
-                  <div><strong>法務與隱私信箱：</strong>privacy@studyhub.tw</div>
-                  <div><strong>客服申訴信箱：</strong>service@studyhub.tw</div>
-                  <div><strong>客服電話：</strong>+886-2-2388-1080</div>
-                  <div style={{ gridColumn: '1 / -1' }}><strong>法定實體地址：</strong>台北市中正區重慶南路一段 122 號 5 樓 (重慶教育大樓)</div>
-                  <div style={{ gridColumn: '1 / -1' }}><strong>服務諮詢時間：</strong>週一至週五 09:00 - 18:00 (台灣標準時間 UTC+8)</div>
-                </div>
-              </div>
-            </div>
-          )}
+
         </div>
 
         {/* 底部按鈕區 (文案清晰，避免歧義) */}
@@ -317,7 +296,7 @@ export default function LegalCenterModal({ isOpen, onClose, initialTab = 'privac
           }}
         >
           <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>
-            若對條款規範有任何疑問或需行使個資權利，請致信 <a href="mailto:privacy@studyhub.tw" style={{ color: 'var(--theme-accent, #ef8354)', fontWeight: 800 }}>privacy@studyhub.tw</a>
+            若對條款規範有任何疑問，請透過本站提供之聯繫管道與我們聯絡。
           </div>
 
           <button
