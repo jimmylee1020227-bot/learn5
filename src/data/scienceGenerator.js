@@ -105,8 +105,9 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
     if (variant === 0) {
       // 溶解度圖表
       const t = Math.floor(rand() * 20 + 20); // 20 ~ 39
-      const s = Math.floor(rand() * 30 + 10); // 10 ~ 39
+      let s = Math.floor(rand() * 30 + 10); // 10 ~ 39
       const maxSolubility = (t - 10) * 1 + 15;
+      if (s === maxSolubility) s += 1; // 避免剛好飽和導致邏輯判斷有爭議
       
       const vT1 = t - 10;
       const vT2 = t + 10;

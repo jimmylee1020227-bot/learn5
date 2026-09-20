@@ -45,24 +45,36 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
   const conceptTag = conceptTags[tagIdx];
 
   let qData;
-  switch (subjectId) {
-    case 'math':
-      qData = generateMathQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
-      break;
-    case 'english':
-      qData = generateEnglishQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
-      break;
-    case 'science':
-      qData = generateScienceQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
-      break;
-    case 'chinese':
-      qData = generateChineseQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
-      break;
-    case 'social':
-      qData = generateSocialQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
-      break;
-    default:
-      qData = generateFallbackQuestion(subjectId, gradeId, unitId, index, difficulty, rand, conceptTag);
+  try {
+    switch (subjectId) {
+      case 'math':
+        qData = generateMathQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        break;
+      case 'english':
+        qData = generateEnglishQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        break;
+      case 'science':
+        qData = generateScienceQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        break;
+      case 'chinese':
+        qData = generateChineseQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        break;
+      case 'social':
+        qData = generateSocialQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        break;
+      default:
+        qData = generateMathQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        break;
+    }
+  } catch (err) {
+    console.error(`Generator Error for ${seedKey}:`, err);
+    qData = {
+      question: `【系統回報】題目生成時發生異常，請略過此題或回報管理員。\n錯誤代碼：${seedKey}`,
+      options: ['略過此題', '略過', '略過...', '略過.'],
+      answer: 0,
+      hint: '請聯絡系統管理員。',
+      explanation: `此題因演算法內部錯誤 (${err.message}) 無法正確生成。`
+    };
   }
 
   const uniqueOptions = [];
@@ -89,6 +101,11 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
       uniqueOptions.push({ text: fText, isCorrect: false });
     }
     fIdx++;
+  }
+
+  // 終極安全網：如果經過過濾後，竟然沒有正確答案，強制將第一個選項設為正解
+  if (!correctOptFound && uniqueOptions.length > 0) {
+    uniqueOptions[0].isCorrect = true;
   }
 
   const shuffled = shuffleWithRand(uniqueOptions, rand);
