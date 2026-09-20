@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, BookOpen, Trophy, Sparkles, MessageSquare, Database, LogOut, CheckCircle, ExternalLink, Check } from 'lucide-react';
 
-export const PRIVACY_POLICY_VERSION = '1.0.0';
+export const PRIVACY_POLICY_VERSION = '1.1.0';
 
 export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }) {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
@@ -261,7 +261,23 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
             </ul>
           </div>
 
-          {/* 條款 7：資安保障與零商業化承諾 */}
+          {/* 條款 7：防作弊與安全監控機制 */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#fee2e2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
+                7
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>
+                考試防作弊與系統安全監控
+              </h3>
+            </div>
+            <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
+              <li><strong>收集項目與行為</strong>：監控滑鼠點擊行為（禁用右鍵/反白/拖曳）、鍵盤快捷鍵使用狀況（封鎖開發人員工具與列印）、以及瀏覽器分頁切換頻率。</li>
+              <li><strong>使用目的</strong>：維持平台考試公平性。當系統偵測到異常切換分頁等可能作弊之行為，將自動給予警告，屢勸不聽者系統將強制中斷考試並沒收測驗。</li>
+            </ul>
+          </div>
+
+          {/* 條款 8：資安保障與零商業化承諾 */}
           <div 
             style={{
               background: '#f0fdf4',
@@ -269,7 +285,8 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               borderRadius: '16px',
               padding: '16px 18px',
               fontSize: '0.86rem',
-              color: '#166534'
+              color: '#166534',
+              marginTop: '10px'
             }}
           >
             <div style={{ fontWeight: 800, fontSize: '0.94rem', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
