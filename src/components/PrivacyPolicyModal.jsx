@@ -228,28 +228,11 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
             </ul>
           </div>
 
-          {/* 條款 5：社群打氣留言牆與言論規範 */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#f3e8ff', color: '#7e22ce', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
-                5
-              </div>
-              <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
-                打氣留言牆社群規範與防護機制
-              </h3>
-            </div>
-            <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
-              <li><strong>使用功能</strong>：發表鼓勵同儕會考衝刺打氣留言、為同學點擊愛心打氣、對違規不當言論提出檢舉。</li>
-              <li><strong>內容規範</strong>：嚴禁重複洗版灌水、謾罵人身攻擊、商業廣告、色情或張貼任何個人電話與社群私密帳號。</li>
-              <li><strong>自主管理</strong>：發布之留言綁定本人帳號，作者本人隨時可自行刪除，管理團隊亦保有審核撤除之權利。</li>
-            </ul>
-          </div>
-
-          {/* 條款 6：多裝置雲端即時漫遊與本機快取 */}
+          {/* 條款 5：多裝置雲端即時漫遊與本機快取 */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#ffedd5', color: '#c2410c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
-                6
+                5
               </div>
               <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                 跨端雲端同步與本機儲存 (LocalStorage)
@@ -261,11 +244,11 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
             </ul>
           </div>
 
-          {/* 條款 7：防作弊與安全監控機制 */}
+          {/* 條款 6：防作弊與安全監控機制 */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#fee2e2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.82rem' }}>
-                7
+                6
               </div>
               <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>
                 考試防作弊與系統安全監控
@@ -277,7 +260,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
             </ul>
           </div>
 
-          {/* 條款 8：資安保障與零商業化承諾 */}
+          {/* 條款 7：資安保障與零商業化承諾 */}
           <div 
             style={{
               background: '#f0fdf4',
