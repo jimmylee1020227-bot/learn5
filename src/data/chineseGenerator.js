@@ -5,7 +5,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty = 'me
   const person = people[Math.floor(rand() * people.length)];
   const preamble = `${person}在研讀國文時：`;
 
-  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
+  const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
 
   // ============================================================
   // 國一 (七年級)

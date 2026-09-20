@@ -63,11 +63,12 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
       const parsedIdx = parseInt(lastPart, 10);
       const questionIndex = isNaN(parsedIdx) ? 1 : parsedIdx;
       
+      const unitId = m.unitId || parts[3] || 'u1';
       const hydratedQuestion = hydrateQuestionDetails({
         id: m.questionId,
         subjectId: m.subjectId,
         gradeId: m.gradeId,
-        unitId: parts[3] || 'u1',
+        unitId: unitId,
         index: questionIndex,
         difficulty: m.difficulty || 'medium',
         conceptTag: m.conceptTag,
@@ -79,7 +80,7 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
       }
 
       // 2. 自動衍生一題同單元同概念題進行交叉驗證
-      const variantQ = generateQuestion(m.subjectId, m.gradeId, parts[3] || 'u1', idx + 500, m.difficulty || 'medium');
+      const variantQ = generateQuestion(m.subjectId, m.gradeId, unitId, idx + 500, m.difficulty || 'medium');
       if (variantQ) {
         variantQ.conceptTag = m.conceptTag;
         quizList.push(variantQ);

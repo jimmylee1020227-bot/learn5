@@ -1,11 +1,11 @@
-import { CURRICULUM_UNITS } from './curriculum108';
-import { getQuestionOverrides, registerQuestionHydrator } from '../services/cloudStorage';
+import { CURRICULUM_UNITS } from './curriculum108.js';
+import { getQuestionOverrides, registerQuestionHydrator } from '../services/cloudStorage.js';
 
-import { generateMathQuestion } from './mathGenerator';
-import { generateEnglishQuestion } from './englishGenerator';
-import { generateScienceQuestion } from './scienceGenerator';
-import { generateChineseQuestion } from './chineseGenerator';
-import { generateSocialQuestion } from './socialGenerator';
+import { generateMathQuestion } from './mathGenerator.js';
+import { generateEnglishQuestion } from './englishGenerator.js';
+import { generateScienceQuestion } from './scienceGenerator.js';
+import { generateChineseQuestion } from './chineseGenerator.js';
+import { generateSocialQuestion } from './socialGenerator.js';
 
 function mulberry32(a) {
   return function() {

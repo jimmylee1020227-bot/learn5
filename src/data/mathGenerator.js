@@ -11,8 +11,8 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
   const person = people[Math.floor(rand() * people.length)];
   const preamble = `${person}在解題時：`;
 
-  // 解析單元編號 (例如 ma-7-u3 -> 3, ma-8-u6 -> 6, ma-past-u2 -> 2)
-  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
+  // 解析單元編號 (例如 ma-7-u3 -> 3, ma-8-u6 -> 6, U3 -> 3)
+  const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
 
   // ============================================================
   // 國一 (七年級)

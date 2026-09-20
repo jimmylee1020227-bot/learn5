@@ -5,7 +5,7 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty = 'me
   const person = people[Math.floor(rand() * people.length)];
   const preamble = `${person}在進行科學實驗與探究時：`;
 
-  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
+  const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
 
   // ============================================================
   // 國一 (七年級：生物學)

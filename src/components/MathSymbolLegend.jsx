@@ -205,8 +205,9 @@ export default function MathSymbolLegend({ question, compact = false }) {
 
   const detectedSymbols = extractMathSymbols(combinedText);
 
-  // 如果這題完全沒有任何數學符號且非數學科，可隱藏或只顯示手冊按鈕
-  if (detectedSymbols.length === 0 && compact) {
+  // 僅限數學科目且題幹/選項含有數學符號時呈現，非數學科或純文字計算自動隱藏
+  const isMathSubject = question?.subjectId === 'math';
+  if (!isMathSubject || detectedSymbols.length === 0) {
     return null;
   }
 

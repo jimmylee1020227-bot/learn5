@@ -642,7 +642,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                   <div style={{ fontWeight: 900, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     💡 思路點撥（解題破題關鍵）：
                   </div>
-                  {q.hint}
+                  <MathText text={q.hint} />
                 </div>
               )}
 

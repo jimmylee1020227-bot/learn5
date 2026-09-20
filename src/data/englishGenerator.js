@@ -5,7 +5,7 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty = 'me
   const person = people[Math.floor(rand() * people.length)];
   const preamble = `While studying English, ${person} encountered this question:`;
 
-  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
+  const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
 
   // ============================================================
   // 國一 (七年級)

@@ -24,6 +24,7 @@ import {
   Sparkles,
   AlertCircle
 } from 'lucide-react';
+import MathText from './MathText';
 
 export default function UserHistoryModal({ onLaunchRetryQuiz }) {
   const { currentUser } = useAuth();
@@ -406,7 +407,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
 
                             {/* 題幹內容 */}
                             <div style={{ fontSize: '0.96rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.5 }}>
-                              {q.question}
+                              <MathText text={q.question} />
                             </div>
 
                             {/* 四個選項與學生作答對比 */}
@@ -448,7 +449,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                                       }}
                                     >
                                       <span>
-                                        {String.fromCharCode(65 + optIdx)}. {optText}
+                                        {String.fromCharCode(65 + optIdx)}. <MathText text={optText} />
                                       </span>
                                       <div style={{ display: 'flex', gap: '4px', fontSize: '0.72rem', fontWeight: 900 }}>
                                         {isSelected && (
@@ -473,7 +474,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                               <span style={{ fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'block', marginBottom: '2px' }}>
                                 📖 題目詳解與觀念推導：
                               </span>
-                              {q.explanation || '依據 108 課綱核心考點設計，按標準公式與定義運算即可得出解答。'}
+                              <MathText text={q.explanation || '依據 108 課綱核心考點設計，按標準公式與定義運算即可得出解答。'} />
                             </div>
                           </div>
                         );
@@ -526,20 +527,22 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
                 </div>
 
                 <div style={{ fontSize: '1.02rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '12px' }}>
-                  {m.question}
+                  <MathText text={m.question} />
                 </div>
 
                 {/* 正確解答與推導 */}
                 <div style={{ background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', border: '1px solid #ded3c5', padding: '12px 14px', borderRadius: '10px', marginBottom: '8px', fontSize: '0.86rem', color: '#5b6772' }}>
                   <div style={{ color: '#047857', fontWeight: 800, marginBottom: '4px' }}>
-                    標準答案：{m.options && m.answer !== undefined ? `${String.fromCharCode(65 + m.answer)}. ${m.options[m.answer]}` : `選項 (${m.answer + 1})`}
+                    標準答案：{m.options && m.answer !== undefined ? (
+                      <span>{String.fromCharCode(65 + m.answer)}. <MathText text={m.options[m.answer]} /></span>
+                    ) : `選項 (${m.answer + 1})`}
                   </div>
-                  {m.explanation && <div style={{ lineHeight: 1.6 }}>{m.explanation}</div>}
+                  {m.explanation && <div style={{ lineHeight: 1.6 }}><MathText text={m.explanation} /></div>}
                 </div>
 
                 {m.hint && (
                   <div style={{ fontSize: '0.82rem', color: '#806523', background: '#fff7d9', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e8d69a' }}>
-                    💡 提示：{m.hint}
+                    💡 提示：<MathText text={m.hint} />
                   </div>
                 )}
               </div>
