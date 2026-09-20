@@ -24,13 +24,15 @@ import {
   MessageSquareHeart, 
   Palette,
   Bell,
-  Users
+  Users,
+  FileText
 } from 'lucide-react';
 
 export default function Navbar({ 
   activeTab, 
   setActiveTab,
-  onOpenRedemptionModal 
+  onOpenRedemptionModal,
+  onOpenPrintExamModal
 }) {
   const { 
     currentUser, 
@@ -166,6 +168,31 @@ export default function Navbar({
             歷程錯題
           </button>
 
+          {/* 紙本考卷列印下載 */}
+          <button 
+            type="button"
+            className="btn"
+            onClick={onOpenPrintExamModal}
+            style={{ 
+              fontSize: '0.86rem', 
+              padding: '7px 14px', 
+              background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+              color: '#1e40af',
+              border: '2px solid #3b82f6',
+              borderRadius: '10px',
+              fontWeight: 800,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              boxShadow: '2px 2px 0px #3b82f6',
+              transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+            }}
+            title="紙本考卷列印下載 (官方檔案下載中心 https://examcommunit-mdqeyikj.manus.space/ 與 A4 考卷輸出)"
+          >
+            <FileText size={15} color="#2563eb" />
+            <span>紙本考卷列印下載</span>
+          </button>
 
           {/* 兌換碼捷徑 */}
           <button 

@@ -9,13 +9,15 @@ import {
   MessageSquare, 
   Gift, 
   Shield, 
-  History 
+  History,
+  FileText
 } from 'lucide-react';
 
 export default function MobileBottomNav({ 
   activeTab, 
   setActiveTab, 
-  onOpenLuckyDraw 
+  onOpenLuckyDraw,
+  onOpenPrintExamModal
 }) {
   const { currentUser } = useAuth();
   const { gameState } = useGame();
@@ -115,6 +117,32 @@ export default function MobileBottomNav({
         </span>
       </button>
 
+
+      {/* 4. 紙本考卷列印下載 */}
+      <button
+        onClick={onOpenPrintExamModal}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'transparent',
+          border: 'none',
+          borderRadius: '10px',
+          padding: '5px 8px',
+          cursor: 'pointer',
+          color: '#2563eb',
+          flex: 1,
+          maxWidth: '68px',
+          transition: 'all 0.15s ease'
+        }}
+        title="紙本考卷列印下載"
+      >
+        <FileText size={20} />
+        <span style={{ fontSize: '0.68rem', fontWeight: 800, marginTop: '2px' }}>
+          印考卷
+        </span>
+      </button>
 
       {/* 5. 抽獎 */}
       <button

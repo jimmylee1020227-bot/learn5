@@ -23,13 +23,14 @@ import {
   EyeOff,
   Layers,
   Sparkles,
-  Scissors
+  Scissors,
+  FileText
 } from 'lucide-react';
 
 
 import MathText from './MathText';
 import MathSymbolLegend from './MathSymbolLegend';
-export default function QuizPlayer({ questions, onComplete, onExit }) {
+export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintExamModal }) {
   const { currentUser } = useAuth();
   
   // 當前題號與作答
@@ -400,7 +401,32 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             )}
           </button>
 
-          {/* 4. 結束交卷大按鈕 */}
+          {/* 4. 紙本考卷列印下載 */}
+          <button
+            type="button"
+            onClick={onOpenPrintExamModal}
+            className="btn"
+            style={{ 
+              padding: '7px 13px', 
+              fontSize: '0.82rem', 
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+              color: '#1e40af',
+              border: '2px solid #3b82f6',
+              boxShadow: '2px 2px 0px #3b82f6',
+              fontWeight: 800,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer'
+            }}
+            title="紙本考卷列印下載 (官方下載中心 https://examcommunit-mdqeyikj.manus.space/ 與 A4 考卷輸出)"
+          >
+            <FileText size={15} color="#2563eb" />
+            <span>紙本考卷列印下載</span>
+          </button>
+
+          {/* 5. 結束交卷大按鈕 */}
           <button
             onClick={() => setIsSubmitModalOpen(true)}
             className="btn btn-primary"

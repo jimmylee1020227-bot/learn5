@@ -20,6 +20,7 @@ import { DeviceProvider, useDevice } from './context/DeviceContext';
 import MobileBottomNav from './components/MobileBottomNav';
 import LoginGateway from './components/LoginGateway';
 import PrivacyPolicyModal from './components/PrivacyPolicyModal';
+import PrintExamModal from './components/PrintExamModal';
 import { generateQuizSet } from './data/questionGenerator';
 import { 
   recordPracticeBatch,
@@ -47,6 +48,7 @@ function MainAppContent() {
 
   const [activeTab, setActiveTab] = useState('quiz'); // 'quiz' | 'reinforce' | 'leaderboard' | 'history' | 'admin' | 'super_admin'
   const [isRedemptionOpen, setIsRedemptionOpen] = useState(false);
+  const [isPrintExamOpen, setIsPrintExamOpen] = useState(false);
   
   // 測驗流程狀態管理: 'idle' | 'in_quiz' | 'result'
   const [quizState, setQuizState] = useState('idle');
@@ -172,6 +174,7 @@ function MainAppContent() {
           if (tab === 'quiz') setQuizState('idle');
         }}
         onOpenRedemptionModal={() => setIsRedemptionOpen(true)}
+        onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
       />
 
       {/* 主工作區塊 */}
@@ -188,9 +191,13 @@ function MainAppContent() {
                   onStartReinforceTab={() => setActiveTab('reinforce')}
                   onStartLeaderboardTab={() => setActiveTab('leaderboard')}
                   onOpenRedemptionModal={() => setIsRedemptionOpen(true)}
+                  onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
                 />
                 <div id="scope-selector-section">
-                  <ScopeSelector onStartQuiz={handleStartQuiz} />
+                  <ScopeSelector 
+                    onStartQuiz={handleStartQuiz} 
+                    onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
+                  />
                 </div>
               </>
             )}
@@ -200,6 +207,7 @@ function MainAppContent() {
                 questions={currentQuestions}
                 onComplete={handleCompleteQuiz}
                 onExit={() => setQuizState('idle')}
+                onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
               />
             )}
 
@@ -213,6 +221,7 @@ function MainAppContent() {
                   setActiveTab('reinforce');
                 }}
                 onBackHome={() => setQuizState('idle')}
+                onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
               />
             )}
           </>
@@ -262,6 +271,7 @@ function MainAppContent() {
             if (tab === 'quiz') setQuizState('idle');
           }}
           onOpenLuckyDraw={() => setIsLuckyDrawOpen(true)}
+          onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
         />
       )}
 
@@ -271,6 +281,11 @@ function MainAppContent() {
       <RedemptionModal 
         isOpen={isRedemptionOpen}
         onClose={() => setIsRedemptionOpen(false)}
+      />
+      <PrintExamModal 
+        isOpen={isPrintExamOpen}
+        onClose={() => setIsPrintExamOpen(false)}
+        currentQuestions={currentQuestions}
       />
     </div>
   );

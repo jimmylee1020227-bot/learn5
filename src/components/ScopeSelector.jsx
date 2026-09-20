@@ -9,10 +9,11 @@ import {
   Play, 
   Sliders, 
   Sparkles,
-  Info
+  Info,
+  FileText
 } from 'lucide-react';
 
-export default function ScopeSelector({ onStartQuiz }) {
+export default function ScopeSelector({ onStartQuiz, onOpenPrintExamModal }) {
   const [selectedGrade, setSelectedGrade] = useState('g7');
   const [selectedSubject, setSelectedSubject] = useState('math');
   const [selectedDifficulty, setSelectedDifficulty] = useState('medium');
@@ -327,23 +328,54 @@ export default function ScopeSelector({ onStartQuiz }) {
             })}
           </div>
 
-          {/* 底部啟動按鈕 (3D 珊瑚色大按鈕) */}
-          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1.5px solid #e8ded0' }}>
-            <button
-              onClick={handleLaunch}
-              className="btn btn-primary"
-              style={{
-                width: '100%',
-                padding: '14px',
-                fontSize: '1.05rem',
-                borderRadius: '16px'
-              }}
-            >
-              <Play size={18} />
-              <span>開始 {currentSubjectObj.name} 測驗工作台 ({questionCount} 題)</span>
-            </button>
-            <div style={{ textAlign: 'center', fontSize: '0.75rem', color: '#78818a', marginTop: '8px', fontWeight: 600 }}>
-              💡 進入測驗後每題附解題提示、答案驗證與解析
+          {/* 底部啟動按鈕群組 (3D 珊瑚色大按鈕 + 紙本考卷列印下載按鈕) */}
+          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1.5px solid #ded3c5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(0, 1fr)', gap: '12px' }}>
+              <button
+                onClick={handleLaunch}
+                className="btn btn-primary"
+                style={{
+                  padding: '14px',
+                  fontSize: '1.02rem',
+                  borderRadius: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <Play size={18} />
+                <span>開始 {currentSubjectObj.name} 線上測驗 ({questionCount} 題)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onOpenPrintExamModal}
+                className="btn"
+                style={{
+                  padding: '14px',
+                  fontSize: '1.02rem',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                  color: '#1e40af',
+                  border: '2.5px solid #3b82f6',
+                  boxShadow: '4px 4px 0px #3b82f6',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer'
+                }}
+                title="紙本考卷列印下載 (官方檔案下載中心 https://examcommunit-mdqeyikj.manus.space/ 與 A4 考卷輸出)"
+              >
+                <FileText size={18} color="#2563eb" />
+                <span>紙本考卷列印下載</span>
+              </button>
+            </div>
+
+            <div style={{ textAlign: 'center', fontSize: '0.75rem', color: '#78818a', marginTop: '4px', fontWeight: 600 }}>
+              💡 支援線上 AI 即時出題作答，或一鍵匯出輸出 A4 國中會考規格紙本測驗卷
             </div>
           </div>
 
