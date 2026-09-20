@@ -1,6 +1,27 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import 'katex/dist/katex.min.css';
-import { InlineMath } from 'react-katex';
+import katex from 'katex';
+
+function InlineMath({ math, renderError }) {
+  const renderedHtml = useMemo(() => {
+    if (!math) return '';
+    try {
+      return (katex.default || katex).renderToString(math, {
+        displayMode: false,
+        throwOnError: false,
+        strict: false
+      });
+    } catch (e) {
+      return null;
+    }
+  }, [math]);
+
+  if (renderedHtml === null) {
+    return renderError ? renderError() : <span>{math}</span>;
+  }
+
+  return <span className="katex-inline" dangerouslySetInnerHTML={{ __html: renderedHtml }} />;
+}
 
 function cleanMath(raw) {
   if (typeof raw !== 'string') return '';
@@ -11,7 +32,7 @@ function cleanMath(raw) {
   expr = expr.replace(/△([A-Za-z0-9\x27]+)/g, '\\triangle $1');
   expr = expr.replace(/∠([A-Za-z0-9\x27]+)/g, '\\angle $1');
   expr = expr.replace(/(?:⊙|圓\s*)([A-Z][0-9]?)/g, '\\odot $1');
-  expr = expr.replace(/(?:弧|⌢)\s*([A-Z0-9]{2})/g, '\\overparen{$1}');
+  expr = expr.replace(/(?:弧|⌢)\s*([A-Z0-9]{2})/g, '\\overset{\\frown}{$1}');
 
   // 2. 根號標準化（√119, 4√5, √x 等）
   expr = expr.replace(/([0-9a-zA-Z]*)[√](\d+|[a-zA-Z]+)/g, (_, coef, num) => (coef || '') + '\\sqrt{' + num + '}');
@@ -90,8 +111,8 @@ export function preprocessMathText(text) {
   // 4. 幾何圓：⊙O、圓 O -> \odot O
   s = s.replace(/(?:⊙|圓\s*)([A-Z][0-9]?)/g, (_, circ) => pushMath(`\\odot ${circ}`));
 
-  // 5. 幾何弧：弧 AB、⌢AB -> \overparen{AB}
-  s = s.replace(/(?:弧|⌢)\s*([A-Z0-9]{2})/g, (_, arc) => pushMath(`\\overparen{${arc}}`));
+  // 5. 幾何弧：弧 AB、⌢AB -> \overset{\frown}{AB}
+  s = s.replace(/(?:弧|⌢)\s*([A-Z0-9]{2})/g, (_, arc) => pushMath(`\\overset{\\frown}{${arc}}`));
 
   // 6. 幾何關係（垂直、平行、全等、相似）
   const relRegex = /(\uE000M\d+\uE000|[A-Za-z0-9\x27_]+)\s*(⊥|(?:\/\/|∥)|≅|∼)\s*(\uE000M\d+\uE000|[A-Za-z0-9\x27_]+)/g;
@@ -124,7 +145,7 @@ export function preprocessMathText(text) {
   s = s.replace(/([0-9]+)\s*°/g, (_, deg) => pushMath(`${deg}^\\circ`));
 
   // 11. 裸露的 LaTeX 命令（如果外面還沒包 $）
-  s = s.replace(/(\\(?:overline|triangle|angle|frac|sqrt|odot|overparen|parallel|perp|cong|sim|times|div|pm|neq|le|ge|approx)\b(?:\{[^{}]*\}|\[[^\[\]]*\]|\s*[A-Za-z0-9]+)?)/g, (_, cmd) => pushMath(cmd));
+  s = s.replace(/(\\(?:overline|triangle|angle|frac|sqrt|odot|overset|parallel|perp|cong|sim|times|div|pm|neq|le|ge|approx)\b(?:\{[^{}]*\}|\[[^\[\]]*\]|\s*[A-Za-z0-9]+)?)/g, (_, cmd) => pushMath(cmd));
 
   // 12. 還原全部公式為標準 $...$
   let iterations = 0;
