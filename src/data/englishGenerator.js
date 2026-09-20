@@ -21,8 +21,14 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
     return res;
   }
 
+  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
+
   if (gradeId === 'g7') {
-    const variant = Math.floor(rand() * 3);
+    let variant = -1;
+    if (uNum === 1 || uNum === 2) variant = rand() > 0.5 ? 1 : 2; // 文法與對話
+    else if (uNum === 3 || uNum === 4) variant = 2; // 文法
+    else if (uNum === 5) variant = 0; // 聽力
+
     if (variant === 0) {
       // 聽力題 (Listening)
       const listenings = [
@@ -74,7 +80,7 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
         hint: `💡 提示：根據前後文的邏輯來判斷最適合的回話。`,
         explanation: `📖 詳解：正確選項為「${c.ans}」。`
       };
-    } else {
+    } else if (variant === 2) {
       const g7Grammar = [
         { q: `If it ________ tomorrow, we will not go to the beach.`, ans: 'rains', wrongs: ['will rain', 'rained', 'is raining', 'has rained'], exp: '條件子句 (If 帶領的子句) 中，要用「現在式代替未來式」。' },
         { q: `There ________ some milk in the fridge.`, ans: 'is', wrongs: ['are', 'have', 'has', 'be'], exp: 'milk 是不可數名詞，Be動詞要用單數 is。' },
@@ -91,7 +97,10 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
       };
     }
   } else if (gradeId === 'g8') {
-    const variant = Math.floor(rand() * 2);
+    let variant = -1;
+    if (uNum === 1 || uNum === 2 || uNum === 3) variant = 1; // 文法與單字
+    else if (uNum === 4 || uNum === 5) variant = rand() > 0.3 ? 0 : 1; // 閱讀為主
+
     if (variant === 0) {
       const cities = ['Japan', 'Korea', 'America', 'England', 'Australia'];
       const city = cities[Math.floor(rand() * cities.length)];
@@ -119,7 +128,7 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
         hint: '💡 提示：仔細閱讀文章並找出對應段落。',
         explanation: `📖 詳解：${r.exp}`
       };
-    } else {
+    } else if (variant === 1) {
       const g8Vocab = [
         { q: `The heavy rain caused a huge ________ in the city, making it impossible for cars to pass through the streets.`, ans: 'flood', wrongs: ['drought', 'earthquake', 'typhoon', 'fire'] },
         { q: `The little boy was so ________ that he drank three glasses of water.`, ans: 'thirsty', wrongs: ['hungry', 'full', 'tired', 'bored'] },
@@ -136,7 +145,11 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
       };
     }
   } else if (gradeId === 'g9') {
-    const variant = Math.floor(rand() * 3);
+    let variant = -1;
+    if (uNum === 1 || uNum === 3 || uNum === 4) variant = 1; // 文法陷阱
+    else if (uNum === 2) variant = 2; // 被動語態
+    else if (uNum === 5) variant = 0; // 閱讀測驗
+
     if (variant === 0) {
       const months = ['October', 'November', 'December', 'January', 'March'];
       const month1 = months[Math.floor(rand() * months.length)];
@@ -179,7 +192,7 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty, rand
         hint: '💡 提示：注意時態與連接詞用法。',
         explanation: `📖 詳解：${g.exp}` 
       };
-    } else {
+    } else if (variant === 2) {
       const g9Passive = [
         { q: `Look! The boy ________ by a big dog. We should go help him!`, ans: 'is being chased', wrongs: ['chased', 'is chasing', 'has chased', 'was chasing'], exp: '男孩「正在被」狗追，需要用現在進行式的被動語態 (is being + Vpp)。' },
         { q: `The bridge ________ fifty years ago.`, ans: 'was built', wrongs: ['built', 'has built', 'is built', 'builds'], exp: '橋是「被建造」的，且時間是 fifty years ago (過去式)，故用 was built。' },

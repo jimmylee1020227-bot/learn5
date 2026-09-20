@@ -20,8 +20,14 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
     return res;
   }
 
+  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
+
   if (gradeId === 'g7') {
-    const variant = Math.floor(rand() * 5);
+    let variant = -1;
+    if (uNum === 1 || uNum === 2) variant = rand() > 0.5 ? 1 : 4; // 歷史
+    else if (uNum === 3) variant = rand() > 0.5 ? 0 : 3; // 地理地形氣候
+    else if (uNum === 4) variant = 2; // 地理人口產業
+
     if (variant === 0) {
       // 台灣地理氣候圖表
       const climates = [
@@ -90,7 +96,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
         hint: '💡 提示：仔細檢視台灣的實際地理特徵。',
         explanation: `📖 詳解：${gt.ans}` 
       };
-    } else {
+    } else if (variant === 4) {
       const historyEvents = [
         { event: '熱蘭遮城', ans: '荷蘭人' },
         { event: '牡丹社事件', ans: '日本' },
@@ -110,7 +116,11 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       };
     }
   } else if (gradeId === 'g8') {
-    const variant = Math.floor(rand() * 4);
+    let variant = -1;
+    if (uNum >= 5) variant = rand() > 0.3 ? 1 : 2; // 公民政府與法律
+    else if (uNum === 3 || uNum === 4) variant = 0; // 地理 (這邊用選舉圖表代用, or fallback)
+    else variant = -1; // 歷史無對應，直接fallback
+
     if (variant === 0) {
       // 公民選舉圖表 (地方自治/政府)
       const v1 = Math.floor(rand() * 10 + 40); // 40~50%
@@ -188,7 +198,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
         hint: '💡 提示：仔細判斷文字敘述中的核心精神。',
         explanation: `📖 詳解：正確答案為「${c.ans}」。` 
       };
-    } else {
+    } else if (variant === 3) {
       const ageLaw = [
         { age: 18, action: '參選立法委員', canDo: false, exp: '18歲成年可簽約考駕照，但立委被選舉權需23歲。' },
         { age: 15, action: '未經父母同意自行購買昂貴機車', canDo: false, exp: '15歲為限制行為能力人，購買昂貴物品需法定代理人同意才生效。' },
@@ -206,7 +216,10 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
       };
     }
   } else if (gradeId === 'g9') {
-    const variant = Math.floor(rand() * 3);
+    let variant = -1;
+    if (uNum === 6) variant = rand() > 0.5 ? 0 : 1; // 經濟
+    else if (uNum === 1 || uNum === 2) variant = 2; // 歷史
+
     if (variant === 0) {
       // 經濟供需圖表
       const p1 = Math.floor(rand() * 50 + 100);
@@ -239,7 +252,7 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty, rand,
         hint: '💡 提示：思考供需原則與貨幣政策的基本邏輯。',
         explanation: `📖 詳解：正確的經濟推論為「${ev.ans}」。`
       };
-    } else {
+    } else if (variant === 2) {
       const historyWorld = [
         { q: '十字軍東征主要是為了從哪一個宗教勢力手中奪回聖地耶路撒冷？', ans: '伊斯蘭教' },
         { q: '引發第一次世界大戰的導火線是發生在哪個半島的暗殺事件？', ans: '巴爾幹半島' },

@@ -26,9 +26,16 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
     return res;
   }
 
-  const variant = Math.floor(rand() * 6);
+  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
+  let variant = -1;
 
   if (gradeId === 'g7') {
+    if (uNum === 1) variant = 1;
+    else if (uNum === 2) variant = 3;
+    else if (uNum === 4) variant = 2;
+    else if (uNum === 5) variant = 4;
+    else if (uNum === 3) variant = 0; // 票價計算 (四則運算)
+
     if (variant === 0) {
       const adultPrice = 150 + Math.floor(rand() * 10) * 10;
       const childPrice = adultPrice - (30 + Math.floor(rand() * 3) * 10);
@@ -85,7 +92,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
         hint: '💡 提示：底數相同相乘，指數相加。',
         explanation: `📖 詳解：根據指數律 a^m × a^n = a^(m+n)，因此答案為 ${base}^${ansExp}。`
       };
-    } else {
+    } else if (variant === 4) {
       const num1 = Math.floor(rand() * 30) + 20; // 20~49
       const num2 = num1 + Math.floor(rand() * 10) + 5; // diff is 5~14
       const sum = num1 + num2;
@@ -107,6 +114,10 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
       };
     }
   } else if (gradeId === 'g8') {
+    if (uNum === 1 || uNum === 3) variant = 1;
+    else if (uNum === 2) variant = rand() > 0.5 ? 0 : 2;
+    else if (uNum === 6) variant = 0;
+
     if (variant === 0) {
       const p1 = Math.floor(rand() * 5) + 1;
       const p2 = Math.floor(rand() * 5) + 1;
@@ -146,7 +157,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
         hint: '💡 提示：利用分配律或十字交乘法逆向思考。',
         explanation: `📖 詳解：展開得 x² + ${t1}x + ${t2}x + ${t1*t2} = ${ansExp}。`
       };
-    } else {
+    } else if (variant === 2) {
       const sq = a * a;
       const w1 = sq + 1;
       const w2 = a * 3; // a >= 5, so a*3 != a and a*3 != sq
@@ -160,6 +171,9 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
       };
     }
   } else if (gradeId === 'g9') {
+    if (uNum === 4) variant = 0;
+    else if (uNum === 2 || uNum === 3) variant = 1;
+
     if (variant === 0) {
       const x0 = Math.floor(rand() * 5) + 1;
       const y0 = Math.floor(rand() * 10) + 5;
@@ -175,7 +189,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty, rand, c
         hint: `💡 提示：觀察開口方向（二次項係數 ${coef} 的正負）。`,
         explanation: `📖 詳解：係數為 ${coef}，開口向${isMax ? '下' : '上'}，故在頂點 x=${x0} 處有${extType} ${y0}。`
       };
-    } else {
+    } else if (variant === 1) {
       const radius = Math.floor(rand() * 5) + 3; // 3~7
       const angle = [60, 90, 120, 180][Math.floor(rand()*4)];
       const fraction = angle / 360;

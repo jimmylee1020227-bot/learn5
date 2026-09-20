@@ -21,15 +21,23 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
     return res;
   }
 
+  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
+
   if (gradeId === 'g7') {
-    const variant = Math.floor(rand() * 4);
+    let variant = 0;
+    if (uNum === 1) variant = rand() > 0.5 ? 2 : 3;
+    else if (uNum === 5) variant = 1;
+    else variant = 0;
+
     if (variant === 0) {
-      const traps = [
-        { q: '光合作用', ans: '主要目的是製造葡萄糖，而非製造氧氣。', wrongs: ['只有在白天進行光合作用，晚上則進行呼吸作用。', '暗反應只能在沒有光的時候進行。', '只要有水和二氧化碳，不需光照也能進行。'] },
-        { q: '人類的消化作用', ans: '胃液中的鹽酸主要用來殺菌，而非直接分解蛋白質。', wrongs: ['大腸是吸收養分的主要器官。', '膽汁中含有大量消化酵素。', '唾液只能分解脂肪。'] },
-        { q: '植物的運輸作用', ans: '木質部負責運送水分，方向只能由下往上。', wrongs: ['韌皮部只在白天運送養分。', '水分運輸的動力主要來自根壓，而非蒸散作用。', '所有植物都有維管束。'] },
-        { q: '神經與內分泌系統', ans: '神經系統反應快但作用短暫，內分泌系統反應慢但作用持久。', wrongs: ['反射動作都由脊髓控制，與腦幹無關。', '所有激素都在血液中隨機流動，不具專一性。', '人類只有在緊張時才會分泌腎上腺素。'] }
+      const allTraps = [
+        { u: 2, q: '光合作用', ans: '主要目的是製造葡萄糖，而非製造氧氣。', wrongs: ['只有在白天進行光合作用，晚上則進行呼吸作用。', '暗反應只能在沒有光的時候進行。', '只要有水和二氧化碳，不需光照也能進行。'] },
+        { u: 2, q: '人類的消化作用', ans: '胃液中的鹽酸主要用來殺菌，而非直接分解蛋白質。', wrongs: ['大腸是吸收養分的主要器官。', '膽汁中含有大量消化酵素。', '唾液只能分解脂肪。'] },
+        { u: 3, q: '植物的運輸作用', ans: '木質部負責運送水分，方向只能由下往上。', wrongs: ['韌皮部只在白天運送養分。', '水分運輸的動力主要來自根壓，而非蒸散作用。', '所有植物都有維管束。'] },
+        { u: 4, q: '神經與內分泌系統', ans: '神經系統反應快但作用短暫，內分泌系統反應慢但作用持久。', wrongs: ['反射動作都由脊髓控制，與腦幹無關。', '所有激素都在血液中隨機流動，不具專一性。', '人類只有在緊張時才會分泌腎上腺素。'] }
       ];
+      let traps = allTraps.filter(t => t.u === uNum);
+      if (traps.length === 0) traps = allTraps;
       const t = traps[Math.floor(rand() * traps.length)];
       return {
         question: `【生物概念陷阱】${preamble}\n關於「${t.q}」，下列敘述何者正確？`,
@@ -88,7 +96,12 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       };
     }
   } else if (gradeId === 'g8') {
-    const variant = Math.floor(rand() * 4);
+    let variant = 0;
+    if (uNum === 1) variant = 3; // 密度測量
+    else if (uNum === 4 || uNum === 6) variant = 1; // 化學實驗對話
+    else if (uNum === 2 || uNum === 3 || uNum === 5) variant = 2; // 物理陷阱
+    else variant = 0;
+
     if (variant === 0) {
       // 溶解度圖表
       const t = Math.floor(rand() * 20 + 20); // 20 ~ 39
@@ -169,8 +182,13 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty, rand
       };
     }
   } else if (gradeId === 'g9') {
-    const variant = Math.floor(rand() * 3);
-    if (variant === 0) {
+    let variant = 0;
+    if (uNum === 4 || uNum === 5) variant = 0; // 電路 SVG
+    else if (uNum === 1) variant = 1; // 直線運動
+    else if (uNum === 2 || uNum === 3) variant = 2; // 牛頓定律陷阱
+    else variant = 0; // 其他(地科)回歸預設
+
+    if (variant === 0 && uNum <= 5) {
       // 電路 SVG 圖
       const v = 1.5 * (Math.floor(rand() * 4) + 1);
       return {

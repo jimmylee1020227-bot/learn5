@@ -1,5 +1,19 @@
 export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand, conceptTag) {
-  const globalVariant = Math.floor(rand() * 4); 
+  const uNum = parseInt(String(unitId).split('-').pop().replace('u', ''), 10) || 1;
+  
+  let globalVariant = Math.floor(rand() * 4);
+  let forceGradeVariant = false;
+
+  if (gradeId === 'g7') {
+    if (uNum === 1) { globalVariant = 3; forceGradeVariant = false; } // 六書
+    else if (uNum === 3) { globalVariant = -1; forceGradeVariant = true; } // 韻文/國學
+  } else if (gradeId === 'g8') {
+    if (uNum === 3) { globalVariant = -1; forceGradeVariant = true; } // 四大句型/修辭
+  } else if (gradeId === 'g9') {
+    if (uNum === 1) { globalVariant = -1; forceGradeVariant = true; } // 文意
+    else if (uNum === 2) { globalVariant = -1; forceGradeVariant = true; } // 題辭
+  }
+
 
   // 動態樂高引擎：產生絕對不重複的情境前導詞
   const people = ['小明', '阿華', '建國', '美美', '志明', '春嬌', '大雄', '胖虎', '小夫', '靜香', '國文老師', '班長'];
@@ -97,7 +111,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       hint: '💡 提示：思考成語背後的典故。',
       explanation: `📖 詳解：答案是「${item.ans}」。`
     };
-  } else {
+  } else if (globalVariant === 3) {
     const chars = ['江', '河', '湖', '海', '松', '柏', '梅', '櫻', '桐', '楓'];
     const ch = chars[Math.floor(rand() * chars.length)];
     const names = getRandItems(people, 2);
@@ -118,7 +132,9 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
 
   // 根據年級區分國學常識
   if (gradeId === 'g7') {
-    const variant = Math.floor(rand() * 2);
+    let variant = Math.floor(rand() * 2);
+    if (uNum === 3) variant = 0;
+    
     if (variant === 0) {
       const qs = [
         { q: '絕句的格律', opts: ['不要求必須對仗', '必須對仗', '每首八句', '一韻到底不可押韻', '字數沒有限制'] },
@@ -153,7 +169,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       };
     }
   } else if (gradeId === 'g8') {
-    const variant = Math.floor(rand() * 2);
+    let variant = Math.floor(rand() * 2);
     if (variant === 0) {
       const s = [
         { t: '判斷句', ex: '蓮，花之君子者也。' },
@@ -192,7 +208,10 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty, rand
       };
     }
   } else if (gradeId === 'g9') {
-    const variant = Math.floor(rand() * 2);
+    let variant = Math.floor(rand() * 2);
+    if (uNum === 1) variant = 0;
+    else if (uNum === 2) variant = 1;
+
     if (variant === 0) {
       const quotes = [
         { text: '學而不思則罔，思而不學則殆。', ans: '強調學習與思考必須並重。' },
