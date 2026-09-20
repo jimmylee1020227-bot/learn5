@@ -132,6 +132,10 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
     audioText: qData.audioText || null,
     isReading: qData.isReading || false,
     readingText: qData.readingText || null,
+    isChat: qData.isChat || false,
+    chatMessages: qData.chatMessages || null,
+    isSvg: qData.isSvg || false,
+    svgContent: qData.svgContent || null,
     isCustom: false
   };
 }
