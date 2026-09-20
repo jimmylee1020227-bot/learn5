@@ -520,8 +520,14 @@ export default function AdminDashboard() {
       const unitId = `${prefixMap[subjectId]}-${gradeNum}-${unitCode}`;
       const index = parseInt(parts[4], 10) || 1;
       
-      const sample = generateQuestion(subjectId, gradeId, unitId, index, 'medium');
+      let sample = generateQuestion(subjectId, gradeId, unitId, index, 'medium');
       sample.id = qId;
+      
+      const overrides = getQuestionOverrides();
+      if (overrides && overrides[qId]) {
+        sample = { ...sample, ...overrides[qId] };
+      }
+      
       setInspectedQuestion(sample);
       setEditAnsIdx(sample.answer);
       setEditExpText(sample.explanation);

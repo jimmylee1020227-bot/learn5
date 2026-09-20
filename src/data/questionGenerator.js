@@ -34,7 +34,7 @@ function shuffleWithRand(array, rand) {
 }
 
 export function generateQuestion(subjectId, gradeId, unitId, index, difficulty = 'medium') {
-  const seedKey = `${subjectId}-${gradeId}-${unitId}-idx${index}-${difficulty}`;
+  const seedKey = `${subjectId}-${gradeId}-${unitId}-idx${index}`;
   const seed = hashStringToSeed(seedKey);
   const rand = mulberry32(seed);
 
