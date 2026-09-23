@@ -74,66 +74,67 @@ export function AuthProvider({ children }) {
   // 1. 頁面載入時：檢查是否有 Google OAuth 2.0 跳轉回調 (#access_token=...)
   useEffect(() => {
     async function handleAuthReturn() {
-      const googleUser = await parseGoogleAuthCallback();
-      if (googleUser) {
-        // 先確保雲端管理員名冊到位，避免首次登入因本機快取未載入而誤判為 student
-        const assignedRole = await resolveUserRoleAsync(googleUser.email);
-        const isJimmy = googleUser.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
-        const cleanEmail = googleUser.email.trim().toLowerCase();
-        const deterministicId = isJimmy ? 'admin_super_jimmy' : (googleUser.id || generateDeterministicUserId(cleanEmail));
+      try {
+        const googleUser = await parseGoogleAuthCallback();
+        if (googleUser) {
+          // 先確保雲端管理員名冊到位，避免首次登入因本機快取未載入而誤判為 student
+          const assignedRole = await resolveUserRoleAsync(googleUser.email);
+          const isJimmy = googleUser.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+          const cleanEmail = googleUser.email.trim().toLowerCase();
+          const deterministicId = isJimmy ? 'admin_super_jimmy' : (googleUser.id || generateDeterministicUserId(cleanEmail));
 
-        // 讀取本地已存的舊帳號資料，優先沿用使用者自訂暱稱（防止重新登入時被 Google 原始名字覆蓋）
-        let savedDisplayName = null;
-        try {
-          // 優先從獨立備份 key 讀取（不隨 logout 清除）
-          const nameKey = `studyhub_custom_name_${cleanEmail}`;
-          const directName = localStorage.getItem(nameKey);
-          if (directName) {
-            savedDisplayName = directName;
-          } else {
-            // fallback：從舊的 auth user 物件裡讀
-            const saved = localStorage.getItem(STORAGE_USER_KEY) || localStorage.getItem('studyhub_auth_user');
-            if (saved) {
-              const parsed = JSON.parse(saved);
-              if (parsed?.email?.toLowerCase() === cleanEmail && parsed?.customDisplayName) {
-                savedDisplayName = parsed.customDisplayName;
+          let savedDisplayName = null;
+          try {
+            const nameKey = `studyhub_custom_name_${cleanEmail}`;
+            const directName = localStorage.getItem(nameKey);
+            if (directName) {
+              savedDisplayName = directName;
+            } else {
+              const saved = localStorage.getItem(STORAGE_USER_KEY) || localStorage.getItem('studyhub_auth_user');
+              if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed?.email?.toLowerCase() === cleanEmail && parsed?.customDisplayName) {
+                  savedDisplayName = parsed.customDisplayName;
+                }
               }
             }
-          }
-        } catch (_) {}
+          } catch (_) {}
 
-        const resolvedDisplayName = savedDisplayName
-          || (isJimmy ? '總管理員 (Jimmy)' : (googleUser.displayName || googleUser.email.split('@')[0]));
+          const resolvedDisplayName = savedDisplayName
+            || (isJimmy ? '總管理員 (Jimmy)' : (googleUser.displayName || googleUser.email.split('@')[0]));
 
-        const newUser = {
-          id: deterministicId,
-          email: googleUser.email,
-          displayName: resolvedDisplayName,
-          customDisplayName: savedDisplayName || null,
-          avatar: isJimmy 
-            ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227' 
-            : (googleUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(googleUser.email)}`),
-          role: assignedRole,
-          isGoogleBound: true,
-          sub: googleUser.sub,
-          accessToken: googleUser.accessToken,
-          authProof: googleUser.authProof,
-          authTimestamp: googleUser.authTimestamp,
-          createdAt: new Date().toISOString()
-        };
-        setCurrentUser(newUser);
-        // ── 安全：accessToken / authProof 不落地 localStorage，只存 sessionStorage ──
-        const sensitive = { accessToken: newUser.accessToken, authProof: newUser.authProof };
-        sessionStorage.setItem('__sh_sensitive__', JSON.stringify(sensitive));
-        const safeUser = { ...newUser };
-        delete safeUser.accessToken;
-        delete safeUser.authProof;
-        localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
-        localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
-        registerCloudUser(newUser);
+          const newUser = {
+            id: deterministicId,
+            email: googleUser.email,
+            displayName: resolvedDisplayName,
+            customDisplayName: savedDisplayName || null,
+            avatar: isJimmy 
+              ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227' 
+              : (googleUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(googleUser.email)}`),
+            role: assignedRole,
+            isGoogleBound: true,
+            sub: googleUser.sub,
+            accessToken: googleUser.accessToken,
+            authProof: googleUser.authProof,
+            authTimestamp: googleUser.authTimestamp,
+            createdAt: new Date().toISOString()
+          };
+          setCurrentUser(newUser);
+          const sensitive = { accessToken: newUser.accessToken, authProof: newUser.authProof };
+          sessionStorage.setItem('__sh_sensitive__', JSON.stringify(sensitive));
+          const safeUser = { ...newUser };
+          delete safeUser.accessToken;
+          delete safeUser.authProof;
+          localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
+          localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
+          registerCloudUser(newUser);
+        }
+      } catch (err) {
+        console.warn('[Auth] handleAuthReturn error:', err);
+      } finally {
+        // 無論成功、失敗、任何例外，都必須解除 loading，否則頁面永遠卡死
+        setAuthLoading(false);
       }
-      // 無論有沒有 OAuth 回調，都要把 authLoading 設為 false，否則頁面永遠卡在載入中
-      setAuthLoading(false);
     }
     handleAuthReturn();
   }, []);
