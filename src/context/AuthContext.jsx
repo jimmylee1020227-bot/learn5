@@ -132,6 +132,7 @@ export function AuthProvider({ children }) {
         localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
         registerCloudUser(newUser);
       }
+      // 無論有沒有 OAuth 回調，都要把 authLoading 設為 false，否則頁面永遠卡在載入中
       setAuthLoading(false);
     }
     handleAuthReturn();
