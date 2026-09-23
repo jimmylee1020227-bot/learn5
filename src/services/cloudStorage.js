@@ -892,11 +892,14 @@ export async function fetchAllCloudQuizPapers() {
     localAll.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
   }
 
-  // 2. 向 Firebase 雲端直接讀取 quiz_papers 節點
+  // 2. 向 Firebase 雲端直接讀取 quiz_papers 節點 (增加 2.5 秒超時保護，避免長卡死)
   if (db) {
     try {
-      const snap = await get(ref(db, 'studyhub/quiz_papers'));
-      const val = snap.val();
+      const snap = await Promise.race([
+        get(ref(db, 'studyhub/quiz_papers')),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500))
+      ]);
+      const val = snap?.val();
       if (val && typeof val === 'object') {
         const list = Array.isArray(val) ? val : Object.values(val);
         list.forEach(p => {
@@ -906,13 +909,13 @@ export async function fetchAllCloudQuizPapers() {
         });
       }
     } catch (e) {
-      console.warn('[Fetch Cloud Quiz Papers Error]', e);
+      console.warn('[Fetch Cloud Quiz Papers Error / Timeout]', e);
     }
   }
 
-  // 3. 智能合成：若現有試卷庫數量較少，但有練習紀錄，從做題歷程中動態合成完整試卷
+  // 3. 智能合成：若現有試卷庫數量較少，以本機/快取做題歷程動態秒級合成完整試卷（不重啟全服網路慢請求）
   try {
-    const allHistory = await fetchAllCloudPracticeLogs();
+    const allHistory = getUserPracticeHistory();
     if (Array.isArray(allHistory) && allHistory.length > 0) {
       // 依 userId 與交卷時間 (3分鐘窗口) 分組
       const groups = {};
@@ -1114,9 +1117,12 @@ export async function fetchCloudUserAllMistakesAndLogs(userId, userName, userSch
 
   try {
     if (db) {
-      const [histSnap, mistakeSnap] = await Promise.all([
-        get(ref(db, `studyhub/practice_history_${userId}`)),
-        get(ref(db, `studyhub/mistake_notebook_${userId}`))
+      const [histSnap, mistakeSnap] = await Promise.race([
+        Promise.all([
+          get(ref(db, `studyhub/practice_history_${userId}`)),
+          get(ref(db, `studyhub/mistake_notebook_${userId}`))
+        ]),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500))
       ]);
 
       const hist = histSnap.val();

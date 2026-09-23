@@ -71,7 +71,7 @@ export default function AdminDashboard() {
   const [reports, setReports] = useState(getQuestionReports());
   const [players, setPlayers] = useState(getLeaderboard());
   const [allHistory, setAllHistory] = useState(getUserPracticeHistory());
-  const [quizPapers, setQuizPapers] = useState([]);
+  const [quizPapers, setQuizPapers] = useState(() => getJson('all_quiz_papers', []));
   const [inspectionViewMode, setInspectionViewMode] = useState('papers'); // 'papers' | 'logs'
   const [expandedPaperIds, setExpandedPaperIds] = useState({});
   const [registeredStudents, setRegisteredStudents] = useState(getRegisteredStudents());
@@ -119,6 +119,7 @@ export default function AdminDashboard() {
       setReports(getQuestionReports());
       setPlayers(getLeaderboard());
       setAllHistory(getUserPracticeHistory());
+      setQuizPapers(getJson('all_quiz_papers', []));
       setRegisteredStudents(getRegisteredStudents());
       setRecentStream(getRecentPracticeStream());
       setRedemptionCodes(getRedemptionCodes());
@@ -171,8 +172,9 @@ export default function AdminDashboard() {
 
   // 點擊學生名字按鈕：從 Firebase 雲端即時調閱該學生的所有做題與錯題紀錄
   const handleSelectStudentForInspection = async (student) => {
-    const sId = student.id || student.userId;
-    const sName = student.name || student.userName;
+    if (!student) return;
+    const sId = student.userId || student.id;
+    const sName = student.name || student.userName || student.displayName || '同學';
     
     if (selectedStudent === sName && onlyMistakes) {
       setOnlyMistakes(false);
@@ -183,11 +185,14 @@ export default function AdminDashboard() {
     setSelectedStudentId(sId || 'ALL');
     setOnlyMistakes(true); // 預設聚焦顯示該生錯題
     
-    // 向 Firebase 雲端發起精確調閱該生所有做題與錯題本
-    if (sId) {
+    // 向 Firebase 雲端發起精確調閱該生所有做題與錯題本（加 2.5 秒超時保護，秒級降級保護防卡死）
+    if (sId && sId !== 'ALL') {
       setIsLoadingStudentHistory(true);
       try {
-        const studentLogs = await fetchCloudUserAllMistakesAndLogs(sId, sName, student.school);
+        const studentLogs = await Promise.race([
+          fetchCloudUserAllMistakesAndLogs(sId, sName, student.school),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500))
+        ]);
         if (studentLogs && studentLogs.length > 0) {
           setAllHistory(prev => {
             const others = prev.filter(p => p.userId !== sId && p.userName !== sName);
@@ -1557,7 +1562,7 @@ export default function AdminDashboard() {
               {isLoadingStudentHistory ? (
                 <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                   <RefreshCw size={32} className="animate-spin" style={{ margin: '0 auto 12px', color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
-                  <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>正在自雲端調閱【{selectedStudent}】之完整試卷與各題作答...</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>正在自雲端調閱【{selectedStudent === 'ALL' || !selectedStudent ? '全體學生' : selectedStudent}】之完整試卷與各題作答...</div>
                 </div>
               ) : filteredQuizPapers.length === 0 ? (
                 <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#78818a' }}>
@@ -1830,7 +1835,7 @@ export default function AdminDashboard() {
               {isLoadingStudentHistory ? (
                 <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                   <RefreshCw size={32} className="animate-spin" style={{ margin: '0 auto 12px', color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
-                  <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>正在自雲端即時載入【{selectedStudent}】之做題詳解...</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>正在自雲端即時載入【{selectedStudent === 'ALL' || !selectedStudent ? '全體學生' : selectedStudent}】之做題詳解...</div>
                   <div style={{ fontSize: '0.82rem', color: '#78818a', marginTop: '6px' }}>透過 Mulberry32 演算法秒級還原題幹、選項、學生答案與考點分析</div>
                 </div>
               ) : filteredPracticeLogs.length === 0 ? (

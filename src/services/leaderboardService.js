@@ -73,9 +73,20 @@ export function checkAndExecuteWeeklyReset() {
 
   // 若發現進入全新的一週，自動將舊排行榜前三名封存至名人堂，並重置每週分數為 0
   if (lastResetWeek !== currentWeekId) {
+    const now = getRealDate();
+    const taipeiShifted = new Date(now.getTime() + (8 * 3600000));
+    const dayOfWeek = taipeiShifted.getUTCDay(); // 0: 週日, 1: 週一 ... 6: 週六
+
+    // 關鍵防線 1：週次重置與積分歸零「僅限週一（台北時間星期一 00:00~23:59）」執行！
+    // 若今天是週二至週日，代表本週早已開跑，該客戶端只是本地快取過期，絕不可在週中抹除排行榜！
+    if (dayOfWeek !== 1) {
+      setJson(LAST_WEEK_KEY, currentWeekId);
+      return;
+    }
+
     const board = getJson(LEADERBOARD_KEY, INITIAL_LEADERBOARD);
     
-    // 【防誤抹除安全守衛】：若榜單中已存在當週且具備分數的玩家，代表全服本週早就已重置並進入全新週期！
+    // 關鍵防線 2：若榜單中已存在當週且具備分數的玩家，代表全服本週早就已重置並進入全新週期！
     // 此時僅需將本地過期標記校正為 currentWeekId，嚴禁覆蓋抹殺其他同學本週累積的積分！
     const alreadyResetInCloud = board.some(p => p.weekId === currentWeekId && (p.weeklyPoints || 0) > 0);
     if (alreadyResetInCloud) {
