@@ -7,6 +7,99 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
 
   const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
 
+  if (index % 7 === 0) {
+    // 折線圖：氣溫變化
+    const months = ['1月', '2月', '3月', '4月', '5月', '6月'];
+    const temps = Array.from({ length: 6 }, () => Math.floor(rand() * 20) + 10);
+    const maxTemp = Math.max(...temps);
+    const minTemp = Math.min(...temps);
+    const maxMonth = months[temps.indexOf(maxTemp)];
+    const minMonth = months[temps.indexOf(minTemp)];
+    const avgTemp = Math.round(temps.reduce((a, b) => a + b, 0) / temps.length);
+    const w = 320, h = 160, padX = 40, padY = 20;
+    const scaleX = (w - padX * 2) / 5;
+    const scaleY = (h - padY * 2) / 30;
+    const points = temps.map((t, i) => `${padX + i * scaleX},${h - padY - (t - 5) * scaleY}`).join(' ');
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" style="max-width:100%;border-radius:8px;background:#f0f9ff">
+  <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${h - padY}" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="${padX}" y1="${h - padY}" x2="${w - padX}" y2="${h - padY}" stroke="#94a3b8" stroke-width="1.5"/>
+  ${months.map((m, i) => `<text x="${padX + i * scaleX}" y="${h - padY + 14}" text-anchor="middle" font-size="10" fill="#64748b">${m}</text>`).join('')}
+  <polyline points="${points}" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linejoin="round"/>
+  ${temps.map((t, i) => `<circle cx="${padX + i * scaleX}" cy="${h - padY - (t - 5) * scaleY}" r="4" fill="#3b82f6"/><text x="${padX + i * scaleX + 6}" y="${h - padY - (t - 5) * scaleY - 4}" font-size="9" fill="#1d4ed8">${t}°</text>`).join('')}
+  <text x="${w / 2}" y="12" text-anchor="middle" font-size="11" fill="#0f172a" font-weight="bold">某城市月均氣溫折線圖（°C）</text>
+</svg>`;
+    return {
+      question: `【折線圖判讀】${preamble}\n下圖為某城市 1～6 月的月均氣溫折線圖，請根據圖表回答：\n\n①氣溫最高的月份是哪一月？②氣溫最低的月份是哪一月？③6 個月的平均氣溫約為幾度？`,
+      options: [
+        `最高：${maxMonth}（${maxTemp}°C）／最低：${minMonth}（${minTemp}°C）／平均：${avgTemp}°C`,
+        `最高：${months[1]}（${temps[1]}°C）／最低：${months[0]}（${temps[0]}°C）／平均：${avgTemp + 3}°C`,
+        `最高：${maxMonth}（${maxTemp + 2}°C）／最低：${minMonth}（${minTemp - 1}°C）／平均：${avgTemp - 2}°C`,
+        `最高：${months[5]}（${temps[5]}°C）／最低：${months[2]}（${temps[2]}°C）／平均：${avgTemp + 5}°C`
+      ],
+      answer: 0,
+      hint: `💡 提示：找折線圖最高點（最高溫）與最低點（最低溫），再將所有月份氣溫加總除以 6 求平均。`,
+      explanation: `📖 詳解：由圖可知，氣溫最高為 ${maxMonth} 的 ${maxTemp}°C，最低為 ${minMonth} 的 ${minTemp}°C。6 個月氣溫合計 ${temps.reduce((a, b) => a + b, 0)}°C，平均 = ${temps.reduce((a, b) => a + b, 0)} ÷ 6 ≈ ${avgTemp}°C。`,
+      isSvg: true,
+      svgContent
+    };
+  }
+
+  if (index % 11 === 0) {
+    // 長條圖：各科成績
+    const subjects = ['國文', '英語', '數學', '自然', '社會'];
+    const scores = Array.from({ length: 5 }, () => Math.floor(rand() * 40) + 55);
+    const maxScore = Math.max(...scores);
+    const maxSubj = subjects[scores.indexOf(maxScore)];
+    const minScore = Math.min(...scores);
+    const minSubj = subjects[scores.indexOf(minScore)];
+    const total = scores.reduce((a, b) => a + b, 0);
+    const avg = Math.round(total / 5);
+    const w2 = 320, h2 = 160, padX2 = 30, padY2 = 20;
+    const barW = (w2 - padX2 * 2) / 5 - 6;
+    const svgContent2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w2} ${h2}" style="max-width:100%;border-radius:8px;background:#fefce8">
+  <line x1="${padX2}" y1="${padY2}" x2="${padX2}" y2="${h2 - padY2}" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="${padX2}" y1="${h2 - padY2}" x2="${w2 - padX2}" y2="${h2 - padY2}" stroke="#94a3b8" stroke-width="1.5"/>
+  ${scores.map((s, i) => {
+    const bH = Math.round((s - 40) / 60 * (h2 - padY2 * 2));
+    const bX = padX2 + i * ((w2 - padX2 * 2) / 5) + 3;
+    const bY = h2 - padY2 - bH;
+    const color = ['#6366f1','#10b981','#f59e0b','#3b82f6','#ef4444'][i];
+    return `<rect x="${bX}" y="${bY}" width="${barW}" height="${bH}" fill="${color}" rx="3"/><text x="${bX + barW/2}" y="${bY - 4}" text-anchor="middle" font-size="9" fill="#374151" font-weight="bold">${s}</text><text x="${bX + barW/2}" y="${h2 - padY2 + 13}" text-anchor="middle" font-size="9" fill="#374151">${subjects[i]}</text>`;
+  }).join('')}
+  <text x="${w2/2}" y="12" text-anchor="middle" font-size="11" fill="#0f172a" font-weight="bold">小明各科段考成績長條圖（分）</text>
+</svg>`;
+    return {
+      question: `【長條圖判讀】${preamble}\n下圖為小明五科段考成績長條圖，請依圖回答：\n\n①成績最高的科目為何？②五科總分為多少？③五科平均分為多少？`,
+      options: [
+        `最高：${maxSubj}（${maxScore} 分）／總分：${total} 分／平均：${avg} 分`,
+        `最高：${minSubj}（${minScore} 分）／總分：${total} 分／平均：${avg} 分`,
+        `最高：${maxSubj}（${maxScore} 分）／總分：${total + 10} 分／平均：${avg + 2} 分`,
+        `最高：${subjects[2]}（${scores[2]} 分）／總分：${total - 5} 分／平均：${avg - 1} 分`
+      ],
+      answer: 0,
+      hint: `💡 提示：最高長條即為最高分，再將五科分數全部加總求總分，最後除以 5 求平均。`,
+      explanation: `📖 詳解：由長條圖讀出各科分數：${subjects.map((s, i) => `${s} ${scores[i]} 分`).join('、')}。最高分為${maxSubj} ${maxScore} 分。總分 = ${scores.join(' + ')} = ${total} 分，平均 = ${total} ÷ 5 = ${avg} 分。`,
+      isSvg: true,
+      svgContent: svgContent2
+    };
+  }
+
+  if (index % 13 === 0) {
+    const a = Math.floor(rand() * 8) + 3;
+    const b = Math.floor(rand() * 6) + 2;
+    const total = a * b;
+    const readingText = `小明參加數學社，社長說：「本學期我們共要完成 ${a} 個模組，每個模組包含 ${b} 份學習單。」小明計算了一下，確認完成所有模組需要填寫的學習單總數。他也發現，若平均分配到 ${b} 週內完成，每週需完成 ${a} 份學習單。最後小明將完成總數記錄在學習手冊上。`;
+    return {
+      question: `【情境閱讀題】請閱讀以下段落後，回答問題：\n\n「${readingText}」\n\n根據上述內容，小明記錄的學習單「總份數」為何？`,
+      options: [`${total} 份`, `${total + a} 份`, `${a + b} 份`, `${total - b} 份`],
+      answer: 0,
+      hint: `💡 提示：學習單總數 = 模組數 × 每模組學習單數。`,
+      explanation: `📖 詳解：${a} 個模組 × ${b} 份學習單 = ${total} 份。段落中提及每週 ${a} 份 × ${b} 週同樣可驗證得 ${total} 份，結果一致。`,
+      isReading: true,
+      readingText
+    };
+  }
+
   // ============================================================
   // 國一 (七年級)
   // ============================================================
@@ -757,6 +850,11 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
       return archetypes[Math.abs(index + Math.floor(rand() * 11)) % archetypes.length]();
     }
   }
+
+  // ── 圖表題 Archetype（各科通用 SVG 圖表，按 index 奇偶輪流出現）──
+
+
+  // 閱讀題 Archetype（每 13 題出現一次）
 
   // 安全 Fallback
   return {

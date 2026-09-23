@@ -7,6 +7,82 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty = 'med
 
   const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
 
+  if (index % 7 === 0) {
+    const years = [1950, 1970, 1990, 2010, 2030];
+    const base = Math.floor(rand() * 5) + 8;
+    const populations = [base, base + Math.floor(rand()*3)+2, base + Math.floor(rand()*3)+6, base + Math.floor(rand()*2)+9, base + Math.floor(rand()*2)+10];
+    const maxPop = Math.max(...populations);
+    const minPop = Math.min(...populations);
+    const w = 320, h = 160, padX = 40, padY = 20;
+    const scaleX = (w - padX * 2) / 4;
+    const scaleY = (h - padY * 2) / (maxPop - minPop + 2);
+    const points = populations.map((p, i) => `${padX + i * scaleX},${h - padY - (p - minPop + 1) * scaleY}`).join(' ');
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" style="max-width:100%;border-radius:8px;background:#eff6ff">
+  <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${h-padY}" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="${padX}" y1="${h-padY}" x2="${w-padX}" y2="${h-padY}" stroke="#94a3b8" stroke-width="1.5"/>
+  ${years.map((y, i) => `<text x="${padX+i*scaleX}" y="${h-padY+14}" text-anchor="middle" font-size="9" fill="#64748b">${y}</text>`).join('')}
+  <polyline points="${points}" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linejoin="round"/>
+  ${populations.map((p, i) => `<circle cx="${padX+i*scaleX}" cy="${h-padY-(p-minPop+1)*scaleY}" r="4" fill="#1d4ed8"/><text x="${padX+i*scaleX+6}" y="${h-padY-(p-minPop+1)*scaleY-4}" font-size="9" fill="#1e40af">${p}百萬</text>`).join('')}
+  <text x="${w/2}" y="12" text-anchor="middle" font-size="11" fill="#1e3a8a" font-weight="bold">臺灣人口變化趨勢（百萬人）</text>
+</svg>`;
+    const trend = populations[4] > populations[0] ? '持續成長' : '逐漸下降';
+    return {
+      question: `【折線圖判讀：人口變化】${preamble}\n下圖為臺灣人口變化趨勢圖，請依圖回答：\n\n①1950 年時人口約為多少百萬人？②2030 年人口預測較 1950 年增加多少？③整體趨勢如何？`,
+      options: [
+        `1950年約 ${populations[0]} 百萬人／增加 ${populations[4] - populations[0]} 百萬人／整體${trend}`,
+        `1950年約 ${populations[1]} 百萬人／增加 ${populations[3] - populations[1]} 百萬人／整體先升後降`,
+        `1950年約 ${populations[0]+2} 百萬人／增加 ${populations[4] - populations[0]+3} 百萬人／整體持平`,
+        `1950年約 ${populations[0]-1} 百萬人／增加 ${populations[4]} 百萬人／整體下降`
+      ],
+      answer: 0,
+      hint: `💡 提示：讀取折線圖最左端（1950）與最右端（2030）的數值，以相減求增加量，再觀察整體走向。`,
+      explanation: `📖 詳解：由圖讀出 1950 年約 ${populations[0]} 百萬人，2030 年預測約 ${populations[4]} 百萬人，增加量約 ${populations[4]-populations[0]} 百萬人。臺灣人口整體呈${trend}趨勢。`,
+      isSvg: true,
+      svgContent
+    };
+  }
+
+  if (index % 11 === 0) {
+    const passages = [
+      {
+        text: `《憲法》第 7 條規定：「中華民國人民，無分男女、宗教、種族、階級、黨派，在法律上一律平等。」這條文體現了民主法治最重要的「平等原則」，不僅是一種法律保障，更是公民社會追求公平正義的基礎價值。然而，平等並非指所有事物都必須完全相同，而是指「相同情形應相同對待，不同情形得不同處理」。`,
+        q: `根據上文，憲法第 7 條所保障的「平等原則」，其正確意涵為何？`,
+        options: [
+          `不論男女、種族等差異，在法律上應受平等對待；但「差別對待」在合理差異下仍可成立`,
+          `所有人在所有事物上都必須完全相同，不能有任何差別`,
+          `只有男性享有完整的憲法保障，女性部分不在本條保護範圍`,
+          `平等原則僅適用於政黨，不適用於個人之間的關係`
+        ],
+        answer: 0,
+        hint: `💡 提示：注意文中提到「平等並非指所有事物都必須完全相同」，而是「相同情形相同對待，不同情形得不同處理」。`,
+        explanation: `📖 詳解：憲法平等原則的精義在於：①法律保障所有人民無差別對待；②「實質平等」允許在合理差異（如性別、年齡）前提下有差別處置；③適用對象為全體人民，非僅特定群體。`
+      },
+      {
+        text: `臺灣地處亞熱帶，東臨太平洋，北回歸線橫貫南部（嘉義附近），因此造就多元地形與氣候特色。西部平原肥沃、農業發達；中央山脈高峻、動植物生態豐富；東部海岸陡峭、形成著名的太魯閣峽谷。每年夏秋颱風季，帶來大量降雨，同時也造成土石流與洪水災害。`,
+        q: `根據上文，下列關於臺灣地理特徵的敘述，何者「正確」？`,
+        options: [
+          `北回歸線穿越嘉義附近，西部平原農業發達，颱風帶來降雨但也引發天然災害`,
+          `臺灣全境屬溫帶氣候，四季分明且無颱風侵襲`,
+          `中央山脈位於西部平原，阻礙農業發展`,
+          `東部海岸地形平緩，是臺灣主要農業區`
+        ],
+        answer: 0,
+        hint: `💡 提示：對照文章中「北回歸線橫貫南部（嘉義附近）」、「西部平原農業」、「颱風帶來降雨」等關鍵資訊。`,
+        explanation: `📖 詳解：文章明確說明：①北回歸線橫貫嘉義附近；②西部平原農業發達；③颱風帶來降雨，同時造成災害。其他選項皆與文章敘述矛盾。`
+      }
+    ];
+    const p = passages[Math.floor(rand() * passages.length)];
+    return {
+      question: `【閱讀素養題】請閱讀以下段落，回答問題：\n\n「${p.text}」\n\n${p.q}`,
+      options: p.options,
+      answer: p.answer,
+      hint: p.hint,
+      explanation: p.explanation,
+      isReading: true,
+      readingText: p.text
+    };
+  }
+
   // ============================================================
   // 國一 (七年級：臺灣史地公)
   // ============================================================
@@ -530,6 +606,9 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty = 'med
       return archetypes[Math.abs(index + Math.floor(rand() * 11)) % archetypes.length]();
     }
   }
+
+  // ── 社會科 SVG 折線圖題（每 7 題出現一次）：人口變化 ──
+   // ── 社會科閱讀素養題（每 11 題出現一次）──
 
   // 預設 Fallback
   return {

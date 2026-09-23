@@ -909,8 +909,9 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
             </button>
           </div>
 
-          {/* 聽力播放區塊 */}
-          {currentQ.isListening && currentQ.audioText && (
+          {/* 聽力播放區塊（僅英文科顯示） */}
+          {currentQ.isListening && currentQ.audioText && currentQ.subjectId === 'english' && (
+
             <div style={{ background: '#eef2ff', border: '1.5px solid #c7d2fe', borderRadius: '16px', padding: '16px 20px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#4f46e5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

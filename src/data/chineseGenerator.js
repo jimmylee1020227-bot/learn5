@@ -7,6 +7,51 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty = 'me
 
   const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
 
+  // ── SVG 長條圖題（每 11 題出現一次）：古代文學體裁分類 ──
+  if (index % 11 === 0) {
+    const genres = ['詩', '詞', '散文', '小說'];
+    const counts = genres.map(() => Math.floor(rand() * 15) + 5);
+    const maxC = Math.max(...counts);
+    const maxGenre = genres[counts.indexOf(maxC)];
+    const w = 300, h = 160, padX = 35, padY = 20;
+    const barW = (w - padX * 2) / 4 - 8;
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" style="max-width:100%;border-radius:8px;background:#fdf4ff">
+  <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${h-padY}" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="${padX}" y1="${h-padY}" x2="${w-padX}" y2="${h-padY}" stroke="#94a3b8" stroke-width="1.5"/>
+  ${counts.map((c, i) => {
+    const bH = Math.round(c / maxC * (h - padY * 2 - 10));
+    const bX = padX + i * ((w - padX * 2) / 4) + 4;
+    const bY = h - padY - bH;
+    const color = ['#c084fc','#818cf8','#38bdf8','#fb923c'][i];
+    return `<rect x="${bX}" y="${bY}" width="${barW}" height="${bH}" fill="${color}" rx="3"/><text x="${bX+barW/2}" y="${bY-4}" text-anchor="middle" font-size="10" fill="#374151" font-weight="bold">${c}</text><text x="${bX+barW/2}" y="${h-padY+13}" text-anchor="middle" font-size="10" fill="#374151">${genres[i]}</text>`;
+  }).join('')}
+  <text x="${w/2}" y="12" text-anchor="middle" font-size="11" fill="#581c87" font-weight="bold">課本各類文學體裁篇數統計</text>
+</svg>`;
+    return {
+      question: `【圖表判讀：文學體裁統計】${preamble}\n下圖為課本中詩、詞、散文、小說的篇數長條圖，請依圖回答：\n\n①篇數最多的體裁為何？②散文有幾篇？③四種體裁總篇數為多少？`,
+      options: [
+        `最多：${maxGenre}（${maxC} 篇）／散文 ${counts[2]} 篇／總計 ${counts.reduce((a, b) => a + b, 0)} 篇`,
+        `最多：詩（${counts[0]} 篇）／散文 ${counts[2]+2} 篇／總計 ${counts.reduce((a, b) => a + b, 0)+5} 篇`,
+        `最多：${maxGenre}（${maxC} 篇）／散文 ${counts[2]+1} 篇／總計 ${counts.reduce((a, b) => a + b, 0)-3} 篇`,
+        `最多：小說（${counts[3]} 篇）／散文 ${counts[2]} 篇／總計 ${counts.reduce((a, b) => a + b, 0)+2} 篇`
+      ],
+      answer: 0,
+      hint: `💡 提示：找最高長條即篇數最多的體裁；直接從圖讀取散文的數值；四個數字相加為總篇數。`,
+      explanation: `📖 詳解：由長條圖讀出：詩 ${counts[0]} 篇、詞 ${counts[1]} 篇、散文 ${counts[2]} 篇、小說 ${counts[3]} 篇，以 ${maxGenre}（${maxC} 篇）最多，總計 ${counts.reduce((a, b) => a + b, 0)} 篇。`,
+      isSvg: true,
+      svgContent
+    };
+  }
+
+  // 預設 Fallback
+  return {
+    question: `【108課綱核心素養】${preamble}\n關於「${conceptTag}」的核心語文常識，下列敘述何者正確？`,
+    options: [`符合108課綱學科素養標準且邏輯推論精確`, `混淆因果先後關聯性的非邏輯敘述`, `違反漢語修辭與格律規範的誤讀`, `超出國中課綱規範之偏誤推論`],
+    answer: 0,
+    hint: `💡 提示：回歸 108 課綱課本核心概念定義，注意選項間的邏輯關聯。`,
+    explanation: `📖 詳解：本題檢驗該單元【${conceptTag}】之核心素養，選項第一項正確無誤。`
+  };
+
   // ============================================================
   // 國一 (七年級)
   // ============================================================
@@ -723,12 +768,46 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty = 'me
     return archetypes[Math.abs(index + Math.floor(rand() * 7)) % archetypes.length]();
   }
 
-  // 預設 Fallback
-  return {
-    question: `【108課綱核心素養】${preamble}\n關於「${conceptTag}」的核心語文常識，下列敘述何者正確？`,
-    options: [`符合108課綱學科素養標準且邏輯推論精確`, `混淆因果先後關聯性的非邏輯敘述`, `違反漢語修辭與格律規範的誤讀`, `超出國中課綱規範之偏誤推論`],
-    answer: 0,
-    hint: `💡 提示：回歸 108 課綱課本核心概念定義，注意選項間的邏輯關聯。`,
-    explanation: `📖 詳解：本題檢驗該單元【${conceptTag}】之核心素養，選項第一項正確無誤。`
-  };
+  // ── 國文閱讀素養題（每 7 題出現一次）──
+  if (index % 7 === 0) {
+    const passages = [
+      {
+        text: `蔣夢麟在《西潮》中回憶道：「我在英國讀書時，最深的感受是圖書館的重要。當地學生人手一冊，隨時翻閱，視書如日常飲食。反觀我的同學，離開課本便無所適從，這正是中西教育觀念最大的差異。」`,
+        q: `根據上段文字，蔣夢麟認為中西教育最大的差異為何？`,
+        options: [
+          `西方學生視閱讀為日常習慣，中國學生則依賴課本，缺乏自主閱讀能力`,
+          `西方學生只讀英文書，中國學生只讀中文書`,
+          `西方圖書館較多，中國圖書館較少`,
+          `西方教師教學法較先進，中國教師教學較保守`
+        ],
+        answer: 0,
+        hint: `💡 提示：找出「中西教育最大差異」的關鍵詞句，文中說「離開課本便無所適從」對比「視書如日常飲食」。`,
+        explanation: `📖 詳解：蔣夢麟觀察到西方學生視閱讀為日常（如飲食）、主動自學；而中國學生習慣依賴課本，缺乏主動閱讀習慣，這是他認為最大的中西教育觀念差異。`
+      },
+      {
+        text: `宋代學者朱熹曾說：「讀書之法，在循序而漸進，熟讀而精思。」意指閱讀應依照順序逐步深入，反覆誦讀直至熟悉，並配合精細的思考與推理。他認為貪多而不求甚解，反倒是讀書的大忌。`,
+        q: `根據上文，朱熹認為最正確的讀書方法是？`,
+        options: [
+          `循序漸進、熟讀與精思並行，避免貪多不精`,
+          `快速瀏覽大量書籍，廣博勝於精深`,
+          `只讀經典，不讀現代書籍`,
+          `全部背誦，不需理解意思`
+        ],
+        answer: 0,
+        hint: `💡 提示：朱熹的「循序漸進、熟讀精思」是核心，注意「貪多而不求甚解」是「大忌」。`,
+        explanation: `📖 詳解：朱熹讀書法三要素：①循序漸進（按順序）、②熟讀（反覆誦讀）、③精思（深入思考），且明確反對「貪多不求甚解」。`
+      }
+    ];
+    const p = passages[Math.floor(rand() * passages.length)];
+    return {
+      question: `【閱讀素養題】請閱讀以下段落後，回答問題：\n\n「${p.text}」\n\n${p.q}`,
+      options: p.options,
+      answer: p.answer,
+      hint: p.hint,
+      explanation: p.explanation,
+      isReading: true,
+      readingText: p.text
+    };
+  }
+
 }

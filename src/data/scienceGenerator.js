@@ -7,6 +7,104 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty = 'me
 
   const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
 
+  // ── SVG 圖表題（前置判斷，適用所有年級單元）──（每 7 題出現一次）──
+  if (index % 7 === 0) {
+    const times = [0, 2, 4, 6, 8, 10];
+    const temps = [25, Math.floor(rand()*10)+35, Math.floor(rand()*10)+50, Math.floor(rand()*10)+70, Math.floor(rand()*10)+85, 100];
+    const w = 320, h = 160, padX = 40, padY = 20;
+    const scaleX = (w - padX * 2) / 5;
+    const maxV = 100, minV = 25;
+    const scaleY = (h - padY * 2) / (maxV - minV + 10);
+    const points = temps.map((t, i) => `${padX + i * scaleX},${h - padY - (t - minV + 5) * scaleY}`).join(' ');
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" style="max-width:100%;border-radius:8px;background:#f0fdf4">
+  <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${h-padY}" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="${padX}" y1="${h-padY}" x2="${w-padX}" y2="${h-padY}" stroke="#94a3b8" stroke-width="1.5"/>
+  ${times.map((t, i) => `<text x="${padX+i*scaleX}" y="${h-padY+14}" text-anchor="middle" font-size="9" fill="#64748b">${t}min</text>`).join('')}
+  <polyline points="${points}" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linejoin="round"/>
+  ${temps.map((t, i) => `<circle cx="${padX+i*scaleX}" cy="${h-padY-(t-minV+5)*scaleY}" r="4" fill="#16a34a"/><text x="${padX+i*scaleX+6}" y="${h-padY-(t-minV+5)*scaleY-4}" font-size="9" fill="#166534">${t}°</text>`).join('')}
+  <text x="${w/2}" y="12" text-anchor="middle" font-size="11" fill="#14532d" font-weight="bold">水加熱實驗：時間 vs 溫度（°C）</text>
+</svg>`;
+    const boilTime = times[temps.indexOf(100)] ?? 10;
+    return {
+      question: `【折線圖判讀：加熱實驗】${preamble}\n下圖為水加熱實驗中，記錄每隔 2 分鐘的溫度變化折線圖。請依圖判斷：\n\n①水沸騰時的溫度為幾度？②水達到沸點約需幾分鐘？③實驗開始時（0 分鐘）的初始溫度為何？`,
+      options: [
+        `沸點：100°C ／達沸點約 ${boilTime} 分鐘 ／初始溫度：25°C`,
+        `沸點：90°C ／達沸點約 8 分鐘 ／初始溫度：30°C`,
+        `沸點：100°C ／達沸點約 6 分鐘 ／初始溫度：35°C`,
+        `沸點：95°C ／達沸點約 ${boilTime} 分鐘 ／初始溫度：25°C`
+      ],
+      answer: 0,
+      hint: `💡 提示：觀察折線圖最高點即沸點，曲線趨於水平的時間即達沸點時間，x軸起點即初始溫度。`,
+      explanation: `📖 詳解：在標準大氣壓下，水的沸點固定為 100°C。由折線圖起點 (0 min, 25°C) 讀出初始溫度；當溫度曲線趨近水平（停止上升）時即為沸騰點，約需 ${boilTime} 分鐘。`,
+      isSvg: true,
+      svgContent
+    };
+  }
+
+  // ── SVG 長條圖題（每 11 題出現一次）：光合作用產氧量 ──
+  if (index % 11 === 0) {
+    const lightLevels = ['弱光', '中光', '強光', '極強光'];
+    const oxygens = lightLevels.map(() => Math.floor(rand() * 30) + 10);
+    oxygens[2] = Math.max(...oxygens); // 強光最高
+    const maxO = Math.max(...oxygens);
+    const w2 = 320, h2 = 160, padX2 = 35, padY2 = 20;
+    const barW2 = (w2 - padX2 * 2) / 4 - 8;
+    const svgContent2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w2} ${h2}" style="max-width:100%;border-radius:8px;background:#fefce8">
+  <line x1="${padX2}" y1="${padY2}" x2="${padX2}" y2="${h2-padY2}" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="${padX2}" y1="${h2-padY2}" x2="${w2-padX2}" y2="${h2-padY2}" stroke="#94a3b8" stroke-width="1.5"/>
+  ${oxygens.map((o, i) => {
+    const bH = Math.round(o / maxO * (h2 - padY2 * 2 - 10));
+    const bX = padX2 + i * ((w2 - padX2 * 2) / 4) + 4;
+    const bY = h2 - padY2 - bH;
+    const color = ['#bef264','#4ade80','#16a34a','#065f46'][i];
+    return `<rect x="${bX}" y="${bY}" width="${barW2}" height="${bH}" fill="${color}" rx="3"/><text x="${bX+barW2/2}" y="${bY-4}" text-anchor="middle" font-size="9" fill="#374151" font-weight="bold">${o}</text><text x="${bX+barW2/2}" y="${h2-padY2+13}" text-anchor="middle" font-size="9" fill="#374151">${lightLevels[i]}</text>`;
+  }).join('')}
+  <text x="${w2/2}" y="12" text-anchor="middle" font-size="11" fill="#14532d" font-weight="bold">不同光度下光合作用產氧量（mL）</text>
+</svg>`;
+    return {
+      question: `【長條圖判讀：光合作用】${preamble}\n下圖為同一植物在不同光度環境下，每小時光合作用產生 O₂ 量的長條圖。請依圖判斷：\n\n①產氧量最高的光度條件為何？②弱光下的產氧量為多少 mL？③光度增強對光合作用速率的影響為何？`,
+      options: [
+        `強光最高（${oxygens[2]} mL）／弱光 ${oxygens[0]} mL ／光度越強，光合速率越快（至極強光趨於飽和）`,
+        `弱光最高／弱光 ${oxygens[0]+5} mL ／光度越強，光合速率越慢`,
+        `極強光最高（${oxygens[3]} mL）／弱光 ${oxygens[0]+3} mL ／光度與光合速率無關`,
+        `強光最高（${oxygens[2]} mL）／弱光 ${oxygens[0]+2} mL ／光度越強，光合速率越慢`
+      ],
+      answer: 0,
+      hint: `💡 提示：找最高長條即最佳光合條件，弱光長條直接讀值，注意「光補償點」與「光飽和點」概念。`,
+      explanation: `📖 詳解：由長條圖可知強光（${oxygens[2]} mL）產氧量最高；弱光約 ${oxygens[0]} mL。一般而言，在光飽和點以下，光度越強光合速率越快；超過光飽和點後增加光度效果趨緩（光合速率達上限）。`,
+      isSvg: true,
+      svgContent: svgContent2
+    };
+  }
+
+  // ── 閱讀素養題（每 13 題出現一次）──
+  if (index % 13 === 0) {
+    const readingText = `科學家在研究酵素（enzyme）特性時發現，酵素的化學本質為蛋白質，具有「專一性」——每種酵素只能催化特定的化學反應。以唾液澱粉酶（salivary amylase）為例，它只能分解澱粉，無法分解蛋白質或脂肪。此外，酵素在最適溫度（人體約 37°C）時活性最高，若溫度過高（超過 60°C），蛋白質結構永久變性，酵素將完全失去活性，即使降溫也無法恢復。`;
+    return {
+      question: `【科學閱讀素養】請閱讀以下科普短文，回答問題：\n\n「${readingText}」\n\n根據上文，下列關於酵素的敘述，何者「正確」？`,
+      options: [
+        `唾液澱粉酶具有專一性，只能分解澱粉而不能分解蛋白質`,
+        `酵素在高溫變性後，只要降溫至 37°C 就能完全恢復活性`,
+        `酵素的化學本質為醣類，不是蛋白質`,
+        `溫度越高，所有酵素的反應速率都會持續提升`
+      ],
+      answer: 0,
+      hint: `💡 提示：「專一性」是酵素最重要的特性之一，文章中明確說明唾液澱粉酶只能分解澱粉。`,
+      explanation: `📖 詳解：(A) 正確，符合文章「每種酵素只能催化特定化學反應」說明。(B) 錯誤，文章指出高溫變性後「即使降溫也無法恢復」。(C) 錯誤，酵素本質為蛋白質。(D) 錯誤，超過最適溫度後酵素失活。`,
+      isReading: true,
+      readingText
+    };
+  }
+
+  // 預設 Fallback
+  return {
+    question: `【108課綱科學素養】${preamble}\n關於「${conceptTag}」之科學探究核心觀念，下列敘述何者正確？`,
+    options: [`符合108課綱自然科學定義且實驗推論客觀精確`, `混淆因果關係之非科學推論`, `違反質量守恆與能量守恆定律之假設`, `超出國中課綱規範之偏誤推論`],
+    answer: 0,
+    hint: `💡 提示：回歸 108 課綱課本核心概念定義，注意實驗控制變因與因果關聯。`,
+    explanation: `📖 詳解：本題檢驗該單元【${conceptTag}】之核心素養，選項第一項正確無誤。`
+  };
+
   // ============================================================
   // 國一 (七年級：生物學)
   // ============================================================
@@ -639,12 +737,4 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty = 'me
     }
   }
 
-  // 預設 Fallback
-  return {
-    question: `【108課綱科學素養】${preamble}\n關於「${conceptTag}」之科學探究核心觀念，下列敘述何者正確？`,
-    options: [`符合108課綱自然科學定義且實驗推論客觀精確`, `混淆因果關係之非科學推論`, `違反質量守恆與能量守恆定律之假設`, `超出國中課綱規範之偏誤推論`],
-    answer: 0,
-    hint: `💡 提示：回歸 108 課綱課本核心概念定義，注意實驗控制變因與因果關聯。`,
-    explanation: `📖 詳解：本題檢驗該單元【${conceptTag}】之核心素養，選項第一項正確無誤。`
-  };
 }

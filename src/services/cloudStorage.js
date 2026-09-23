@@ -1359,6 +1359,45 @@ export function registerCloudUser(user) {
   }
 }
 
+// ─── 暱稱唯一性查詢（先查本地快取，再向 Firebase 雲端確認） ───
+export async function checkNicknameAvailable(nickname, currentUserId = '') {
+  if (!nickname) return { available: false, suggestion: '' };
+  const trimmed = nickname.trim();
+
+  // 1. 本地 registry 快速查重
+  const localRegistry = getJson('user_registry', {});
+  const localTaken = Object.entries(localRegistry).some(([uid, u]) =>
+    uid !== currentUserId &&
+    (u.name === trimmed || u.displayName === trimmed)
+  );
+  if (localTaken) {
+    const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return { available: false, suggestion: `${trimmed}_${suffix}` };
+  }
+
+  // 2. Firebase 雲端確認
+  if (db) {
+    try {
+      const snap = await get(ref(db, 'studyhub/user_registry'));
+      const val = snap.val();
+      if (val && typeof val === 'object') {
+        const cloudTaken = Object.entries(val).some(([uid, u]) =>
+          uid !== currentUserId &&
+          (u.name === trimmed || u.displayName === trimmed)
+        );
+        if (cloudTaken) {
+          const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+          return { available: false, suggestion: `${trimmed}_${suffix}` };
+        }
+      }
+    } catch (e) {
+      console.warn('[checkNicknameAvailable Cloud Error]', e);
+    }
+  }
+
+  return { available: true, suggestion: trimmed };
+}
+
 
 // --- 4. 錯題本與「錯題加強模式」掌握狀態 ---
 export function getMistakeNotebook(userId) {

@@ -94,7 +94,7 @@ export default function LegalCenterModal({ isOpen, onClose, initialTab = 'privac
                 法律遵循、隱私權與條款規範中心
               </h2>
               <span style={{ fontSize: '0.76rem', color: '#5b6772', fontWeight: 600 }}>
-                遵循中華民國《個人資料保護法》、《兒少權益保障法》與 WCAG 2.1 AA 無障礙標準 (2026 最新版)
+                遵循中華民國《個人資料保護法》、《兒少權益保障法》與 WCAG 2.1 AA 無障礙標準 (2026 最新修訂版 v2.0.0)
               </span>
             </div>
           </div>
@@ -172,7 +172,7 @@ export default function LegalCenterModal({ isOpen, onClose, initialTab = 'privac
           {activeTab === 'privacy' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '14px', padding: '14px 18px', color: '#166534', fontWeight: 600 }}>
-                🛡️ <strong>隱私權政策宣告 (版本 1.2.0 / 2026 修訂版)</strong><br />
+                🛡️ <strong>隱私權政策宣告 (版本 2.0.0 / 2026 最新修訂版)</strong><br />
                 本平台遵循中華民國《個人資料保護法》(PDPA) 及國際 COPPA 兒童線上隱私保護規範，承諾零商業廣告、不將資料外流販售。
               </div>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>一、個人資料蒐集之目的與類別</h3>
@@ -188,16 +188,22 @@ export default function LegalCenterModal({ isOpen, onClose, initialTab = 'privac
           {activeTab === 'terms' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '4px 0' }}>一、服務條款之認知與接受</h3>
-              <p>歡迎使用「學習網」（以下簡稱本平台）。當您使用本平台所提供之任何服務時，即表示您已充分閱讀、理解並同意接受本服務條款之所有規範。</p>
+              <p>歡迎使用「學習網」（以下簡稱本平台）。當您使用本平台所提供之任何服務時，即表示您已充分閱讀、理解並同意接受本服務條款之所有規範。本條款之最新版本為 v2.0.0，2026 年陸續公布於平台服務條款中心。</p>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>二、使用者行為規範與違約限制</h3>
               <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
                 <li>嚴禁以自動化腳本、爬蟲、外掛軟體進行非正常頻率之作答、洗榜或干擾伺服器運作。</li>
                 <li>嚴禁意圖逆向反編譯、破解或複製本站題庫與自適應演算法架構。</li>
                 <li>測驗時應遵守誠信原則，若經系統偵測持續惡意翻拍、切換分頁作弊，管理團隊得取消榮譽排行榜資格。</li>
+                <li>嚴禁上傳、廣播任何仇恨、騷擾、協迫弱勢或不雅之內容，違者得立即封禁帳號。</li>
+                <li>暱稱禁止冒用管理員身份關鍵字，系統將自動將暱稱調整為「同學」。</li>
               </ul>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>三、智慧財產權聲明</h3>
-              <p>本平台所包含之軟體程式、介面編排、演算法題庫及講義解析，其智慧財產權均受中華民國著作權法及相關專利商標法令保護。</p>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>四、準據法與管轄法院</h3>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>三、暱稱唯一性與內容適用規範</h3>
+              <p>每位注冊學員的排行榜暱稱須為全平台唯一。系統將先查在地快取記錄，再向 Firebase 雲端驗證，若暱稱已被使用，系統將自動為您加上隨機後綴。暱稱不得包含帶有歧視性、語言、收費性內容。</p>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>四、智慧財產權聲明</h3>
+              <p>本平台所包含之軟體程式、介面編排、演算法題庫及講義解析，其智慧財產權均受中華民國著作權法及相關專利商標法令保護。題庫包含 AI 自適應演算法動態衍生之素養變換題，不保證與正式會考安排全等。</p>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>五、帳號封禁與終止機制</h3>
+              <p>管理團隊得對違反本條款之帳號進行警告、暫停或永久封禁，並將相關操作實時寫入總管審計日誌。封禁帳號不得提出退款申請。</p>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>六、準據法與管轄法院</h3>
               <p>本服務條款之解釋與適用，均以中華民國法令為準據法。因本契約所生之爭議，雙方合意以臺灣臺北地方法院為第一審管轄法院。</p>
             </div>
           )}

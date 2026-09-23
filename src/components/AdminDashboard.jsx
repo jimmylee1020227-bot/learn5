@@ -941,7 +941,8 @@ export default function AdminDashboard() {
               placeholder="輸入要廣播給全體學生的公告內容（例如：🎉 恭喜林同學打破本週最高題庫得分紀錄！本週六有模考直播複習！）"
               style={{
                 width: '100%',
-                height: '100px',
+                minHeight: '280px',
+                resize: 'vertical',
                 background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
                 color: 'var(--theme-border, var(--theme-border, #17324d))',
                 border: '1.5px solid #ded3c5',
@@ -949,7 +950,8 @@ export default function AdminDashboard() {
                 padding: '12px',
                 fontSize: '0.92rem',
                 fontFamily: 'inherit',
-                fontWeight: 600
+                fontWeight: 600,
+                lineHeight: 1.7
               }}
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -1348,7 +1350,11 @@ export default function AdminDashboard() {
                 .filter(s => {
                   if (!studentSearchKeyword.trim()) return true;
                   const kw = studentSearchKeyword.toLowerCase();
-                  return s.name.toLowerCase().includes(kw) || s.school.toLowerCase().includes(kw);
+                  return (
+                    s.name.toLowerCase().includes(kw) ||
+                    (s.school || '').toLowerCase().includes(kw) ||
+                    (s.email || '').toLowerCase().includes(kw)
+                  );
                 })
                 .map(student => {
                   const isSelected = selectedStudent === student.name;
@@ -1370,9 +1376,16 @@ export default function AdminDashboard() {
                         alignItems: 'center',
                         gap: '6px'
                       }}
-                      title={`點擊調閱【${student.name}】的雲端做題與錯題紀錄`}
+                      title={`點擊調閱【${student.name}】(${student.email || '未登入'}) 的雲端做題與錯題紀錄`}
                     >
-                      <span>👤 {student.name}</span>
+                      <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+                        <span>👤 {student.name}</span>
+                        {student.email && (
+                          <span style={{ fontSize: '0.68rem', color: '#78818a', fontWeight: 600, fontFamily: 'monospace' }}>
+                            ✉ {student.email}
+                          </span>
+                        )}
+                      </span>
                       <span 
                         style={{ 
                           fontSize: '0.72rem', 
@@ -1694,9 +1707,13 @@ export default function AdminDashboard() {
                                   </span>
                                 </div>
 
-                                {/* 題幹文字 */}
+                                {/* 題幹文字（支援 SVG 圖表題、純文字與 LaTeX MathText） */}
                                 <div style={{ fontSize: '0.94rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.7, background: 'var(--theme-card, var(--theme-card, #fffdf9))', padding: '12px 14px', borderRadius: '10px', border: '1px solid #ded3c5' }}>
-                                  <MathText text={q.question || `【題目代碼 ${q.id}】：某題庫標準觀念評量題。`} />
+                                  {q.question && q.question.includes('<svg') ? (
+                                    <div dangerouslySetInnerHTML={{ __html: q.question }} style={{ overflowX: 'auto' }} />
+                                  ) : (
+                                    <MathText text={q.question || `【題目代碼 ${q.id}】：某題庫標準觀念評量題。`} />
+                                  )}
                                 </div>
 
                                 {/* 四大選項呈現 */}
@@ -1756,12 +1773,16 @@ export default function AdminDashboard() {
                                   </div>
                                 )}
 
-                                {/* 名師推導詳解 */}
+                                {/* 名師推導詳解（支援 SVG/HTML 圖表詳解渲染） */}
                                 <div style={{ background: 'var(--theme-card, var(--theme-card, #fffdf9))', border: '1px solid #ded3c5', borderRadius: '10px', padding: '10px 14px', fontSize: '0.82rem', color: '#2d3748', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
-                                  <span style={{ fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'block', marginBottom: '2px' }}>
-                                    📖 題目詳解與觀念解讀：
+                                  <span style={{ fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', display: 'block', marginBottom: '4px' }}>
+                                    📖 名師推導詳解與觀念解讀：
                                   </span>
-                                  <MathText text={q.explanation || '依據 108 課綱核心考點設計，按標準公式與定義運算即可得出解答。'} />
+                                  {q.explanation && q.explanation.includes('<') ? (
+                                    <div dangerouslySetInnerHTML={{ __html: q.explanation }} style={{ overflowX: 'auto', whiteSpace: 'normal' }} />
+                                  ) : (
+                                    <MathText text={q.explanation || '依據 108 課綱核心考點設計，按標準公式與定義運算即可得出解答。'} />
+                                  )}
                                 </div>
                               </div>
                             );
@@ -2035,7 +2056,7 @@ export default function AdminDashboard() {
                   <textarea
                     value={editExpText}
                     onChange={e => setEditExpText(e.target.value)}
-                    style={{ width: '100%', height: '80px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', padding: '10px', fontWeight: 600, marginBottom: '8px' }}
+                    style={{ width: '100%', minHeight: '240px', resize: 'vertical', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', padding: '10px', fontWeight: 600, marginBottom: '8px', lineHeight: 1.7 }}
                   />
                   <div style={{ padding: '10px', background: 'var(--theme-card, #fffdf9)', border: '1px dashed #ded3c5', borderRadius: 'var(--radius-sm)', fontSize: '0.9rem' }}>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px', fontWeight: 800 }}>即時預覽：</div>

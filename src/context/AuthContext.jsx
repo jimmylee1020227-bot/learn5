@@ -9,7 +9,8 @@ import {
   subscribeToCloudSync,
   subscribeUserRealtimeSync,
   registerCloudUser,
-  purgeAllTestData
+  purgeAllTestData,
+  checkNicknameAvailable
 } from '../services/cloudStorage';
 import { 
   redirectToGoogleLogin, 
@@ -199,8 +200,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('studyhub_auth_user');
   };
 
-  // 5. 自訂排行榜暱稱 (加入長度限制、XSS 過濾與管理員冒充防護)
-  const setCustomDisplayName = (newName) => {
+  // 5. 自訂排行榜暱稱 (加入長度限制、XSS 過濾、管理員冒充防護、雲端暱稱唯一性確認)
+  const setCustomDisplayName = async (newName) => {
     if (!newName || !newName.trim()) return;
     let trimmed = newName.trim().slice(0, 20);
     // XSS 安全過濾：剔除潛在 HTML/Script 標籤符號
@@ -211,6 +212,26 @@ export function AuthProvider({ children }) {
     const isAdminUser = checkIsAdmin(currentUser);
     if (!isAdminUser) {
       trimmed = trimmed.replace(/(管理員|總管理員|站長|官方|總管|系統總管|Admin|SuperAdmin)/gi, '同學');
+    }
+
+    // 防重複暱稱（先查本地快取，再向 Firebase 雲端確認）
+    try {
+      const { available, suggestion } = await checkNicknameAvailable(trimmed, currentUser?.id || '');
+      if (!available) {
+        trimmed = suggestion || (trimmed + '_' + Math.random().toString(36).substring(2, 6).toUpperCase());
+        alert(`⚠️ 該暱稱已被其他同學使用！系統已為您自動調整為：${trimmed}`);
+      }
+    } catch (e) {
+      // 雲端查詢失敗時，退回本地快速檢查
+      const registry = JSON.parse(localStorage.getItem('studyhub_user_registry') || '{}');
+      const nameExists = Object.values(registry).some(u =>
+        u.id !== currentUser?.id &&
+        (u.name === trimmed || u.displayName === trimmed)
+      );
+      if (nameExists) {
+        trimmed = trimmed + '_' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        alert(`⚠️ 該暱稱已被使用，系統已自動為您加上專屬後綴：${trimmed}`);
+      }
     }
 
     setCurrentUser(prev => ({
@@ -224,6 +245,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem(nameKey, trimmed);
     }
     updatePlayerDisplayName(currentUser?.id || 'guest_student', trimmed);
+    return trimmed;
   };
 
   // 6. 登入特定 Email（跨裝置 100% 相同 ID，資料即時漫遊）

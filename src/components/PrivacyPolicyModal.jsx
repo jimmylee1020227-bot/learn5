@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, BookOpen, Trophy, Sparkles, MessageSquare, Database, LogOut, CheckCircle, ExternalLink, Check } from 'lucide-react';
 
-export const PRIVACY_POLICY_VERSION = '1.2.0';
+export const PRIVACY_POLICY_VERSION = '2.0.0';
 
 export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }) {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
@@ -366,7 +366,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               }}
             />
             <span>
-              我已詳細閱讀、充分理解並同意遵守上述《學習網使用者服務條款與隱私權保護政策》，並同意本系統處理上述記載之必要學習作答資料。
+              我已詳細閱讀、充分理解並同意遵守上述《學習網使用者服務條款與隱私權保護政策（v2.0.0 / 2026 最新版）》，並同意本系統依法處理上述記載之必要學習作答資料。本人確認已年滿 13 歲，或已取得法定監護人之明示同意。
             </span>
           </label>
 
