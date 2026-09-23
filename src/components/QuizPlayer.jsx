@@ -79,11 +79,13 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
   // 🛡️ 強制交卷 (違規累計滿 3 次)
   const handleForceSubmit = () => {
     setShowCheatAlert(false);
-    const results = questions.map(q => {
-      const chosen = userAnswers[q.id];
+    const results = questions.map((q, idx) => {
+      const qKey = (q && (q.id || q.questionId)) || `q_${idx}`;
+      const chosen = userAnswers[qKey];
       const isCorrect = chosen === q.answer;
       return {
         ...q,
+        id: qKey,
         userChoice: chosen,
         isCorrect
       };
@@ -207,7 +209,9 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
     };
   }, [isSubmitModalOpen, questions, userAnswers, secondsSpent]);
 
+  const getQKey = (q, idx) => (q && (q.id || q.questionId)) || `q_${idx}`;
   const currentQ = questions[currentIndex] || questions[0];
+  const currentQKey = getQKey(currentQ, currentIndex);
 
   // 當題目組合改變（例如重測、換批題目或新測驗啟動）時，徹底重置測驗狀態，杜絕上一回答案殘留
   useEffect(() => {
@@ -232,37 +236,31 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
     setShowHint(false);
   }, [currentIndex]);
 
-  // 作答選擇 (支援再次點擊已選選項取消選取)
+  // 作答選擇 (保證選中，永不因誤觸或重複事件反向取消)
   const handleSelectOption = (optIndex) => {
-    console.log('Option clicked', optIndex, 'isPaused', isPaused);
-    if (isPaused) {
-      console.warn('Selection ignored due to pause');
-      return;
-    }
+    if (isPaused) return;
+    const qKey = getQKey(currentQ, currentIndex);
+
     // 如果已被消去劃線，點選時自動取消消去
-    const elimKey = `${currentQ.id}_${optIndex}`;
+    const elimKey = `${qKey}_${optIndex}`;
     if (eliminatedOptions[elimKey]) {
       setEliminatedOptions(prev => ({ ...prev, [elimKey]: false }));
     }
 
-    setUserAnswers(prev => {
-      // 若再次點擊相同選項，則取消作答 (方便誤點時重置)
-      if (prev[currentQ.id] === optIndex) {
-        const next = { ...prev };
-        delete next[currentQ.id];
-        return next;
-      }
-      return {
-        ...prev,
-        [currentQ.id]: optIndex
-      };
-    });
+    setUserAnswers(prev => ({
+      ...prev,
+      [qKey]: optIndex
+    }));
   };
 
   // 切換消去法劃線 (刪去法)
   const toggleEliminate = (e, optIndex) => {
-    e.stopPropagation();
-    const elimKey = `${currentQ.id}_${optIndex}`;
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const qKey = getQKey(currentQ, currentIndex);
+    const elimKey = `${qKey}_${optIndex}`;
     setEliminatedOptions(prev => ({
       ...prev,
       [elimKey]: !prev[elimKey]
@@ -271,20 +269,23 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
 
   // 切換待檢查標記
   const toggleFlagCurrent = () => {
+    const qKey = getQKey(currentQ, currentIndex);
     setFlaggedQuestions(prev => ({
       ...prev,
-      [currentQ.id]: !prev[currentQ.id]
+      [qKey]: !prev[qKey]
     }));
   };
 
   // 交卷動作
   const handleConfirmSubmit = () => {
     setIsSubmitModalOpen(false);
-    const results = questions.map(q => {
-      const chosen = userAnswers[q.id];
+    const results = questions.map((q, idx) => {
+      const qKey = getQKey(q, idx);
+      const chosen = userAnswers[qKey];
       const isCorrect = chosen === q.answer;
       return {
         ...q,
+        id: qKey,
         userChoice: chosen,
         isCorrect
       };
@@ -294,8 +295,9 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
 
   // 疑義回報
   const handleSubmitReport = () => {
+    const qKey = getQKey(currentQ, currentIndex);
     submitQuestionReport({
-      questionId: currentQ.id,
+      questionId: qKey,
       unitName: currentQ.unitName,
       reason: reportReason,
       comment: reportComment,
@@ -311,7 +313,7 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
       template_params: {
         reporter_name: currentUser?.displayName || '同學',
         report_reason: reportReason,
-        question_id: currentQ.id,
+        question_id: qKey,
         question_text: currentQ.question || '(無文字內容)',
         question_answer: currentQ.options ? currentQ.options[currentQ.answer] : '(無選項)',
         report_comment: reportComment || '(無補充說明)'
@@ -332,7 +334,7 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
   };
 
   // 統計數據
-  const answeredCount = Object.keys(userAnswers).filter(k => userAnswers[k] !== undefined).length;
+  const answeredCount = questions.filter((q, idx) => userAnswers[getQKey(q, idx)] !== undefined).length;
   const unansweredCount = questions.length - answeredCount;
   const flaggedCount = Object.values(flaggedQuestions).filter(Boolean).length;
 
@@ -890,16 +892,16 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
                 gap: '6px',
                 padding: '6px 14px',
                 borderRadius: '12px',
-                border: flaggedQuestions[currentQ.id] ? '2px solid var(--theme-accent, #ef8354)' : '1.5px solid #ded3c5',
-                background: flaggedQuestions[currentQ.id] ? '#fff0e9' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
-                color: flaggedQuestions[currentQ.id] ? '#c8643d' : '#5b6772',
+                border: flaggedQuestions[getQKey(currentQ, currentIndex)] ? '2px solid var(--theme-accent, #ef8354)' : '1.5px solid #ded3c5',
+                background: flaggedQuestions[getQKey(currentQ, currentIndex)] ? '#fff0e9' : 'var(--theme-bg, var(--theme-bg, #f8f3eb))',
+                color: flaggedQuestions[getQKey(currentQ, currentIndex)] ? '#c8643d' : '#5b6772',
                 fontWeight: 800,
                 fontSize: '0.82rem',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease'
               }}
             >
-              {flaggedQuestions[currentQ.id] ? (
+              {flaggedQuestions[getQKey(currentQ, currentIndex)] ? (
                 <>
                   <BookmarkCheck size={16} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
                   <span>已標記待檢查 (★)</span>
@@ -1053,8 +1055,9 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {currentQ.options.map((opt, optIdx) => {
               const letter = ['A', 'B', 'C', 'D'][optIdx];
-              const isSelected = userAnswers[currentQ.id] === optIdx;
-              const elimKey = `${currentQ.id}_${optIdx}`;
+              const currentQKey = getQKey(currentQ, currentIndex);
+              const isSelected = userAnswers[currentQKey] === optIdx;
+              const elimKey = `${currentQKey}_${optIdx}`;
               const isEliminated = Boolean(eliminatedOptions[elimKey]);
 
               return (
@@ -1096,9 +1099,8 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
                     width: '100%',
                     textAlign: 'left',
                     fontFamily: 'var(--font-sans)',
-                    touchAction: 'manipulation',
                     WebkitTapHighlightColor: 'transparent',
-                    userSelect: 'none'
+                    pointerEvents: 'auto'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>
@@ -1458,7 +1460,7 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
                 <AlertTriangle size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
-                <span>回報題目疑義 (題號: {currentQ.id})</span>
+                <span>回報題目疑義 (題號: {getQKey(currentQ, currentIndex)})</span>
               </div>
               <button onClick={() => setIsReportModalOpen(false)} className="btn btn-ghost btn-icon">
                 <X size={18} />

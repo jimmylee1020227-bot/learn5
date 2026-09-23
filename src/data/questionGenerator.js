@@ -152,7 +152,17 @@ try {
 } catch (e) {}
 
 function generateFallbackQuestion(subjectId, gradeId, unitId, index, difficulty, rand, conceptTag) {
+  const formattedIndex = String(index || 1).padStart(4, '0');
+  const unitSuffix = (String(unitId || 'u1').split('-').pop() || 'U1').toUpperCase();
+  const questionId = `Q-${(gradeId || 'G7').toUpperCase()}-${(subjectId ? subjectId.substring(0, 2) : 'MA').toUpperCase()}-${unitSuffix}-${formattedIndex}`;
   return {
+    id: questionId,
+    index: index || 1,
+    subjectId,
+    gradeId,
+    unitId,
+    conceptTag,
+    difficulty,
     question: `【108課綱核心素養第 ${index} 題】關於「${conceptTag}」之學科知識理解，下列敘述何者正確？`,
     options: [
       '核心概念詮釋精確且符合108課綱學科素養標準',

@@ -107,6 +107,7 @@ export function hydrateQuestionDetails(item) {
       if (gen) {
         return {
           ...item,
+          id: item.id || item.questionId || gen.id,
           subjectId,
           gradeId,
           unitId,
