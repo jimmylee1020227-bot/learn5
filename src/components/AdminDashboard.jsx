@@ -1710,7 +1710,7 @@ export default function AdminDashboard() {
                                 {/* 題幹文字（支援 SVG 圖表題、純文字與 LaTeX MathText） */}
                                 <div style={{ fontSize: '0.94rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.7, background: 'var(--theme-card, var(--theme-card, #fffdf9))', padding: '12px 14px', borderRadius: '10px', border: '1px solid #ded3c5' }}>
                                   {q.question && q.question.includes('<svg') ? (
-                                    <div dangerouslySetInnerHTML={{ __html: q.question }} style={{ overflowX: 'auto' }} />
+                                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.question, { USE_PROFILES: { svg: true, html: true }, ADD_TAGS: ['svg','path','line','circle','rect','text','g','polyline','polygon'] }) }} style={{ overflowX: 'auto' }} />
                                   ) : (
                                     <MathText text={q.question || `【題目代碼 ${q.id}】：某題庫標準觀念評量題。`} />
                                   )}
@@ -1779,7 +1779,7 @@ export default function AdminDashboard() {
                                     📖 名師推導詳解與觀念解讀：
                                   </span>
                                   {q.explanation && q.explanation.includes('<') ? (
-                                    <div dangerouslySetInnerHTML={{ __html: q.explanation }} style={{ overflowX: 'auto', whiteSpace: 'normal' }} />
+                                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.explanation, { USE_PROFILES: { svg: true, html: true }, ADD_TAGS: ['svg','path','line','circle','rect','text','g','polyline','polygon'] }) }} style={{ overflowX: 'auto', whiteSpace: 'normal' }} />
                                   ) : (
                                     <MathText text={q.explanation || '依據 108 課綱核心考點設計，按標準公式與定義運算即可得出解答。'} />
                                   )}

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { rateLimiter } from '../utils/secureStorage';
 import { updatePlayerDisplayName } from '../services/leaderboardService';
 import { 
   SUPER_ADMIN_EMAIL, 
@@ -121,8 +122,14 @@ export function AuthProvider({ children }) {
           createdAt: new Date().toISOString()
         };
         setCurrentUser(newUser);
-        localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(newUser));
-        localStorage.setItem('studyhub_auth_user', JSON.stringify(newUser));
+        // ── 安全：accessToken / authProof 不落地 localStorage，只存 sessionStorage ──
+        const sensitive = { accessToken: newUser.accessToken, authProof: newUser.authProof };
+        sessionStorage.setItem('__sh_sensitive__', JSON.stringify(sensitive));
+        const safeUser = { ...newUser };
+        delete safeUser.accessToken;
+        delete safeUser.authProof;
+        localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
+        localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
         registerCloudUser(newUser);
       }
       setAuthLoading(false);
@@ -141,8 +148,10 @@ export function AuthProvider({ children }) {
         if (currentUser.role !== correctRole) {
           const updatedUser = { ...currentUser, role: correctRole };
           setCurrentUser(updatedUser);
-          localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(updatedUser));
-          localStorage.setItem('studyhub_auth_user', JSON.stringify(updatedUser));
+          const safeUpdated = { ...updatedUser };
+          delete safeUpdated.accessToken; delete safeUpdated.authProof;
+          localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUpdated));
+          localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUpdated));
         }
       }
     };
@@ -174,8 +183,10 @@ export function AuthProvider({ children }) {
   // 2. 當使用者資料變更時同步持久化並訂閱專屬個人雲端節點
   useEffect(() => {
     if (currentUser && currentUser.isGoogleBound) {
-      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(currentUser));
-      localStorage.setItem('studyhub_auth_user', JSON.stringify(currentUser));
+      const safeUser = { ...currentUser };
+      delete safeUser.accessToken; delete safeUser.authProof;
+      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
+      localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
       registerCloudUser(currentUser);
     }
     if (currentUser?.id) {
@@ -251,6 +262,14 @@ export function AuthProvider({ children }) {
   // 6. 登入特定 Email（跨裝置 100% 相同 ID，資料即時漫遊）
   const directLoginWithEmail = (email, displayName = '', securityKey = '') => {
     const cleanEmail = email.trim();
+
+    // ── 暴力攻擊防護：同 Email 5 分鐘內超過 5 次失敗 → 鎖定 15 分鐘 ──
+    const rl = rateLimiter.attempt(`login_${cleanEmail}`);
+    if (!rl.allowed) {
+      const mins = Math.ceil(rl.remainingMs / 60000);
+      throw new Error(`⛔ 登入次數過多！請等待 ${mins} 分鐘後再試。`);
+    }
+
     const assignedRole = resolveUserRole(cleanEmail);
 
     // 管理員帳號安全防護：未通過 Google 官方驗證時，需提供環境變數中的專屬管理安全密鑰
@@ -283,8 +302,11 @@ export function AuthProvider({ children }) {
       createdAt: new Date().toISOString()
     };
     setCurrentUser(user);
-    localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user));
-    localStorage.setItem('studyhub_auth_user', JSON.stringify(user));
+    // ── 安全：adminSessionProof 不落地 localStorage ──
+    const safeUser = { ...user };
+    delete safeUser.adminSessionProof; delete safeUser.accessToken; delete safeUser.authProof;
+    localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
+    localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
     registerCloudUser(user);
   };
 

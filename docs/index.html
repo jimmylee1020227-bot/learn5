@@ -14,7 +14,52 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
+  <!-- ══════ Security Headers (防火牆) ══════ -->
+  <!-- CSP：只允許指定來源，封鎖 inline script 外的任意注入 -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval'
+      https://apis.google.com
+      https://accounts.google.com
+      https://cdn.jsdelivr.net
+      https://www.googletagmanager.com;
+    style-src 'self' 'unsafe-inline'
+      https://fonts.googleapis.com
+      https://cdn.jsdelivr.net;
+    font-src 'self' data:
+      https://fonts.gstatic.com
+      https://cdn.jsdelivr.net;
+    img-src 'self' data: blob:
+      https://api.dicebear.com
+      https://lh3.googleusercontent.com
+      https://www.google.com;
+    connect-src 'self'
+      https://*.firebaseio.com
+      https://*.googleapis.com
+      https://identitytoolkit.googleapis.com
+      https://securetoken.googleapis.com
+      https://fonts.googleapis.com
+      https://fonts.gstatic.com
+      https://jimmylee1020227-bot.github.io;
+    frame-src
+      https://accounts.google.com;
+    frame-ancestors 'none';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self' https://accounts.google.com;
+    upgrade-insecure-requests;
+  " />
+  <!-- 禁止在 iframe 中被嵌入（Clickjacking 防護） -->
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <!-- 禁止 MIME-type sniffing -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <!-- Referrer 政策：只在同源傳送 referrer -->
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <!-- 禁用麥克風、相機等不必要權限 -->
+  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()" />
+  <!-- ══════ /Security Headers ══════ -->
   <!-- Google Fonts: Plus Jakarta Sans & Noto Sans TC (Manus Exam Community Style) -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -22,7 +67,7 @@
     rel="stylesheet">
   <!-- KaTeX 向量排版印刷字型樣式 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
-  <script type="module" crossorigin src="./assets/index-BXrq9ZBs.js"></script>
+  <script type="module" crossorigin src="./assets/index-CNqxA6MN.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-Dlqim-H6.css">
 </head>
 

@@ -8,22 +8,28 @@
 
       "global_settings": {
         ".read": true,
-        ".write": "newData.exists() && newData.hasChildren()"
+        ".write": false,
+        "comment": "只有後端 Admin SDK 可寫（不開放 client-side 寫入）"
       },
 
       "admins_list": {
         ".read": true,
-        ".write": "newData.exists() && newData.hasChildren()"
+        ".write": false,
+        "comment": "管理員名冊唯讀，僅後端 Admin SDK 可修改"
       },
 
       "audit_logs": {
-        ".read": true,
-        ".write": "newData.exists() && newData.hasChildren()"
+        ".read": false,
+        "$logId": {
+          ".read": false,
+          ".write": "!data.exists() && newData.exists() && newData.hasChildren(['action','userId','ts'])"
+        },
+        "comment": "稽核日誌只允許新增（不可覆蓋/刪除），且須包含必要欄位"
       },
 
       "studyhub_weekly_leaderboard": {
         ".read": true,
-        ".write": "newData.exists()"
+        ".write": "newData.exists() && newData.hasChildren(['id','score'])"
       },
 
       "leaderboard_players": {
@@ -35,62 +41,73 @@
       },
 
       "ticket_grants": {
-        ".read": true,
+        ".read": false,
         "$userId": {
           ".read": true,
           "$grantId": {
             ".read": true,
-            ".write": "newData.exists()"
+            ".write": "!data.exists() && newData.exists()",
+            "comment": "票券只能新增，不能覆蓋（防止重複兌換）"
           }
         }
       },
 
       "studyhub_hall_of_fame": {
         ".read": true,
-        ".write": "newData.exists()"
+        ".write": "newData.exists() && newData.hasChildren()"
       },
 
       "recent_practice_stream": {
         ".read": true,
-        ".write": "newData.exists()"
+        ".write": "newData.exists() && newData.hasChildren(['userId','subject','ts'])"
       },
 
       "user_registry": {
         ".read": false,
         "$userId": {
           ".read": true,
-          ".write": "newData.exists() && newData.hasChild('id') && newData.child('id').val() === $userId"
+          ".write": "newData.exists() && newData.hasChild('id') && newData.child('id').val() === $userId",
+          "comment": "用戶只能寫自己的節點"
         }
       },
 
       "admin_notifications": {
         ".read": true,
-        ".write": "newData.exists()"
+        ".write": "newData.exists() && newData.hasChildren()",
+        "comment": "管理員廣播只讀 + 新增，實際管控在應用層"
       },
 
       "redemption_codes": {
         ".read": false,
-        ".write": "newData.exists() && newData.hasChildren()"
+        ".write": false,
+        "comment": "兌換碼只有後端 Admin SDK 可管理"
       },
 
       "question_overrides": {
         ".read": true,
-        ".write": "newData.exists()"
+        ".write": "newData.exists() && newData.hasChildren()"
       },
 
       "question_reports": {
-        ".read": true,
-        ".write": "newData.exists()"
+        ".read": false,
+        "$reportId": {
+          ".write": "!data.exists() && newData.exists() && newData.hasChildren(['subject','questionId','reporterId'])",
+          "comment": "只能新增舉報，不能修改或刪除"
+        }
       },
 
       "site_issue_reports": {
-        ".read": true,
-        ".write": "newData.exists()"
+        ".read": false,
+        "$reportId": {
+          ".write": "!data.exists() && newData.exists() && newData.hasChildren(['type','reporterId'])"
+        }
       },
 
       "community_posts": {
         ".read": true,
-        ".write": "newData.exists()"
+        "$postId": {
+          ".write": "newData.exists() && newData.hasChild('authorId')"
+        }
       },
 
       "deleted_community_post_ids": {
@@ -99,15 +116,17 @@
       },
 
       "community_reports": {
-        ".read": true,
-        ".write": "newData.exists()"
+        ".read": false,
+        "$reportId": {
+          ".write": "!data.exists() && newData.exists() && newData.hasChildren(['postId','reporterId'])"
+        }
       },
 
       "support_chats": {
         ".read": false,
         "$chatId": {
           ".read": true,
-          ".write": "newData.exists()"
+          ".write": "newData.exists() && newData.hasChild('userId')"
         }
       },
 
@@ -115,7 +134,7 @@
         ".read": false,
         "$paperId": {
           ".read": true,
-          ".write": "newData.exists()"
+          ".write": "newData.exists() && newData.hasChild('ownerId')"
         }
       },
 
@@ -123,7 +142,8 @@
         ".read": false,
         "$redeemId": {
           ".read": true,
-          ".write": "!data.exists() && newData.exists()"
+          ".write": "!data.exists() && newData.exists() && newData.hasChildren(['userId','code','ts'])",
+          "comment": "兌換紀錄只能新增一次，防止重複兌換攻擊"
         }
       },
 
@@ -132,36 +152,16 @@
         ".write": "newData.exists()"
       },
 
-      
-      
       "deleted_redemption_codes": {
         ".read": true,
         ".write": "newData.exists()"
       },
-      
+
       "$dynamicKey": {
         ".read": true,
-        ".write": "newData.exists() && ( $dynamicKey.matches('^practice_history_.*') || $dynamicKey.matches('^mistake_notebook_.*') || $dynamicKey.matches('^user_quiz_papers_.*') || $dynamicKey.matches('^studyhub_game_state_.*') || $dynamicKey.matches('^redeemed_history_.*') || $dynamicKey.matches('^daily_stats_.*') || $dynamicKey.matches('^privacy_consent_.*') || $dynamicKey.matches('^studyhub_custom_name_.*') )"
-      },
-      
-      "$dynamicKey": {
-        ".read": true,
-        ".write": "newData.exists() && ( $dynamicKey.matches('^practice_history_.*') || $dynamicKey.matches('^mistake_notebook_.*') || $dynamicKey.matches('^user_quiz_papers_.*') || $dynamicKey.matches('^studyhub_game_state_.*') || $dynamicKey.matches('^redeemed_history_.*') || $dynamicKey.matches('^daily_stats_.*') || $dynamicKey.matches('^privacy_consent_.*') || $dynamicKey.matches('^studyhub_custom_name_.*') )"
-      },
-
-      
-
-      
-
-      
-
-      
-
-      
-
-      
-
-      
+        ".write": "newData.exists() && ($dynamicKey.matches('^practice_history_[a-zA-Z0-9_-]+$') || $dynamicKey.matches('^mistake_notebook_[a-zA-Z0-9_-]+$') || $dynamicKey.matches('^user_quiz_papers_[a-zA-Z0-9_-]+$') || $dynamicKey.matches('^studyhub_game_state_[a-zA-Z0-9_-]+$') || $dynamicKey.matches('^redeemed_history_[a-zA-Z0-9_-]+$') || $dynamicKey.matches('^daily_stats_[a-zA-Z0-9_-]+$') || $dynamicKey.matches('^privacy_consent_[a-zA-Z0-9_-]+$') || $dynamicKey.matches('^studyhub_custom_name_[a-zA-Z0-9@._-]+$'))",
+        "comment": "動態 key 白名單：只允許已知前綴 + 字元限制（防止 key injection）"
+      }
     }
   }
 }

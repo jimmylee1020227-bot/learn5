@@ -1028,7 +1028,7 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
             {currentQ.html && (
               <div 
                 style={{ marginTop: '10px', marginBottom: '10px' }}
-                dangerouslySetInnerHTML={{ __html: currentQ.html }} 
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentQ.html, { USE_PROFILES: { svg: true, html: true }, ADD_TAGS: ['svg','path','line','circle','rect','text','g','polyline','polygon'] }) }} 
               />
             )}
 
