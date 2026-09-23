@@ -1,11 +1,19 @@
+import { getHardChineseQuestion } from './chineseHardArchetypes.js';
 // 108 課綱國文全單元題庫引擎（豐富多樣範本，100% 依年級與單元精準對齊，杜絕重複題）
 export function generateChineseQuestion(gradeId, unitId, index, difficulty = 'medium', rand, conceptTag) {
-  const isExtreme = difficulty === 'extreme' || difficulty === 'hardest';
+  const isExtreme = difficulty === 'extreme' || difficulty === 'hard' || difficulty === 'hardest';
   const people = ['小明', '阿華', '建國', '美美', '志明', '春嬌', '大雄', '胖虎', '小夫', '靜香', '子涵', '宇軒', '博雅'];
   const person = people[Math.floor(rand() * people.length)];
   const preamble = `${person}在研讀國文時：`;
 
   const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
+
+  // ── 進階挑戰難度分流 (Extreme / Hardest) ──
+  if (isExtreme) {
+    const hardQ = getHardChineseQuestion(gradeId, unitId, index, rand, preamble, conceptTag);
+    if (hardQ) return hardQ;
+  }
+
 
   // ── SVG 長條圖題（每 11 題出現一次）：古代文學體裁分類 ──
   if (index % 11 === 0) {

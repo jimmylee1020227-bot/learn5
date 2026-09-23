@@ -1,11 +1,19 @@
+import { getHardEnglishQuestion } from './englishHardArchetypes.js';
 // 108 課綱英語科全單元題庫引擎（豐富多樣題庫範本，100% 依年級與單元精準對齊，杜絕重複題）
 export function generateEnglishQuestion(gradeId, unitId, index, difficulty = 'medium', rand, conceptTag) {
-  const isExtreme = difficulty === 'extreme' || difficulty === 'hardest';
+  const isExtreme = difficulty === 'extreme' || difficulty === 'hard' || difficulty === 'hardest';
   const people = ['Alex', 'David', 'Emily', 'Sarah', 'Kevin', 'Grace', 'Brian', 'Chloe', 'Daniel', 'Jessica'];
   const person = people[Math.floor(rand() * people.length)];
   const preamble = `While practicing English, ${person} was asked:`;
 
   const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
+
+  // ── 進階挑戰難度分流 (Extreme / Hardest) ──
+  if (isExtreme) {
+    const hardQ = getHardEnglishQuestion(gradeId, unitId, index, rand, preamble, conceptTag);
+    if (hardQ) return hardQ;
+  }
+
 
   if (index % 11 === 0) {
     const actList = ['Reading', 'Sports', 'Gaming', 'Music', 'Cooking'];

@@ -1,11 +1,19 @@
+import { getHardMathQuestion } from './mathHardArchetypes.js';
 // 108 課綱數學全單元題庫引擎（豐富多樣題庫範本，100% 依年級與單元精準對齊，杜絕重複題）
 export function generateMathQuestion(gradeId, unitId, index, difficulty = 'medium', rand, conceptTag) {
-  const isExtreme = difficulty === 'extreme' || difficulty === 'hardest';
+  const isExtreme = difficulty === 'extreme' || difficulty === 'hard' || difficulty === 'hardest';
   const people = ['小明', '阿華', '大建', '美美', '小英', '志明', '春嬌', '大雄', '靜香', '王老師', '陳老闆'];
   const person = people[Math.floor(rand() * people.length)];
   const preamble = `${person}在解題時：`;
 
   const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
+
+  // ── 進階挑戰難度分流 (Extreme / Hardest) ──
+  if (isExtreme) {
+    const hardQ = getHardMathQuestion(gradeId, unitId, index, rand, preamble, conceptTag);
+    if (hardQ) return hardQ;
+  }
+
 
   if (index % 7 === 0) {
     // 折線圖：氣溫變化

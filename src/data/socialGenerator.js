@@ -1,11 +1,19 @@
+import { getHardSocialQuestion } from './socialHardArchetypes.js';
 // 108 課綱社會科全單元題庫引擎（豐富多樣題庫範本，100% 依年級與單元精準對齊，杜絕重複題）
 export function generateSocialQuestion(gradeId, unitId, index, difficulty = 'medium', rand, conceptTag) {
-  const isExtreme = difficulty === 'extreme' || difficulty === 'hardest';
+  const isExtreme = difficulty === 'extreme' || difficulty === 'hard' || difficulty === 'hardest';
   const people = ['阿翔', '小美', '大壯', '阿建', '班長', '歷史學家', '地理考察組', '公民小記者', '小英', '文華老師'];
   const person = people[Math.floor(rand() * people.length)];
   const preamble = `${person}在探討社會科議題時：`;
 
   const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
+
+  // ── 進階挑戰難度分流 (Extreme / Hardest) ──
+  if (isExtreme) {
+    const hardQ = getHardSocialQuestion(gradeId, unitId, index, rand, preamble, conceptTag);
+    if (hardQ) return hardQ;
+  }
+
 
   if (index % 7 === 0) {
     const years = [1950, 1970, 1990, 2010, 2030];
