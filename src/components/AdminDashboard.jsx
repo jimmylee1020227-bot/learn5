@@ -24,7 +24,8 @@ import {
   subscribeToCloudSync,
   SUPER_ADMIN_EMAIL,
   getAdminsList,
-  checkIsAdmin
+  checkIsAdmin,
+  getJson
 } from '../services/cloudStorage';
 import { 
   adminGrantPoints, 
