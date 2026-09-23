@@ -329,16 +329,81 @@ function MainAppContent() {
   );
 }
 
+
+class AppErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('[AppErrorBoundary]', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#f8f3eb',
+          padding: '24px'
+        }}>
+          <div style={{
+            maxWidth: '440px',
+            background: '#fffdf9',
+            border: '3px solid #17324d',
+            borderRadius: '24px',
+            boxShadow: '8px 8px 0px #17324d',
+            padding: '32px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
+            <h2 style={{ color: '#17324d', fontWeight: 900, marginBottom: '12px' }}>
+              頁面載入異常
+            </h2>
+            <p style={{ color: '#5b6772', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.6 }}>
+              系統遇到未預期的錯誤，可能是網路連線問題或暫時性異常。請嘗試重新載入頁面。
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: '12px 32px',
+                background: '#ef8354',
+                color: '#fff',
+                fontWeight: 800,
+                fontSize: '1rem',
+                border: '2.5px solid #17324d',
+                borderRadius: '14px',
+                boxShadow: '4px 4px 0px #17324d',
+                cursor: 'pointer'
+              }}
+            >
+              🔄 重新載入
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   return (
-    <DeviceProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <GameProvider>
-            <MainAppContent />
-          </GameProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </DeviceProvider>
+    <AppErrorBoundary>
+      <DeviceProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <GameProvider>
+              <MainAppContent />
+            </GameProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </DeviceProvider>
+    </AppErrorBoundary>
   );
 }
