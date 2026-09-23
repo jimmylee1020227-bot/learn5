@@ -970,20 +970,33 @@ export async function fetchAllCloudQuizPapers() {
   return sortedPapers;
 }
 
-// 異步向 Firebase 調閱特定學生的歷史試卷
+// 異步向 Firebase 調閱特定學生的歷史試卷（加 2 秒超時保護，移除昂貴的全服遞迴呼叫）
 export async function fetchCloudUserQuizPapers(userId) {
   if (!userId) return [];
   const userPapersKey = `user_quiz_papers_${userId}`;
   const papersMap = new Map();
 
+  // 1. 本地快取（同步秒出）
   const localCached = getJson(userPapersKey, []);
   if (Array.isArray(localCached)) {
     localCached.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
   }
 
+  // 2. 從全服本地快取中篩出該學生（避免重複發 Firebase 請求）
+  const allCachedPapers = getJson('all_quiz_papers', []);
+  if (Array.isArray(allCachedPapers)) {
+    allCachedPapers.filter(p => p && p.userId === userId).forEach(p => {
+      if (p.id && !papersMap.has(p.id)) papersMap.set(p.id, p);
+    });
+  }
+
+  // 3. Firebase 專屬節點（加 2 秒 timeout，超時靜默跳過）
   if (db) {
     try {
-      const snap = await get(ref(db, `studyhub/${userPapersKey}`));
+      const snap = await Promise.race([
+        get(ref(db, `studyhub/${userPapersKey}`)),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2000))
+      ]);
       const val = snap.val();
       if (val) {
         const list = Array.isArray(val) ? val : Object.values(val);
@@ -992,13 +1005,9 @@ export async function fetchCloudUserQuizPapers(userId) {
     } catch (e) {}
   }
 
-  // 結合全服中該學生的試卷
-  const allPapers = await fetchAllCloudQuizPapers();
-  allPapers.filter(p => p.userId === userId).forEach(p => {
-    if (!papersMap.has(p.id)) papersMap.set(p.id, p);
-  });
-
-  return Array.from(papersMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const sorted = Array.from(papersMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  if (sorted.length > 0) safeSetLocalStorage(STORAGE_PREFIX + userPapersKey, JSON.stringify(sorted));
+  return sorted;
 }
 
 export function recordPracticeLog(logData) {

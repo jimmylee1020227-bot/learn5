@@ -6,7 +6,8 @@ import {
   fetchCloudUserPracticeHistory, 
   fetchCloudUserQuizPapers, 
   subscribeToCloudSync,
-  hydrateQuestionDetails
+  hydrateQuestionDetails,
+  getJson
 } from '../services/cloudStorage';
 import { 
   BookOpen, 
@@ -30,7 +31,7 @@ import MathText from './MathText';
 export default function UserHistoryModal({ onLaunchRetryQuiz }) {
   const { currentUser } = useAuth();
   const [subTab, setSubTab] = useState('papers'); // 'papers' | 'mistakes' | 'history'
-  const [quizPapers, setQuizPapers] = useState([]);
+  const [quizPapers, setQuizPapers] = useState(() => getJson(`user_quiz_papers_${currentUser?.id || 'guest_student'}`, []));
   const [historyList, setHistoryList] = useState([]);
   const [mistakeList, setMistakeList] = useState([]);
   const [filterSubject, setFilterSubject] = useState('all');
@@ -41,35 +42,37 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
 
   // 載入本地與雲端歷程
   const loadData = useCallback(async (forceCloud = false) => {
-    // 1. 先即時讀取本地快取
+    // 1. 先即時讀取本地快取（同步，秒出）
     const localHistory = getUserPracticeHistory(userId);
     const localMistakes = getMistakeNotebook(userId);
+    const localPapers = getJson(`user_quiz_papers_${userId}`, []);
     setHistoryList(localHistory);
     setMistakeList(localMistakes);
+    if (localPapers.length > 0) setQuizPapers(localPapers);
 
-    // 2. 從 Firebase 雲端非同步調閱完整試卷與作答紀錄
-    if (forceCloud || localHistory.length === 0 || quizPapers.length === 0) {
+    // 2. 非同步向 Firebase 更新（加 2.5 秒 timeout，超時靜默降級，不卡畫面）
+    if (forceCloud || localHistory.length === 0) {
       setIsLoading(true);
       try {
-        const [cloudPapers, cloudHistory] = await Promise.all([
-          fetchCloudUserQuizPapers(userId),
-          fetchCloudUserPracticeHistory(userId)
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500));
+        const [cloudPapers, cloudHistory] = await Promise.race([
+          Promise.all([
+            fetchCloudUserQuizPapers(userId),
+            fetchCloudUserPracticeHistory(userId)
+          ]),
+          timeout.then(() => { throw new Error('TIMEOUT'); })
         ]);
 
-        if (Array.isArray(cloudPapers) && cloudPapers.length > 0) {
-          setQuizPapers(cloudPapers);
-        }
-        if (Array.isArray(cloudHistory) && cloudHistory.length > 0) {
-          setHistoryList(cloudHistory);
-        }
+        if (Array.isArray(cloudPapers) && cloudPapers.length > 0) setQuizPapers(cloudPapers);
+        if (Array.isArray(cloudHistory) && cloudHistory.length > 0) setHistoryList(cloudHistory);
         setMistakeList(getMistakeNotebook(userId));
       } catch (err) {
-        console.warn('雲端歷程拉取異常:', err);
+        if (err.message !== 'TIMEOUT') console.warn('雲端歷程拉取異常:', err);
       } finally {
         setIsLoading(false);
       }
     }
-  }, [userId, quizPapers.length]);
+  }, [userId]);
 
   useEffect(() => {
     loadData(true);
