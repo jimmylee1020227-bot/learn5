@@ -234,7 +234,11 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
 
   // 作答選擇 (支援再次點擊已選選項取消選取)
   const handleSelectOption = (optIndex) => {
-    if (isPaused) return;
+    console.log('Option clicked', optIndex, 'isPaused', isPaused);
+    if (isPaused) {
+      console.warn('Selection ignored due to pause');
+      return;
+    }
     // 如果已被消去劃線，點選時自動取消消去
     const elimKey = `${currentQ.id}_${optIndex}`;
     if (eliminatedOptions[elimKey]) {
