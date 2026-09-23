@@ -96,14 +96,6 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty = 'me
     };
   }
 
-  // 預設 Fallback
-  return {
-    question: `【108課綱科學素養】${preamble}\n關於「${conceptTag}」之科學探究核心觀念，下列敘述何者正確？`,
-    options: [`符合108課綱自然科學定義且實驗推論客觀精確`, `混淆因果關係之非科學推論`, `違反質量守恆與能量守恆定律之假設`, `超出國中課綱規範之偏誤推論`],
-    answer: 0,
-    hint: `💡 提示：回歸 108 課綱課本核心概念定義，注意實驗控制變因與因果關聯。`,
-    explanation: `📖 詳解：本題檢驗該單元【${conceptTag}】之核心素養，選項第一項正確無誤。`
-  };
 
   // ============================================================
   // 國一 (七年級：生物學)
@@ -737,4 +729,13 @@ export function generateScienceQuestion(gradeId, unitId, index, difficulty = 'me
     }
   }
 
+
+  // 預設 Fallback
+  return {
+    question: `【108課綱科學素養】${preamble}\n關於「${conceptTag}」之科學探究核心觀念，下列敘述何者正確？`,
+    options: [`符合108課綱自然科學定義且實驗推論客觀精確`, `混淆因果關係之非科學推論`, `違反質量守恆與能量守恆定律之假設`, `超出國中課綱規範之偏誤推論`],
+    answer: 0,
+    hint: `💡 提示：回歸 108 課綱課本核心概念定義，注意實驗控制變因與因果關聯。`,
+    explanation: `📖 詳解：本題檢驗該單元【${conceptTag}】之核心素養，選項第一項正確無誤。`
+  };
 }
