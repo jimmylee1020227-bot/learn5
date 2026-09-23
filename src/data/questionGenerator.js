@@ -132,12 +132,15 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
     explanation: qData.explanation,
     isListening: qData.isListening || false,
     audioText: qData.audioText || null,
-    isReading: qData.isReading || false,
+    isReading: Boolean(qData.isReading || qData.readingText),
     readingText: qData.readingText || null,
     isChat: qData.isChat || false,
     chatMessages: qData.chatMessages || null,
-    isSvg: qData.isSvg || false,
+    isSvg: Boolean(qData.isSvg || qData.svgContent),
     svgContent: qData.svgContent || null,
+    html: qData.html || null,
+    tts: qData.tts || null,
+    ttsLang: qData.ttsLang || null,
     isCustom: false
   };
 }

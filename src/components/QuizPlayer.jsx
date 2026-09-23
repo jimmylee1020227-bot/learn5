@@ -934,10 +934,10 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
           )}
 
           {/* 閱讀測驗長文區塊 */}
-          {currentQ.isReading && currentQ.readingText && (
-            <div style={{ background: '#fcf8e3', border: '1.5px solid #faebcc', borderRadius: '16px', padding: '20px 24px', marginBottom: '8px' }}>
+          {(currentQ.isReading || currentQ.readingText) && currentQ.readingText && (
+            <div style={{ background: '#fcf8e3', border: '1.5px solid #faebcc', borderRadius: '16px', padding: '20px 24px', marginBottom: '8px', maxHeight: '380px', overflowY: 'auto' }}>
               <span style={{ display: 'inline-block', background: '#8a6d3b', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 900, marginBottom: '12px' }}>
-                閱讀素養文本
+                📖 閱讀素養文本
               </span>
               <div style={{ 
                 fontSize: activeFont.stem, 
@@ -953,9 +953,19 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
           )}
 
           {/* SVG 向量幾何/圖形題區塊 */}
-          {currentQ.isSvg && currentQ.svgContent && (
-            <div style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd', borderRadius: '16px', padding: '20px', marginBottom: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentQ.svgContent, { USE_PROFILES: { svg: true, svgFilters: true }, FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'], FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'] }) }} />
+          {(currentQ.isSvg || currentQ.svgContent) && currentQ.svgContent && (
+            <div style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd', borderRadius: '16px', padding: '20px', marginBottom: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible', minHeight: '160px' }}>
+              <div
+                className="quiz-svg-wrapper"
+                style={{ maxWidth: '100%', width: '100%', display: 'flex', justifyContent: 'center' }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentQ.svgContent, {
+                  USE_PROFILES: { svg: true, svgFilters: true },
+                  ADD_TAGS: ['svg', 'path', 'line', 'circle', 'rect', 'text', 'g', 'polyline', 'polygon', 'ellipse', 'defs', 'marker', 'linearGradient', 'stop'],
+                  ADD_ATTR: ['viewBox', 'xmlns', 'style', 'fill', 'stroke', 'stroke-width', 'rx', 'ry', 'text-anchor', 'font-size', 'font-weight', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'points', 'width', 'height', 'transform', 'd'],
+                  FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+                  FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover']
+                }) }}
+              />
             </div>
           )}
 
@@ -1046,7 +1056,15 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
               return (
                 <div
                   key={optIdx}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectOption(optIdx)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelectOption(optIdx);
+                    }
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1070,7 +1088,13 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
                       : '3px 3px 0 var(--theme-border, #17324d)',
                     cursor: 'pointer',
                     opacity: isEliminated ? 0.6 : 1,
-                    transition: 'all 0.15s ease'
+                    transition: 'all 0.15s ease',
+                    width: '100%',
+                    textAlign: 'left',
+                    fontFamily: 'var(--font-sans)',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    userSelect: 'none'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>

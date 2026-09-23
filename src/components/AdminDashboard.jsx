@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
@@ -1707,6 +1708,35 @@ export default function AdminDashboard() {
                                   </span>
                                 </div>
 
+                                {/* 閱讀測驗長文區塊 */}
+                                {(q.isReading || q.readingText) && q.readingText && (
+                                  <div style={{ background: '#fcf8e3', border: '1.5px solid #faebcc', borderRadius: '10px', padding: '12px 16px', marginBottom: '8px' }}>
+                                    <span style={{ display: 'inline-block', background: '#8a6d3b', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 900, marginBottom: '6px' }}>
+                                      📖 閱讀素養文本
+                                    </span>
+                                    <div style={{ fontSize: '0.88rem', lineHeight: 1.7, fontWeight: 600, color: '#4a4a4a', whiteSpace: 'pre-wrap', fontFamily: 'var(--font-serif)' }}>
+                                      {q.readingText}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* SVG 向量幾何/圖形題區塊 */}
+                                {(q.isSvg || q.svgContent) && q.svgContent && (
+                                  <div style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd', borderRadius: '10px', padding: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                    <div
+                                      className="quiz-svg-wrapper"
+                                      style={{ maxWidth: '100%', width: '100%', display: 'flex', justifyContent: 'center' }}
+                                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(q.svgContent, {
+                                        USE_PROFILES: { svg: true, svgFilters: true },
+                                        ADD_TAGS: ['svg', 'path', 'line', 'circle', 'rect', 'text', 'g', 'polyline', 'polygon', 'ellipse', 'defs', 'marker', 'linearGradient', 'stop'],
+                                        ADD_ATTR: ['viewBox', 'xmlns', 'style', 'fill', 'stroke', 'stroke-width', 'rx', 'ry', 'text-anchor', 'font-size', 'font-weight', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'points', 'width', 'height', 'transform', 'd'],
+                                        FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+                                        FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover']
+                                      }) }}
+                                    />
+                                  </div>
+                                )}
+
                                 {/* 題幹文字（支援 SVG 圖表題、純文字與 LaTeX MathText） */}
                                 <div style={{ fontSize: '0.94rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.7, background: 'var(--theme-card, var(--theme-card, #fffdf9))', padding: '12px 14px', borderRadius: '10px', border: '1px solid #ded3c5' }}>
                                   {q.question && q.question.includes('<svg') ? (
@@ -1900,6 +1930,35 @@ export default function AdminDashboard() {
                     {isExpanded && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '6px' }}>
                         
+                        {/* 閱讀測驗長文區塊 */}
+                        {(log.isReading || log.readingText) && log.readingText && (
+                          <div style={{ background: '#fcf8e3', border: '1.5px solid #faebcc', borderRadius: '10px', padding: '12px 16px', marginBottom: '8px' }}>
+                            <span style={{ display: 'inline-block', background: '#8a6d3b', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 900, marginBottom: '6px' }}>
+                              📖 閱讀素養文本
+                            </span>
+                            <div style={{ fontSize: '0.88rem', lineHeight: 1.7, fontWeight: 600, color: '#4a4a4a', whiteSpace: 'pre-wrap', fontFamily: 'var(--font-serif)' }}>
+                              {log.readingText}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* SVG 向量幾何/圖形題區塊 */}
+                        {(log.isSvg || log.svgContent) && log.svgContent && (
+                          <div style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd', borderRadius: '10px', padding: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <div
+                              className="quiz-svg-wrapper"
+                              style={{ maxWidth: '100%', width: '100%', display: 'flex', justifyContent: 'center' }}
+                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(log.svgContent, {
+                                USE_PROFILES: { svg: true, svgFilters: true },
+                                ADD_TAGS: ['svg', 'path', 'line', 'circle', 'rect', 'text', 'g', 'polyline', 'polygon', 'ellipse', 'defs', 'marker', 'linearGradient', 'stop'],
+                                ADD_ATTR: ['viewBox', 'xmlns', 'style', 'fill', 'stroke', 'stroke-width', 'rx', 'ry', 'text-anchor', 'font-size', 'font-weight', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'points', 'width', 'height', 'transform', 'd'],
+                                FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+                                FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover']
+                              }) }}
+                            />
+                          </div>
+                        )}
+
                         {/* 題幹內容 */}
                         <div style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--theme-border, var(--theme-border, #17324d))', lineHeight: 1.8, background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ded3c5' }}>
                           {log.question || `【題目代碼 ${log.questionId}】：某題庫標準觀念評量題。`}

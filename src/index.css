@@ -826,3 +826,20 @@ textarea:focus-visible {
     --text-dim: #1e293b !important;
   }
 }
+
+/* 測驗圖表 SVG 顯示自適應標準化 */
+.quiz-svg-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.quiz-svg-wrapper svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+  min-height: 120px;
+}
+

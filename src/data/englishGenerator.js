@@ -15,6 +15,54 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty = 'me
   }
 
 
+  // ── English Reading Comprehension (every 7th question) ──
+  if (index % 7 === 0) {
+    const passages = [
+      {
+        text: `Smartphones have become an essential part of daily life. People use them not only for communication, but also for entertainment, education, and shopping. However, experts warn that too much screen time can lead to poor sleep, reduced concentration, and social isolation. Many schools have banned smartphones in classrooms to help students focus on their studies.`,
+        q: `According to the passage, why have some schools banned smartphones in classrooms?`,
+        options: [`To help students focus on their studies`, `Because smartphones are too expensive`, `Because smartphones are not useful`, `To encourage buying better devices`],
+        answer: 0,
+        hint: `💡 Tip: Key phrase is "to help students focus on their studies".`,
+        explanation: `📖 Explanation: The passage says "Many schools have banned smartphones in classrooms to help students focus on their studies."`
+      },
+      {
+        text: `The water cycle is the continuous movement of water through Earth's systems. Water evaporates from oceans, rises as water vapor, cools into clouds, and falls back as rain or snow. This process is driven by solar energy and the force of gravity, playing a crucial role in maintaining life on Earth.`,
+        q: `What drives the water cycle according to the passage?`,
+        options: [`Solar energy and the force of gravity`, `Wind and ocean currents alone`, `Human activity and industry`, `The movement of the moon`],
+        answer: 0,
+        hint: `💡 Tip: Look for "driven by" in the passage.`,
+        explanation: `📖 Explanation: "driven by solar energy and the force of gravity" — solar energy causes evaporation, gravity causes precipitation.`
+      },
+      {
+        text: `Taiwan is an island nation in East Asia, known for its advanced technology industry and vibrant culture. The island experiences a subtropical climate, with hot summers and mild winters. Night markets are a beloved part of Taiwanese culture, offering a wide variety of local street foods and goods.`,
+        q: `Which feature of Taiwan's culture is described in the passage?`,
+        options: [`Night markets with street food and goods`, `Large desert landscapes`, `Cold arctic winters`, `Underground transportation systems`],
+        answer: 0,
+        hint: `💡 Tip: Look for what is described as "a beloved part of Taiwanese culture".`,
+        explanation: `📖 Explanation: The passage specifically mentions night markets as a beloved cultural feature offering local foods and goods.`
+      },
+      {
+        text: `Artificial intelligence is transforming many industries. In healthcare, AI can analyze medical images and detect diseases early. In education, personalized learning systems adapt to each student's pace and style. However, concerns remain about privacy, data security, and the potential displacement of workers by automated systems.`,
+        q: `According to the passage, what is one concern about artificial intelligence?`,
+        options: [`The risk of data privacy violations and job displacement`, `The high cost of personal computers`, `The difficulty of teaching AI to speak`, `The lack of research in healthcare`],
+        answer: 0,
+        hint: `💡 Tip: The concerns are listed at the end of the passage.`,
+        explanation: `📖 Explanation: The passage explicitly lists privacy, data security, and worker displacement as key concerns about AI.`
+      }
+    ];
+    const p = passages[Math.abs(index + Math.floor(rand() * 7)) % passages.length];
+    return {
+      question: `【Reading Comprehension】Read the following passage and answer:\n\n${p.q}`,
+      options: p.options,
+      answer: p.answer,
+      hint: p.hint,
+      explanation: p.explanation,
+      isReading: true,
+      readingText: p.text
+    };
+  }
+
   if (index % 11 === 0) {
     const actList = ['Reading', 'Sports', 'Gaming', 'Music', 'Cooking'];
     const hrList = actList.map(() => Math.floor(rand() * 4) + 1);
@@ -639,38 +687,6 @@ export function generateEnglishQuestion(gradeId, unitId, index, difficulty = 'me
       ];
       return archetypes[Math.abs(index + Math.floor(rand() * 19)) % archetypes.length]();
     }
-  }
-
-  // ── English Reading Comprehension (every 7th question) ──
-  if (index % 7 === 0) {
-    const passages = [
-      {
-        text: `Smartphones have become an essential part of daily life. People use them not only for communication, but also for entertainment, education, and shopping. However, experts warn that too much screen time can lead to poor sleep, reduced concentration, and social isolation. Many schools have banned smartphones in classrooms to help students focus on their studies.`,
-        q: `According to the passage, why have some schools banned smartphones in classrooms?`,
-        options: [`To help students focus on their studies`, `Because smartphones are too expensive`, `Because smartphones are not useful`, `To encourage buying better devices`],
-        answer: 0,
-        hint: `💡 Tip: Key phrase is "to help students focus on their studies".`,
-        explanation: `📖 Explanation: The passage says "Many schools have banned smartphones in classrooms to help students focus on their studies."`
-      },
-      {
-        text: `The water cycle is the continuous movement of water through Earth's systems. Water evaporates from oceans, rises as water vapor, cools into clouds, and falls back as rain or snow. This process is driven by solar energy and the force of gravity, playing a crucial role in maintaining life on Earth.`,
-        q: `What drives the water cycle according to the passage?`,
-        options: [`Solar energy and the force of gravity`, `Wind and ocean currents alone`, `Human activity and industry`, `The movement of the moon`],
-        answer: 0,
-        hint: `💡 Tip: Look for "driven by" in the passage.`,
-        explanation: `📖 Explanation: "driven by solar energy and the force of gravity" — solar energy causes evaporation, gravity causes precipitation.`
-      }
-    ];
-    const p = passages[Math.floor(rand() * passages.length)];
-    return {
-      question: `【Reading Comprehension】Read the following passage and answer:\n\n"${p.text}"\n\n${p.q}`,
-      options: p.options,
-      answer: p.answer,
-      hint: p.hint,
-      explanation: p.explanation,
-      isReading: true,
-      readingText: p.text
-    };
   }
 
   // ── English SVG Bar Chart (every 11th question) ──
