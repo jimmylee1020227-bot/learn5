@@ -69,7 +69,13 @@ export function AuthProvider({ children }) {
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isGoogleConfigModalOpen, setIsGoogleConfigModalOpen] = useState(false);
   const [isGoogleConsentOpen, setIsGoogleConsentOpen] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(() => {
+    // 只有 URL 帶有 OAuth 回調參數時才需要等，一般頁面直接進
+    if (typeof window === 'undefined') return false;
+    const hash = window.location.hash;
+    const search = window.location.search;
+    return (hash && hash.includes('access_token')) || search.includes('google_auth_success');
+  });
 
   // 1. 頁面載入時：檢查是否有 Google OAuth 2.0 跳轉回調 (#access_token=...)
   useEffect(() => {
