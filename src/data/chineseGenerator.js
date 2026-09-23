@@ -43,15 +43,6 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty = 'me
     };
   }
 
-  // 預設 Fallback
-  return {
-    question: `【108課綱核心素養】${preamble}\n關於「${conceptTag}」的核心語文常識，下列敘述何者正確？`,
-    options: [`符合108課綱學科素養標準且邏輯推論精確`, `混淆因果先後關聯性的非邏輯敘述`, `違反漢語修辭與格律規範的誤讀`, `超出國中課綱規範之偏誤推論`],
-    answer: 0,
-    hint: `💡 提示：回歸 108 課綱課本核心概念定義，注意選項間的邏輯關聯。`,
-    explanation: `📖 詳解：本題檢驗該單元【${conceptTag}】之核心素養，選項第一項正確無誤。`
-  };
-
   // ============================================================
   // 國一 (七年級)
   // ============================================================
@@ -810,4 +801,15 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty = 'me
     };
   }
 
+
+
+  // ── 萬用回退 ──
+  // 預設 Fallback
+  return {
+    question: `【108課綱核心素養】${preamble}\n關於「${conceptTag}」的核心語文常識，下列敘述何者正確？`,
+    options: [`符合108課綱學科素養標準且邏輯推論精確`, `混淆因果先後關聯性的非邏輯敘述`, `違反漢語修辭與格律規範的誤讀`, `超出國中課綱規範之偏誤推論`],
+    answer: 0,
+    hint: `💡 提示：回歸 108 課綱課本核心概念定義，注意選項間的邏輯關聯。`,
+    explanation: `📖 詳解：本題檢驗該單元【${conceptTag}】之核心素養，選項第一項正確無誤。`
+  };
 }

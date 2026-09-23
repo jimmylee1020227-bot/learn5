@@ -610,6 +610,8 @@ export function generateSocialQuestion(gradeId, unitId, index, difficulty = 'med
   // ── 社會科 SVG 折線圖題（每 7 題出現一次）：人口變化 ──
    // ── 社會科閱讀素養題（每 11 題出現一次）──
 
+
+  // ── 萬用回退 ──
   // 預設 Fallback
   return {
     question: `【108課綱社會素養】${preamble}\n關於「${conceptTag}」之公民社會與史地探究觀念，下列敘述何者正確？`,
