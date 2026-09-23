@@ -14,6 +14,46 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
     // u1: 負數、數線與整數運算
     if (uNum === 1) {
       const archetypes = [
+
+        () => {
+          const a = Math.floor(rand() * 20) + 10;
+          const b = Math.floor(rand() * 15) + 5;
+          const c = Math.floor(rand() * 10) + 2;
+          const ans = (a - b) * c;
+          return {
+            question: `【盈虧問題】${preamble}\n某商店進貨成本為每件 ${b} 元，售價定為每件 ${a} 元，今天共賣出了 ${c} 件。請問今天的總利潤（盈餘）為多少元？`,
+            options: [`${ans}`, `${ans + 5}`, `${ans - c}`, `${a * c}`],
+            answer: 0,
+            hint: `💡 提示：利潤 = (售價 - 成本) $\times$ 數量。`,
+            explanation: `📖 詳解：每件利潤為 ${a} - ${b} = ${a - b} 元，賣出 ${c} 件總利潤為 (${a} - ${b}) \times ${c} = ${ans} 元。`
+          };
+        },
+        () => {
+          const temp1 = Math.floor(rand() * 15) + 5;
+          const drop = Math.floor(rand() * 8) + 3;
+          const rise = Math.floor(rand() * 10) + 4;
+          const ans = temp1 - drop + rise;
+          return {
+            question: `【溫度變化問題】${preamble}\n今日早晨氣溫為 ${temp1} 度，中午因為下雨氣溫下降了 ${drop} 度，到了下午太陽出來氣溫又回升了 ${rise} 度。請問下午的氣溫為幾度？`,
+            options: [`${ans}`, `${ans + 2}`, `${ans - 1}`, `${temp1 + rise}`],
+            answer: 0,
+            hint: `💡 提示：下降用減法，回升用加法，按順序計算即可。`,
+            explanation: `📖 詳解：${temp1} - ${drop} + ${rise} = ${ans} 度。`
+          };
+        },
+        () => {
+          const start = Math.floor(rand() * 10) - 5;
+          const move1 = Math.floor(rand() * 8) + 2;
+          const move2 = Math.floor(rand() * 12) + 3;
+          const ans = start + move1 - move2;
+          return {
+            question: `【數線位移問題】${preamble}\n一隻青蛙在數線上，起點位於坐標 ${start}。牠先向右跳了 ${move1} 單位，接著又向左跳了 ${move2} 單位。請問青蛙最後停在數線上的哪一個坐標？`,
+            options: [`${ans}`, `${ans + 1}`, `${ans - 1}`, `${start + move1 + move2}`],
+            answer: 0,
+            hint: `💡 提示：向右跳代表加，向左跳代表減。`,
+            explanation: `📖 詳解：${start} + ${move1} - ${move2} = ${ans}。`
+          };
+        },
         () => {
           const vA = Math.floor(rand() * 2) + 2; // 2, 3
           const vB = Math.floor(rand() * 3) + 3; // 3, 4, 5

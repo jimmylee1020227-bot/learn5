@@ -1335,19 +1335,28 @@ export function getRegisteredStudents() {
 // 註冊或更新學生雲端資料至註冊名冊 (確保跨裝置實名制且管理員可見)
 export function registerCloudUser(user) {
   if (!user || !user.id) return;
-  const registry = getJson('user_registry', {});
-  const existing = registry[user.id] || {};
-  registry[user.id] = {
-    ...existing,
+  const userPayload = {
     id: user.id,
-    email: user.email || existing.email,
-    name: user.displayName || user.email?.split('@')[0] || existing.name || '國中同學',
-    avatar: user.avatar || existing.avatar,
-    role: user.role || existing.role || 'student',
-    school: user.school || existing.school || (user.role === 'super_admin' ? '系統總管理員' : '會考戰友'),
+    email: user.email || '',
+    name: user.displayName || user.email?.split('@')[0] || '國中同學',
+    avatar: user.avatar || '',
+    role: user.role || 'student',
+    school: user.school || (user.role === 'super_admin' ? '系統總管理員' : '會考戰友'),
     lastActive: new Date().toISOString()
   };
-  setJson('user_registry', registry);
+
+  // 1. 同步更新本地端
+  const registry = getJson('user_registry', {});
+  registry[user.id] = { ...(registry[user.id] || {}), ...userPayload };
+  safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(registry));
+
+  // 2. 直接寫入 Firebase 單一使用者節點，避免整包覆寫造成 Racing Condition
+  if (db && typeof window !== 'undefined') {
+    try {
+      const nodeRef = ref(db, `studyhub/user_registry/${user.id}`);
+      set(nodeRef, userPayload).catch(e => console.warn('Registry sync failed', e));
+    } catch(err) {}
+  }
 }
 
 
