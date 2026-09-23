@@ -42,7 +42,6 @@ function MainAppContent() {
   const { 
     currentUser, 
     logout,
-    authLoading,
     triggerGoogleLogin, 
     isGoogleConfigModalOpen,
     setIsGoogleConfigModalOpen 
@@ -158,19 +157,7 @@ function MainAppContent() {
     }
   };
 
-  // 1. Google OAuth 回調是 async，等 authLoading 完成後再判斷登入狀態，防止短暫 null 期閃回登入頁
-  if (authLoading) {
-    return (
-      <div className="app-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--theme-bg, #f8f3eb)' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🎓</div>
-          <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--theme-border, #17324d)' }}>會考讀書網載入中...</div>
-        </div>
-      </div>
-    );
-  }
-
-  // 2. 嚴格強制登入機制：未登入時全螢幕鎖定為登入閘道，禁止任何訪客操作
+  // 強制登入機制：未登入時全螢幕鎖定為登入閘道
   if (!currentUser) {
     return (
       <div className="app-container">
