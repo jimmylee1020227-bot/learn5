@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { addStudentPoints } from '../services/leaderboardService';
-import { getGlobalSettings, subscribeToCloudSync, getJson, setJson, fetchCloudUserGameState, getTaiwanDateStr } from '../services/cloudStorage';
+import { getGlobalSettings, subscribeToCloudSync, getJson, setJson, updateServerSync, fetchCloudUserGameState, getTaiwanDateStr } from '../services/cloudStorage';
 import { getRealDate, getRealTime, syncServerTime } from '../services/timeService';
 import confetti from 'canvas-confetti';
 
@@ -96,7 +96,8 @@ export function GameProvider({ children }) {
                 tickets: cloudState.tickets ?? prev.tickets ?? 0,
                 pityCount: cloudState.pityCount ?? prev.pityCount ?? 0
               };
-              setJson(`${STORAGE_GAME_KEY}_${userId}`, merged);
+              window.localStorage && localStorage.setItem('studyhub_' + `${STORAGE_GAME_KEY}_${userId}`, JSON.stringify(merged));
+              updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, merged);
               return merged;
             }
             return prev;
@@ -143,7 +144,8 @@ export function GameProvider({ children }) {
           return; // 嚴禁以未水合之空預設值覆蓋雲端！
         }
       }
-      setJson(`${STORAGE_GAME_KEY}_${userId}`, gameState);
+      window.localStorage && localStorage.setItem('studyhub_' + `${STORAGE_GAME_KEY}_${userId}`, JSON.stringify(gameState));
+      updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, gameState);
     }
   }, [gameState, userId]);
 
@@ -256,7 +258,8 @@ export function GameProvider({ children }) {
     // 同步立即寫入 localStorage 與 state，防止連點抽獎時狀態遺失或被舊快取反彈
     setGameState(updatedState);
     if (userId && userId !== 'guest_student') {
-      setJson(`${STORAGE_GAME_KEY}_${userId}`, updatedState);
+      window.localStorage && localStorage.setItem('studyhub_' + `${STORAGE_GAME_KEY}_${userId}`, JSON.stringify(updatedState));
+      updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, updatedState);
     }
 
     let resultNotice = '';

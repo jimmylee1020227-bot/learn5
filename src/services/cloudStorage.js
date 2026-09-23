@@ -1,4 +1,4 @@
-import { db, ref, set, get, onValue } from './firebase.js';
+import { db, ref, set, get, onValue, update } from './firebase.js';
 
 // 安全寫入 LocalStorage (防 QuotaExceededError 造成後續雲端同步中斷)
 export function safeSetLocalStorage(key, valueStr) {
@@ -711,7 +711,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
   const combinedLogs = [...newLogEntries, ...existingLogs];
   if (combinedLogs.length > 500) combinedLogs.length = 500; // 安全保存最新 500 筆做題歷史，徹底防止 localStorage 溢出
   setJson(userHistoryKey, combinedLogs);
-  setJson('practice_history', combinedLogs);
+  // REMOVED: global overwrite
 
   // 3. 即時全服作答串流推播 (供管理員中台秒級即時監控做題狀況)
   try {
@@ -1025,7 +1025,7 @@ export function recordPracticeLog(logData) {
   logs.unshift(entry);
   if (logs.length > 5000) logs.length = 5000; // 永久保存 5000 筆做題歷史
   setJson(userHistoryKey, logs);
-  setJson('practice_history', logs);
+  // REMOVED: global overwrite
   return hydrateQuestionDetails(entry);
 }
 
@@ -2315,3 +2315,13 @@ export function savePrivacyConsent(userId, userInfo = {}) {
   return consentRecord;
 }
 
+
+export function updateServerSync(key, updates) {
+  if (typeof window === 'undefined' || !db) return;
+  try {
+    const r = ref(db, `studyhub/${key}`);
+    update(r, updates).catch(err => {
+      console.error(`[Firebase Update Error: ${key}]`, err);
+    });
+  } catch (e) {}
+}

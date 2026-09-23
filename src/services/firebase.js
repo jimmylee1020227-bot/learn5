@@ -1,6 +1,6 @@
 // Firebase 雲端即時連線實例 (官方 Realtime Database 初始化)
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set, get, onValue, off, child } from 'firebase/database';
+import { getDatabase, ref, set, get, onValue, off, child, update } from 'firebase/database';
 
 export const firebaseConfig = {
   projectId: "learn-9e08c",
@@ -21,4 +21,4 @@ try {
   console.error('[Firebase Init Error]', e);
 }
 
-export { db, ref, set, get, onValue, off, child };
+export { db, ref, set, get, onValue, off, child, update };

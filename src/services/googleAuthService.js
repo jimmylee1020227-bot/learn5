@@ -74,17 +74,16 @@ export async function parseGoogleAuthCallback() {
     if (mockEmail) {
       window.history.replaceState(null, '', window.location.pathname);
       const cleanEmail = mockEmail.trim().toLowerCase();
-      const isJimmy = cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase();
-      const legacyId = typeof btoa !== 'undefined' ? btoa(cleanEmail).replace(/[^a-zA-Z0-9]/g, '').slice(0, 16) : generateDeterministicUserId(cleanEmail);
+      const unifiedId = generateDeterministicUserId(cleanEmail);
       
       return {
-        googleId: isJimmy ? 'admin_super_jimmy' : legacyId,
-        id: isJimmy ? 'admin_super_jimmy' : legacyId, // 確保有 id (使用舊版 btoa 邏輯，保留舊帳號分數)
+        googleId: unifiedId,
+        id: unifiedId, // 統一所有登入 ID 格式
         email: cleanEmail,
         displayName: cleanEmail.split('@')[0],
         avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
         isGoogleBound: true,
-        role: isJimmy ? 'super_admin' : 'student'
+        role: cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase() ? 'super_admin' : 'student'
       };
     }
   }
@@ -112,10 +111,11 @@ export async function parseGoogleAuthCallback() {
 
       const data = await res.json();
       const cleanEmail = (data.email || '').trim().toLowerCase();
-      const isJimmy = cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase();
+      const unifiedId = generateDeterministicUserId(cleanEmail);
 
       return {
-        googleId: isJimmy ? 'admin_super_jimmy' : generateDeterministicUserId(cleanEmail),
+        googleId: unifiedId,
+        id: unifiedId,
         sub: data.sub,
         email: data.email,
         displayName: data.name || data.email.split('@')[0],
@@ -123,7 +123,9 @@ export async function parseGoogleAuthCallback() {
         emailVerified: data.email_verified,
         accessToken,
         authProof: generateAuthProof(data.email, data.sub, accessToken),
-        authTimestamp: Date.now()
+        authTimestamp: Date.now(),
+        isGoogleBound: true,
+        role: cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase() ? 'super_admin' : 'student'
       };
     } catch (err) {
       console.error('Failed to parse Google OAuth callback', err);

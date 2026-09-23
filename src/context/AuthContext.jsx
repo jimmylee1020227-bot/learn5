@@ -157,10 +157,18 @@ export function AuthProvider({ children }) {
         const currentAdmins = getAdminsList();
         updateRoleFromList(currentAdmins);
       }
+      if (event && event.key === 'user_registry' && currentUser?.id) {
+        const registry = JSON.parse(localStorage.getItem('studyhub_user_registry') || '{}');
+        const latestData = registry[currentUser.id];
+        if (latestData && latestData.name && latestData.name !== currentUser.displayName) {
+          setCurrentUser(prev => ({ ...prev, displayName: latestData.name }));
+          localStorage.setItem('studyhub_auth_user', JSON.stringify({ ...currentUser, displayName: latestData.name }));
+        }
+      }
     });
 
     return () => unsub();
-  }, [currentUser?.email, currentUser?.role]);
+  }, [currentUser?.email, currentUser?.role, currentUser?.id, currentUser?.displayName]);
 
   // 2. 當使用者資料變更時同步持久化並訂閱專屬個人雲端節點
   useEffect(() => {
