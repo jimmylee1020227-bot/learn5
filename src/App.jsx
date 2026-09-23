@@ -42,6 +42,7 @@ function MainAppContent() {
   const { 
     currentUser, 
     logout,
+    authLoading,
     triggerGoogleLogin, 
     isGoogleConfigModalOpen,
     setIsGoogleConfigModalOpen 
@@ -156,6 +157,11 @@ function MainAppContent() {
       setQuizState('idle');
     }
   };
+
+  // Google OAuth 回調時短暫隱藏畫面（不顯示文字，避免使用者覺得卡頓，僅等待數百毫秒）
+  if (authLoading) {
+    return <div className="app-container" style={{ background: 'var(--theme-bg, #f8f3eb)', minHeight: '100vh' }}></div>;
+  }
 
   // 強制登入機制：未登入時全螢幕鎖定為登入閘道
   if (!currentUser) {

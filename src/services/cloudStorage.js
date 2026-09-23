@@ -554,11 +554,14 @@ export function getAdminsList() {
   return list;
 }
 
-// 主動向 Firebase 雲端即時拉取最新管理員名冊 (跨裝置跨分頁即時生效)
+// 主動向 Firebase 雲端即時拉取最新管理員名冊 (跨裝置跨分頁即時生效，加入 3 秒超時防護)
 export async function fetchCloudAdminsList() {
   if (!db) return getAdminsList();
   try {
-    const snap = await get(ref(db, 'studyhub/admins_list'));
+    const snap = await Promise.race([
+      get(ref(db, 'studyhub/admins_list')),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+    ]);
     const val = snap.val();
     if (val) {
       let list = Array.isArray(val) ? val : Object.values(val);
@@ -570,7 +573,7 @@ export async function fetchCloudAdminsList() {
       return list;
     }
   } catch (e) {
-    console.warn('[Fetch Cloud Admins Error]', e);
+    console.warn('[Fetch Cloud Admins Error / Timeout]', e);
   }
   return getAdminsList();
 }

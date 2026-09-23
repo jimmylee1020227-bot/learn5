@@ -98,11 +98,16 @@ export async function parseGoogleAuthCallback() {
 
       window.history.replaceState(null, '', window.location.pathname + window.location.search);
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: {
           Authorization: `Bearer ${accessToken}`
-        }
+        },
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         console.error('Google UserInfo fetch failed', res.statusText);
