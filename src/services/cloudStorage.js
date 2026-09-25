@@ -58,6 +58,17 @@ let activeUserListenerUnsub = null;
 
 // 動態題庫還原器 (由 questionGenerator 註冊，實現 0 空間負擔的完整解析還原)
 let registeredQuestionHydrator = null;
+
+// Firebase 同步推播函數 (移至最前方避免混淆器 Hoisting 失效)
+export function updateServerSync(key, updates) {
+  if (typeof window === 'undefined' || !db) return;
+  try {
+    const r = ref(db, `studyhub/${key}`);
+    update(r, updates).catch(err => {
+      console.error(`[Firebase Update Error: ${key}]`, err);
+    });
+  } catch (e) {}
+}
 export function registerQuestionHydrator(fn) {
   registeredQuestionHydrator = fn;
 }
@@ -2436,13 +2447,3 @@ export function savePrivacyConsent(userId, userInfo = {}) {
   return consentRecord;
 }
 
-
-export function updateServerSync(key, updates) {
-  if (typeof window === 'undefined' || !db) return;
-  try {
-    const r = ref(db, `studyhub/${key}`);
-    update(r, updates).catch(err => {
-      console.error(`[Firebase Update Error: ${key}]`, err);
-    });
-  } catch (e) {}
-}
