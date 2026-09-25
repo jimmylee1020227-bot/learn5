@@ -1420,6 +1420,22 @@ export async function checkNicknameAvailable(nickname, currentUserId = '') {
   if (!nickname) return { available: false, suggestion: '' };
   const trimmed = nickname.trim();
 
+  // 輔助函數：計算下一個可用的數字後綴
+  const getNextAvailableName = (baseName, registryObj) => {
+    let counter = 2;
+    let tempName = `${baseName}${counter}`;
+    while (
+      Object.entries(registryObj).some(([uid, u]) =>
+        uid !== currentUserId &&
+        (u.name === tempName || u.displayName === tempName)
+      )
+    ) {
+      counter++;
+      tempName = `${baseName}${counter}`;
+    }
+    return tempName;
+  };
+
   // 1. 本地 registry 快速查重
   const localRegistry = getJson('user_registry', {});
   const localTaken = Object.entries(localRegistry).some(([uid, u]) =>
@@ -1427,8 +1443,7 @@ export async function checkNicknameAvailable(nickname, currentUserId = '') {
     (u.name === trimmed || u.displayName === trimmed)
   );
   if (localTaken) {
-    const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return { available: false, suggestion: `${trimmed}_${suffix}` };
+    return { available: false, suggestion: getNextAvailableName(trimmed, localRegistry) };
   }
 
   // 2. Firebase 雲端確認
@@ -1442,8 +1457,7 @@ export async function checkNicknameAvailable(nickname, currentUserId = '') {
           (u.name === trimmed || u.displayName === trimmed)
         );
         if (cloudTaken) {
-          const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-          return { available: false, suggestion: `${trimmed}_${suffix}` };
+          return { available: false, suggestion: getNextAvailableName(trimmed, val) };
         }
       }
     } catch (e) {

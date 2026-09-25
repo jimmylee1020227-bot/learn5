@@ -106,8 +106,19 @@ export function AuthProvider({ children }) {
             }
           } catch (_) {}
 
-          const resolvedDisplayName = savedDisplayName
+          let baseDisplayName = savedDisplayName
             || (isJimmy ? '總管理員 (Jimmy)' : (googleUser.displayName || googleUser.email.split('@')[0]));
+
+          // 新增防重複名機制：剛進來時若名稱重複，自動透過 Firebase/本地 檢查並加上數字後綴 (2, 3...)
+          try {
+            const { available, suggestion } = await checkNicknameAvailable(baseDisplayName, deterministicId);
+            if (!available && suggestion) {
+              baseDisplayName = suggestion;
+            }
+          } catch (e) {
+            // 雲端確認失敗的 fallback 防護
+          }
+          const resolvedDisplayName = baseDisplayName;
 
           const newUser = {
             id: deterministicId,
