@@ -26,9 +26,22 @@ export function GameProvider({ children }) {
   const [globalSettings, setGlobalSettings] = useState(getGlobalSettings());
   
   // 學生個人遊戲狀態：抽獎券、點數倍率、每日簽到日期 (雲端即時同步)
-  const [gameState, setGameState] = useState(() => {
+  const [gameState, setLocalGameState] = useState(() => {
     return getJson(`${STORAGE_GAME_KEY}_${userId}`, DEFAULT_GAME_STATE);
   });
+
+  // 全域包裹 setGameState，確保從任何組件 (如兌換碼) 呼叫時，都會自動同步到雲端
+  const setGameState = React.useCallback((action) => {
+    setLocalGameState(prev => {
+      const nextState = typeof action === 'function' ? action(prev) : { ...prev, ...action };
+      nextState.updatedAt = getRealTime();
+      setJson(`${STORAGE_GAME_KEY}_${userId}`, nextState);
+      if (userId && userId !== 'guest_student') {
+        updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, nextState);
+      }
+      return nextState;
+    });
+  }, [userId]);
 
   const [isLuckyDrawOpen, setIsLuckyDrawOpen] = useState(false);
   const hasClaimedTodayRef = useRef(false);
@@ -51,7 +64,7 @@ export function GameProvider({ children }) {
         isRemoteSyncingRef.current = true;
         const remoteData = getJson(`${STORAGE_GAME_KEY}_${userId}`, null);
         if (remoteData) {
-          setGameState(prev => {
+          setLocalGameState(prev => {
             const remoteTime = remoteData.updatedAt || 0;
             const localTime = prev.updatedAt || 0;
             // 只有遠端時間較新時才採納遠端，避免覆蓋本地剛抽獎的扣票
@@ -78,17 +91,17 @@ export function GameProvider({ children }) {
     hasClaimedTodayRef.current = false;
     const localCached = getJson(`${STORAGE_GAME_KEY}_${userId}`, null);
     if (localCached) {
-      setGameState(localCached);
+      setLocalGameState(localCached);
       isHydratedRef.current = true;
     } else {
-      setGameState(DEFAULT_GAME_STATE);
+      setLocalGameState(DEFAULT_GAME_STATE);
     }
     
     if (userId && userId !== 'guest_student') {
       // 主動自 Firebase 雲端拉取確認，以時間戳較新者為準
       fetchCloudUserGameState(userId).then(cloudState => {
         if (cloudState) {
-          setGameState(prev => {
+          setLocalGameState(prev => {
             const cloudTime = cloudState.updatedAt || 0;
             const localTime = prev.updatedAt || 0;
             // 只有雲端時間嚴格大於本地時才覆蓋，絕對不再用 tickets > prev.tickets 倒灌舊票！
@@ -121,7 +134,7 @@ export function GameProvider({ children }) {
     // 如果今天還沒領過，且同步鎖定還沒開啟，才給予抽獎券
     if (gameState.lastDailyClaimDate !== todayStr && !hasClaimedTodayRef.current) {
       hasClaimedTodayRef.current = true; // 立即鎖定，防止 React 18 兩次執行
-      setGameState(prev => {
+      setLocalGameState(prev => {
         if (prev.lastDailyClaimDate === todayStr) return prev;
         const nextState = {
           ...prev,
@@ -255,11 +268,8 @@ export function GameProvider({ children }) {
     };
 
     // 同步立即寫入 localStorage 與 state，防止連點抽獎時狀態遺失或被舊快取反彈
+    // 這裡直接使用新的 setGameState 函式，它已經內建了 setJson 與 updateServerSync
     setGameState(updatedState);
-    setJson(`${STORAGE_GAME_KEY}_${userId}`, updatedState);
-    if (userId && userId !== 'guest_student') {
-      updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, updatedState);
-    }
 
     let resultNotice = '';
     const userToAward = currentUser || { id: 'guest_student', displayName: '國中同學' };
