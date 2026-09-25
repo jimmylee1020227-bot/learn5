@@ -1843,6 +1843,7 @@ export function addRedemptionCode(codeObj, operatorUser) {
   // 若先前曾被刪除，重新加入時解除刪除狀態
   const deletedCodes = getJson('deleted_redemption_codes', []).filter(c => c !== code);
   setJson('deleted_redemption_codes', deletedCodes);
+  updateServerSync('deleted_redemption_codes', deletedCodes);
 
   const currentCodes = getRedemptionCodes();
   if (currentCodes.some(c => c.code.toUpperCase() === code)) {
@@ -1861,7 +1862,8 @@ export function addRedemptionCode(codeObj, operatorUser) {
 
   const updatedCodes = [newCodeEntry, ...currentCodes];
   setJson('redemption_codes', updatedCodes);
-
+  updateServerSync('redemption_codes', updatedCodes);
+  
   // 寫入總管日誌
   logAuditEvent({
     operatorId: operatorUser.id,
@@ -1892,11 +1894,13 @@ export function deleteRedemptionCode(codeString, operatorUser) {
   if (!deletedCodes.includes(codeTrimmed)) {
     deletedCodes.push(codeTrimmed);
     setJson('deleted_redemption_codes', deletedCodes);
+    updateServerSync('deleted_redemption_codes', deletedCodes);
   }
 
   const currentCodes = getRedemptionCodes();
   const filtered = currentCodes.filter(c => (c.code || '').trim().toUpperCase() !== codeTrimmed);
   setJson('redemption_codes', filtered);
+  updateServerSync('redemption_codes', filtered);
 
   logAuditEvent({
     operatorId: operatorUser.id,
@@ -1957,6 +1961,7 @@ export function redeemCode(userId, inputCode, userName = '同學') {
   // 3. 記錄兌換並寫入原子帳本
   redeemedHistory.push(codeTrimmed);
   setJson('redeemed_history_' + userId, redeemedHistory);
+  updateServerSync('redeemed_history_' + userId, redeemedHistory);
 
   // 4. 同步至雲端不可逆帳本
   if (db) {
