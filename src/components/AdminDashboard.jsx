@@ -247,7 +247,7 @@ export default function AdminDashboard() {
       const regEntry = (log.userId && userRegistry[log.userId]) || {};
       if (!studentMap[key]) {
         studentMap[key] = {
-          name: sName,
+          name: regEntry.name || sName,
           school: log.userSchool || regEntry.school || '會考戰友',
           total: 0,
           correct: 0,
@@ -258,10 +258,10 @@ export default function AdminDashboard() {
           accuracy: 0
         };
       }
-      // 若已存在的記錄缺少 email，嘗試從 registry 補充
-      if (!studentMap[key].email && regEntry.email) {
-        studentMap[key].email = regEntry.email;
-      }
+      
+      // 強制使用最新的 user_registry 名稱與信箱，覆蓋舊的歷史紀錄
+      if (regEntry.name) studentMap[key].name = regEntry.name;
+      if (regEntry.email) studentMap[key].email = regEntry.email;
       studentMap[key].total = Math.max(studentMap[key].total, (studentMap[key].total || 0) + 1);
       if (log.isCorrect) {
         studentMap[key].correct += 1;
@@ -1398,7 +1398,7 @@ export default function AdminDashboard() {
                       <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
                         <span>👤 {student.name}</span>
                         <span style={{ fontSize: '0.68rem', color: '#78818a', fontWeight: 600, fontFamily: 'monospace' }}>
-                          ✉ {student.email || '訪客 (未綁定 Email)'}
+                          ✉ {student.email || '早期紀錄 (無 Email)'}
                         </span>
                       </span>
                       <span 
