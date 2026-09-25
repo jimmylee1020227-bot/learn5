@@ -2355,116 +2355,98 @@ export function incrementDailyPracticeStats(userId = 'guest', countIncrement = 1
 
 // --- 12. 多設備跨端雲端同步引擎 (Cross-Device Real-Time Sync Engine) ---
 if (typeof window !== 'undefined') {
-  const syncFromServer = () => {
-    fetch('/api/cloud-sync')
-      .then(res => res.json())
-      .then(data => {
-        if (data?.ok && data.state) {
-          Object.entries(data.state).forEach(([k, v]) => {
-            if (v === null || v === undefined) return;
-            const currentRaw = localStorage.getItem(STORAGE_PREFIX + k);
+  let isSubscribed = false;
+  
+  const initFirebaseRealtimeSync = () => {
+    if (!db || isSubscribed) return;
+    isSubscribed = true;
 
-            if (!currentRaw) {
-              safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(v));
-              const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
-              localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
+    try {
+      const globalRef = ref(db, 'studyhub');
+      onValue(globalRef, (snapshot) => {
+        if (!snapshot.exists()) return;
+        const data = snapshot.val();
+        
+        Object.entries(data).forEach(([k, v]) => {
+          if (v === null || v === undefined) return;
+          const currentRaw = localStorage.getItem(STORAGE_PREFIX + k);
+
+          if (!currentRaw) {
+            safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(v));
+            const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
+            localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
+            return;
+          }
+
+          try {
+            const currentVal = JSON.parse(currentRaw);
+
+            // 遊戲狀態：僅當伺服器時間戳較新或票數大增時採納，嚴防本地保底遭覆蓋回退！
+            if (k.startsWith('studyhub_game_state_') && typeof v === 'object' && v !== null) {
+              const remoteTime = v.updatedAt || 0;
+              const localTime = currentVal?.updatedAt || 0;
+              if (remoteTime > localTime || (v.tickets || 0) > (currentVal?.tickets || 0)) {
+                safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(v));
+                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
+                localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
+              }
               return;
             }
 
-            try {
-              const currentVal = JSON.parse(currentRaw);
-
-              // 遊戲狀態：僅當伺服器時間戳較新或票數大增時採納，嚴防本地保底遭覆蓋回退！
-              if (k.startsWith('studyhub_game_state_') && typeof v === 'object' && v !== null) {
-                const remoteTime = v.updatedAt || 0;
-                const localTime = currentVal?.updatedAt || 0;
-                if (remoteTime > localTime || (v.tickets || 0) > (currentVal?.tickets || 0)) {
-                  safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(v));
-                  const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
-                  localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
-                }
-                return;
+            // 每日刷題目標：只增不減，取大者合併！
+            if (k.startsWith('daily_stats_') && typeof v === 'object' && v !== null) {
+              const merged = {
+                ...currentVal,
+                ...v,
+                count: Math.max(currentVal.count || 0, v.count || 0),
+                correctCount: Math.max(currentVal.correctCount || 0, v.correctCount || 0)
+              };
+              const mergedRaw = JSON.stringify(merged);
+              if (mergedRaw !== currentRaw) {
+                safeSetLocalStorage(STORAGE_PREFIX + k, mergedRaw);
+                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
+                localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
               }
-
-              // 每日刷題目標：只增不減，取大者合併！
-              if (k.startsWith('daily_stats_') && typeof v === 'object' && v !== null) {
-                const merged = {
-                  ...currentVal,
-                  ...v,
-                  count: Math.max(currentVal.count || 0, v.count || 0),
-                  correctCount: Math.max(currentVal.correctCount || 0, v.correctCount || 0)
-                };
-                const mergedRaw = JSON.stringify(merged);
-                if (mergedRaw !== currentRaw) {
-                  safeSetLocalStorage(STORAGE_PREFIX + k, mergedRaw);
-                  const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
-                  localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
-                }
-                return;
-              }
-
-              // 做題歷程：去重累加，防止換設備時被空陣列沖洗
-              if ((k === 'practice_history' || k.startsWith('practice_history_')) && Array.isArray(v)) {
-                const currentArr = Array.isArray(currentVal) ? currentVal : [];
-                const map = new Map();
-                currentArr.forEach(i => { if (i?.id) map.set(i.id, i); });
-                v.forEach(i => { if (i?.id) map.set(i.id, i); });
-                const merged = Array.from(map.values()).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
-                if (merged.length > currentArr.length) {
-                  safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(merged));
-                  const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
-                  localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
-                }
-                return;
-              }
-            } catch (e) {}
-
-            const newRaw = JSON.stringify(v);
-            if (currentRaw !== newRaw) {
-              safeSetLocalStorage(STORAGE_PREFIX + k, newRaw);
-              const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
-              localSyncListeners.forEach(cb => {
-                try { cb(payload); } catch (e) {}
-              });
+              return;
             }
-          });
-        }
-      })
-      .catch(() => {});
-  };
 
-  // 1. 初次載入立刻自服務端拉取最新全域狀態
-  syncFromServer();
+            // 做題歷程：去重累加，防止換設備時被空陣列沖洗
+            if ((k === 'practice_history' || k.startsWith('practice_history_')) && Array.isArray(v)) {
+              const currentArr = Array.isArray(currentVal) ? currentVal : [];
+              const map = new Map();
+              currentArr.forEach(i => { if (i?.id) map.set(i.id, i); });
+              v.forEach(i => { if (i?.id) map.set(i.id, i); });
+              const merged = Array.from(map.values()).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+              if (merged.length > currentArr.length) {
+                safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(merged));
+                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
+                localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
+              }
+              return;
+            }
+          } catch (e) {}
 
-  // 2. 即時 SSE 串流 (毫秒級響應跨設備做題交卷、刪除打氣留言、刪除題目、發送兌換碼)
-  let sseSource = null;
-  const initSSE = () => {
-    try {
-      sseSource = new EventSource('/api/cloud-stream');
-      sseSource.onmessage = (e) => {
-        try {
-          const data = JSON.parse(e.data);
-          if (data.type === 'SYNC_UPDATE' && data.key) {
-            safeSetLocalStorage(STORAGE_PREFIX + data.key, JSON.stringify(data.value));
-            const payload = { type: 'SYNC_UPDATE', key: data.key, timestamp: Date.now() };
+          const newRaw = JSON.stringify(v);
+          if (currentRaw !== newRaw) {
+            safeSetLocalStorage(STORAGE_PREFIX + k, newRaw);
+            const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
             localSyncListeners.forEach(cb => {
-              try { cb(payload); } catch (err) {}
+              try { cb(payload); } catch (e) {}
             });
           }
-        } catch (err) {}
-      };
-      sseSource.onerror = () => {
-        if (sseSource) sseSource.close();
-        setTimeout(initSSE, 3000);
-      };
+        });
+      }, (error) => {
+        console.warn('[Firebase Realtime Sync Error]', error);
+        isSubscribed = false;
+        setTimeout(initFirebaseRealtimeSync, 5000); // 斷線重連
+      });
     } catch (err) {
-      setTimeout(initSSE, 3000);
+      isSubscribed = false;
     }
   };
-  initSSE();
 
-  // 3. 心跳定時拉取 (每 2 秒)，確保手機休眠換頁或斷線重連也絕對 100% 準確同步
-  setInterval(syncFromServer, 2000);
+  // 延遲啟動以確保 db 已初始化
+  setTimeout(initFirebaseRealtimeSync, 1000);
 }
 
 // --- 13. 使用者服務條款與個人資料保護政策同意管理 (Privacy Consent Management) ---
