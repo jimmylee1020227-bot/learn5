@@ -1232,6 +1232,7 @@ export async function fetchAllCloudPracticeLogs() {
   try {
     const regSnap = await get(ref(db, 'studyhub/user_registry'));
     const registry = regSnap.val() || {};
+    safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(registry));
     const userIds = Object.keys(registry);
 
     const logMap = new Map();

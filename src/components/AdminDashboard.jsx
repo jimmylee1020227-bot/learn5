@@ -224,8 +224,9 @@ export default function AdminDashboard() {
 
     // 1. 先用 registeredStudents 初始化名冊，保證即便本地尚未載入題目細節的學生也會顯示在名冊中
     registeredStudents.forEach(st => {
+      const key = st.id || st.name || '匿名同學';
       const sName = st.name || '匿名同學';
-      studentMap[sName] = {
+      studentMap[key] = {
         name: sName,
         school: st.school || '會考戰友',
         total: st.totalQuestions || 0,
@@ -240,11 +241,12 @@ export default function AdminDashboard() {
 
     // 2. 用已載入的 allHistory 補充精確細節
     allHistory.forEach(log => {
+      const key = log.userId || log.userName || '匿名同學';
       const sName = log.userName || '匿名同學';
       // 透過 userId 查找 registry 中的 email
       const regEntry = (log.userId && userRegistry[log.userId]) || {};
-      if (!studentMap[sName]) {
-        studentMap[sName] = {
+      if (!studentMap[key]) {
+        studentMap[key] = {
           name: sName,
           school: log.userSchool || regEntry.school || '會考戰友',
           total: 0,
@@ -257,17 +259,17 @@ export default function AdminDashboard() {
         };
       }
       // 若已存在的記錄缺少 email，嘗試從 registry 補充
-      if (!studentMap[sName].email && regEntry.email) {
-        studentMap[sName].email = regEntry.email;
+      if (!studentMap[key].email && regEntry.email) {
+        studentMap[key].email = regEntry.email;
       }
-      studentMap[sName].total = Math.max(studentMap[sName].total, (studentMap[sName].total || 0) + 1);
+      studentMap[key].total = Math.max(studentMap[key].total, (studentMap[key].total || 0) + 1);
       if (log.isCorrect) {
-        studentMap[sName].correct += 1;
+        studentMap[key].correct += 1;
       } else {
-        studentMap[sName].wrong += 1;
+        studentMap[key].wrong += 1;
       }
-      if (studentMap[sName].total > 0) {
-        studentMap[sName].accuracy = Math.round((studentMap[sName].correct / studentMap[sName].total) * 100);
+      if (studentMap[key].total > 0) {
+        studentMap[key].accuracy = Math.round((studentMap[key].correct / studentMap[key].total) * 100);
       }
 
       const tag = log.conceptTag || log.unitName || '基礎核心綜合';
