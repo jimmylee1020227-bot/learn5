@@ -742,6 +742,9 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
   const combinedLogs = [...newLogEntries, ...existingLogs];
   if (combinedLogs.length > 500) combinedLogs.length = 500; // 安全保存最新 500 筆做題歷史，徹底防止 localStorage 溢出
   setJson(userHistoryKey, combinedLogs);
+  if (finalUserId !== 'guest_student') {
+    updateServerSync(userHistoryKey, combinedLogs);
+  }
   // REMOVED: global overwrite
 
   // 3. 即時全服作答串流推播 (供管理員中台秒級即時監控做題狀況)
@@ -765,6 +768,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
     stream.unshift(streamItem);
     if (stream.length > 1000) stream.length = 1000; // 擴大保留最新 1000 筆即時交卷串流
     setJson('recent_practice_stream', stream);
+    updateServerSync('recent_practice_stream', stream);
 
     // 4. 同步更新在線學生註冊名冊統計
     const registry = getJson('user_registry', {});
@@ -784,6 +788,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
     existingU.totalCorrect = (existingU.totalCorrect || 0) + correctCount;
     registry[finalUserId] = existingU;
     setJson('user_registry', registry);
+    updateServerSync('user_registry', registry);
   } catch (err) {
     console.error('Failed to update practice stream / user registry', err);
   }
@@ -830,8 +835,12 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
 
   if (userList.length > 300) userList.length = 300; // 安全保存最新 300 筆錯題
   setJson(mistakeKey, userList);
+  if (finalUserId !== 'guest_student') {
+    updateServerSync(mistakeKey, userList);
+  }
   allMistakes[finalUserId] = userList;
   setJson('mistake_notebook', allMistakes);
+  // 不全域同步 allMistakes，避免傳輸過大，Admin 會用 fetchCloudUserAllMistakesAndLogs 拉取個別資料
 
   // 5. 完整試卷封存記錄 (Quiz Paper Session) - 支援調閱整份試卷每一題與作答狀況
   try {
@@ -1519,6 +1528,9 @@ export function updateMistakeRecord(userId, question, isNowCorrect) {
 
   if (userList.length > 3000) userList.length = 3000; // 永久保存錯題本
   setJson(mistakeKey, userList);
+  if (userId && userId !== 'guest_student') {
+    updateServerSync(mistakeKey, userList);
+  }
   allMistakes[userId] = userList;
   setJson('mistake_notebook', allMistakes);
 }
