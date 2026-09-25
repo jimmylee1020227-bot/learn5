@@ -322,28 +322,55 @@ export function subscribeUserRealtimeSync(userId) {
           const remoteStr = JSON.stringify(val);
           const localStr = localStorage.getItem(STORAGE_PREFIX + key);
           if (remoteStr !== localStr) {
-            safeSetLocalStorage(STORAGE_PREFIX + key, remoteStr);
-            // 同時廣播精確 key 與通用類別 key，確保任何組件皆可即時重新渲染！
-            const payloadExact = { type: 'SYNC_UPDATE', key, userId, timestamp: Date.now(), fromRemote: true };
-            localSyncListeners.forEach(cb => {
-              try { cb(payloadExact); } catch (e) {}
-            });
+            let shouldOverwrite = true;
+            try {
+              if (localStr) {
+                const localData = JSON.parse(localStr);
+                const isGame = key.includes('game_state');
+                
+                if (isGame && localData.updatedAt) {
+                  if (localData.updatedAt > (val.updatedAt || 0)) shouldOverwrite = false;
+                } else if (Array.isArray(val) && Array.isArray(localData)) {
+                   const rTs = val[0]?.timestamp || val[0]?.lastAttemptAt || val[0]?.addedAt || '';
+                   const lTs = localData[0]?.timestamp || localData[0]?.lastAttemptAt || localData[0]?.addedAt || '';
+                   if (lTs && rTs && new Date(lTs).getTime() > new Date(rTs).getTime()) {
+                     shouldOverwrite = false;
+                   } else if (localData.length > val.length && !rTs && !lTs) {
+                     shouldOverwrite = false;
+                   }
+                } else if (localData && localData.lastUpdatedAt && val && val.lastUpdatedAt) {
+                   if (localData.lastUpdatedAt > val.lastUpdatedAt) shouldOverwrite = false;
+                }
+              }
+            } catch(e) {}
 
-            if (key.startsWith('daily_stats_')) {
-              const payloadGeneral = { type: 'SYNC_UPDATE', key: 'daily_stats', userId, timestamp: Date.now(), fromRemote: true };
-              localSyncListeners.forEach(cb => { try { cb(payloadGeneral); } catch (e) {} });
-            }
-            if (key.startsWith('practice_history_')) {
-              const payloadGeneral = { type: 'SYNC_UPDATE', key: 'practice_history', userId, timestamp: Date.now(), fromRemote: true };
-              localSyncListeners.forEach(cb => { try { cb(payloadGeneral); } catch (e) {} });
-            }
-            if (key.startsWith('mistake_notebook_')) {
-              const payloadGeneral = { type: 'SYNC_UPDATE', key: 'mistake_notebook', userId, timestamp: Date.now(), fromRemote: true };
-              localSyncListeners.forEach(cb => { try { cb(payloadGeneral); } catch (e) {} });
-            }
-            if (key.startsWith('user_quiz_papers_')) {
-              const payloadGeneral = { type: 'SYNC_UPDATE', key: 'user_quiz_papers', userId, timestamp: Date.now(), fromRemote: true };
-              localSyncListeners.forEach(cb => { try { cb(payloadGeneral); } catch (e) {} });
+            if (shouldOverwrite) {
+              safeSetLocalStorage(STORAGE_PREFIX + key, remoteStr);
+              // 同時廣播精確 key 與通用類別 key，確保任何組件皆可即時重新渲染！
+              const payloadExact = { type: 'SYNC_UPDATE', key, userId, timestamp: Date.now(), fromRemote: true };
+              localSyncListeners.forEach(cb => {
+                try { cb(payloadExact); } catch (e) {}
+              });
+
+              if (key.startsWith('daily_stats_')) {
+                const payloadGeneral = { type: 'SYNC_UPDATE', key: 'daily_stats', userId, timestamp: Date.now(), fromRemote: true };
+                localSyncListeners.forEach(cb => { try { cb(payloadGeneral); } catch (e) {} });
+              }
+              if (key.startsWith('practice_history_')) {
+                const payloadGeneral = { type: 'SYNC_UPDATE', key: 'practice_history', userId, timestamp: Date.now(), fromRemote: true };
+                localSyncListeners.forEach(cb => { try { cb(payloadGeneral); } catch (e) {} });
+              }
+              if (key.startsWith('mistake_notebook_')) {
+                const payloadGeneral = { type: 'SYNC_UPDATE', key: 'mistake_notebook', userId, timestamp: Date.now(), fromRemote: true };
+                localSyncListeners.forEach(cb => { try { cb(payloadGeneral); } catch (e) {} });
+              }
+              if (key.startsWith('user_quiz_papers_')) {
+                const payloadGeneral = { type: 'SYNC_UPDATE', key: 'user_quiz_papers', userId, timestamp: Date.now(), fromRemote: true };
+                localSyncListeners.forEach(cb => { try { cb(payloadGeneral); } catch (e) {} });
+              }
+            } else {
+              // Local is newer, push local back to Firebase to correct it!
+              pushServerSync(key, JSON.parse(localStr));
             }
           }
         } catch (err) {}
