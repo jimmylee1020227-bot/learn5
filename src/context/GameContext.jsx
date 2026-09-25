@@ -67,8 +67,8 @@ export function GameProvider({ children }) {
           setLocalGameState(prev => {
             const remoteTime = remoteData.updatedAt || 0;
             const localTime = prev.updatedAt || 0;
-            // 只有遠端時間較新時才採納遠端，避免覆蓋本地剛抽獎的扣票
-            if (remoteTime > localTime) {
+            // 只有遠端時間較新，或者「抽獎券明顯增加」時才採納遠端，避免覆蓋本地剛抽獎的扣票
+            if (remoteTime > localTime || (remoteData.tickets || 0) > (prev.tickets || 0)) {
               return {
                 ...remoteData,
                 tickets: remoteData.tickets ?? 0,
