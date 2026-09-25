@@ -85,6 +85,7 @@ export default function AdminDashboard() {
   // 學生歷程調閱與搜尋狀態
   const [selectedStudent, setSelectedStudent] = useState('ALL');
   const [selectedStudentId, setSelectedStudentId] = useState('ALL');
+  const [selectedStudentEmail, setSelectedStudentEmail] = useState('ALL');
   const [studentSearchKeyword, setStudentSearchKeyword] = useState('');
   const [questionSearchKeyword, setQuestionSearchKeyword] = useState('');
   const [onlyMistakes, setOnlyMistakes] = useState(false);
@@ -184,20 +185,54 @@ export default function AdminDashboard() {
 
     setSelectedStudent(sName);
     setSelectedStudentId(sId || 'ALL');
+    setSelectedStudentEmail(student.email || 'ALL'); // 追加 Email
     setOnlyMistakes(true); // 預設聚焦顯示該生錯題
     
+    // 找出所有屬於這個「合併帳號」的 userId
+    const userRegistry = getJson('user_registry', {});
+    const targetEmail = (student.email || '').trim().toLowerCase();
+    const relatedUserIds = new Set();
+    
+    if (sId && sId !== 'ALL') relatedUserIds.add(sId);
+    
+    // 如果有 email，掃描 registry 找出所有同 email 的 userId
+    if (targetEmail) {
+      Object.entries(userRegistry).forEach(([uid, u]) => {
+        if ((u.email || '').trim().toLowerCase() === targetEmail) {
+          relatedUserIds.add(uid);
+        }
+      });
+    }
+    
+    // 掃描 allHistory 找出同名或同 email 的 userId (兼容舊訪客帳號)
+    allHistory.forEach(log => {
+      const logEmail = ((log.userId && userRegistry[log.userId]?.email) || log.userEmail || '').trim().toLowerCase();
+      if (
+        (targetEmail && logEmail === targetEmail) || 
+        (log.userName === sName)
+      ) {
+        if (log.userId) relatedUserIds.add(log.userId);
+      }
+    });
+
     // 向 Firebase 雲端發起精確調閱該生所有做題與錯題本（加 2.5 秒超時保護，秒級降級保護防卡死）
-    if (sId && sId !== 'ALL') {
+    if (relatedUserIds.size > 0) {
       setIsLoadingStudentHistory(true);
       try {
-        const studentLogs = await Promise.race([
-          fetchCloudUserAllMistakesAndLogs(sId, sName, student.school),
+        const fetchPromises = Array.from(relatedUserIds).map(uid => 
+          fetchCloudUserAllMistakesAndLogs(uid, sName, student.school)
+        );
+        const results = await Promise.race([
+          Promise.all(fetchPromises),
           new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500))
         ]);
-        if (studentLogs && studentLogs.length > 0) {
+        
+        const mergedLogs = results.flat();
+        
+        if (mergedLogs && mergedLogs.length > 0) {
           setAllHistory(prev => {
-            const others = prev.filter(p => p.userId !== sId && p.userName !== sName);
-            return [...studentLogs, ...others];
+            const others = prev.filter(p => !relatedUserIds.has(p.userId));
+            return [...mergedLogs, ...others].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
           });
         }
       } catch (err) {
@@ -370,7 +405,7 @@ export default function AdminDashboard() {
       }
       return true;
     });
-  }, [allHistory, selectedStudent, selectedStudentId, studentSearchKeyword, onlyMistakes, questionSearchKeyword]);
+  }, [allHistory, selectedStudent, selectedStudentId, selectedStudentEmail, studentSearchKeyword, onlyMistakes, questionSearchKeyword, userRegistry]);
 
   // 篩選完整試卷列表 (支援學生姓名、學校、題目關鍵字與科目快篩)
   const filteredQuizPapers = React.useMemo(() => {
@@ -379,7 +414,14 @@ export default function AdminDashboard() {
         const sName = paper.userName || '匿名同學';
         const matchName = sName === selectedStudent || sName.toLowerCase() === selectedStudent.toLowerCase();
         const matchId = paper.userId && (paper.userId === selectedStudent || (selectedStudentId !== 'ALL' && paper.userId === selectedStudentId));
-        if (!matchName && !matchId) {
+        
+        // 追加 Email 跨帳號合併匹配
+        const regEntry = (paper.userId && userRegistry[paper.userId]) || {};
+        let targetEmail = regEntry.email || paper.userEmail || '';
+        targetEmail = targetEmail.trim().toLowerCase();
+        const matchEmail = selectedStudentEmail !== 'ALL' && targetEmail && targetEmail === selectedStudentEmail.trim().toLowerCase();
+
+        if (!matchName && !matchId && !matchEmail) {
           return false;
         }
       }
