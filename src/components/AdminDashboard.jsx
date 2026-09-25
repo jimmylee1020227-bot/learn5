@@ -224,7 +224,9 @@ export default function AdminDashboard() {
 
     // 1. 先用 registeredStudents 初始化名冊，保證即便本地尚未載入題目細節的學生也會顯示在名冊中
     registeredStudents.forEach(st => {
-      const key = st.id || st.name || '匿名同學';
+      let targetEmail = st.email || (st.id && userRegistry[st.id]?.email) || '';
+      targetEmail = targetEmail.trim().toLowerCase();
+      const key = targetEmail || st.id || st.name || '匿名同學';
       const sName = st.name || '匿名同學';
       studentMap[key] = {
         name: sName,
@@ -233,7 +235,7 @@ export default function AdminDashboard() {
         correct: st.totalCorrect || 0,
         wrong: Math.max(0, (st.totalQuestions || 0) - (st.totalCorrect || 0)),
         userId: st.id,
-        email: st.email || (st.id && userRegistry[st.id]?.email) || '',
+        email: targetEmail,
         lastActive: st.lastActive || '',
         accuracy: st.accuracy !== undefined ? st.accuracy : 0
       };
@@ -241,10 +243,14 @@ export default function AdminDashboard() {
 
     // 2. 用已載入的 allHistory 補充精確細節
     allHistory.forEach(log => {
-      const key = log.userId || log.userName || '匿名同學';
-      const sName = log.userName || '匿名同學';
       // 透過 userId 查找 registry 中的 email
       const regEntry = (log.userId && userRegistry[log.userId]) || {};
+      let targetEmail = regEntry.email || log.userEmail || '';
+      targetEmail = targetEmail.trim().toLowerCase();
+      
+      const key = targetEmail || log.userId || log.userName || '匿名同學';
+      const sName = log.userName || '匿名同學';
+      
       if (!studentMap[key]) {
         studentMap[key] = {
           name: regEntry.name || sName,
@@ -252,8 +258,8 @@ export default function AdminDashboard() {
           total: 0,
           correct: 0,
           wrong: 0,
-          userId: log.userId,
-          email: regEntry.email || log.userEmail || '',
+          userId: log.userId, // 保留最先遇到的 userId
+          email: targetEmail,
           lastActive: log.timestamp || '',
           accuracy: 0
         };
@@ -261,7 +267,7 @@ export default function AdminDashboard() {
       
       // 強制使用最新的 user_registry 名稱與信箱，覆蓋舊的歷史紀錄
       if (regEntry.name) studentMap[key].name = regEntry.name;
-      if (regEntry.email) studentMap[key].email = regEntry.email;
+      if (targetEmail && !studentMap[key].email) studentMap[key].email = targetEmail;
       studentMap[key].total = Math.max(studentMap[key].total, (studentMap[key].total || 0) + 1);
       if (log.isCorrect) {
         studentMap[key].correct += 1;
