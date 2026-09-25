@@ -1437,6 +1437,20 @@ export function registerCloudUser(user) {
   }
 }
 
+// 取得使用者的雲端個資 (用於跨裝置登入時還原其自訂名稱)
+export async function fetchCloudUserProfile(userId) {
+  if (!db || !userId || userId === 'guest_student') return null;
+  try {
+    const snap = await get(ref(db, `studyhub/user_registry/${userId}`));
+    if (snap.exists()) {
+      return snap.val();
+    }
+  } catch (e) {
+    console.warn('[Fetch Cloud User Profile Error]', e);
+  }
+  return null;
+}
+
 // ─── 暱稱唯一性查詢（先查本地快取，再向 Firebase 雲端確認） ───
 export async function checkNicknameAvailable(nickname, currentUserId = '') {
   if (!nickname) return { available: false, suggestion: '' };

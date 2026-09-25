@@ -91,16 +91,22 @@ export function AuthProvider({ children }) {
 
           let savedDisplayName = null;
           try {
-            const nameKey = `studyhub_custom_name_${cleanEmail}`;
-            const directName = localStorage.getItem(nameKey);
-            if (directName) {
-              savedDisplayName = directName;
+            const { fetchCloudUserProfile } = await import('../services/cloudStorage');
+            const cloudProfile = await fetchCloudUserProfile(deterministicId);
+            if (cloudProfile && cloudProfile.name && cloudProfile.name !== googleUser.email.split('@')[0]) {
+              savedDisplayName = cloudProfile.name;
             } else {
-              const saved = localStorage.getItem(STORAGE_USER_KEY) || localStorage.getItem('studyhub_auth_user');
-              if (saved) {
-                const parsed = JSON.parse(saved);
-                if (parsed?.email?.toLowerCase() === cleanEmail && parsed?.customDisplayName) {
-                  savedDisplayName = parsed.customDisplayName;
+              const nameKey = `studyhub_custom_name_${cleanEmail}`;
+              const directName = localStorage.getItem(nameKey);
+              if (directName) {
+                savedDisplayName = directName;
+              } else {
+                const saved = localStorage.getItem(STORAGE_USER_KEY) || localStorage.getItem('studyhub_auth_user');
+                if (saved) {
+                  const parsed = JSON.parse(saved);
+                  if (parsed?.email?.toLowerCase() === cleanEmail && parsed?.customDisplayName) {
+                    savedDisplayName = parsed.customDisplayName;
+                  }
                 }
               }
             }
@@ -155,6 +161,33 @@ export function AuthProvider({ children }) {
     }
     handleAuthReturn();
   }, []);
+
+  // 1.2 跨裝置名稱即時同步：確保在其他設備修改的名稱能自動覆寫回本機
+  useEffect(() => {
+    if (currentUser && currentUser.id && currentUser.id !== 'admin_super_jimmy' && currentUser.id !== 'guest_student') {
+      import('../services/cloudStorage').then(({ fetchCloudUserProfile }) => {
+        fetchCloudUserProfile(currentUser.id).then(cloudProfile => {
+          if (cloudProfile && cloudProfile.name && cloudProfile.name !== currentUser.displayName) {
+            setCurrentUser(prev => {
+              if (!prev || prev.displayName === cloudProfile.name) return prev;
+              const updated = {
+                ...prev,
+                displayName: cloudProfile.name,
+                customDisplayName: cloudProfile.name
+              };
+              const safeUser = { ...updated };
+              delete safeUser.accessToken;
+              delete safeUser.authProof;
+              localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
+              localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
+              localStorage.setItem(`studyhub_custom_name_${updated.email.trim().toLowerCase()}`, cloudProfile.name);
+              return updated;
+            });
+          }
+        });
+      });
+    }
+  }, [currentUser?.id]);
 
   // 1.5 自動自雲端同步最新管理員名冊並即時響應任命/撤銷
   useEffect(() => {
