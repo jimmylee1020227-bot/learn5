@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { addStudentPoints } from '../services/leaderboardService';
 import { getGlobalSettings, subscribeToCloudSync, getJson, setJson, updateServerSync, fetchCloudUserGameState, getTaiwanDateStr } from '../services/cloudStorage';
@@ -31,7 +31,7 @@ export function GameProvider({ children }) {
   });
 
   // 全域包裹 setGameState，確保從任何組件 (如兌換碼) 呼叫時，都會自動同步到雲端
-  const setGameState = React.useCallback((action) => {
+  const setGameState = useCallback((action) => {
     setLocalGameState(prev => {
       const nextState = typeof action === 'function' ? action(prev) : { ...prev, ...action };
       nextState.updatedAt = getRealTime();
