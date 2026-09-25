@@ -703,6 +703,7 @@ export function logAuditEvent({ operatorId, operatorName, operatorRole, actionTy
   logs.unshift(newEntry);
   if (logs.length > 2000) logs.length = 2000;
   setJson('audit_logs', logs);
+  updateServerSync('audit_logs', logs);
 }
 
 export function getAuditLogs(currentUser) {
@@ -1088,6 +1089,7 @@ export function recordPracticeLog(logData) {
   logs.unshift(entry);
   if (logs.length > 5000) logs.length = 5000; // 永久保存 5000 筆做題歷史
   setJson(userHistoryKey, logs);
+  updateServerSync(userHistoryKey, logs);
   // REMOVED: global overwrite
   return hydrateQuestionDetails(entry);
 }
@@ -1575,6 +1577,7 @@ export function submitQuestionReport({ questionId, unitName, reason, comment, re
   };
   const updatedReports = [reportItem, ...reports].slice(0, 200);
   setJson('question_reports', updatedReports);
+  updateServerSync('question_reports', updatedReports);
   return reportItem;
 }
 
@@ -1592,6 +1595,7 @@ export function resolveQuestionReport(reportId, operatorUser, resolutionNote) {
     target.resolvedAt = new Date().toISOString();
     target.resolutionNote = (resolutionNote || '已完成修正').trim().slice(0, 200);
     setJson('question_reports', reports);
+    updateServerSync('question_reports', reports);
 
     logAuditEvent({
       operatorId: operatorUser.id,
@@ -1618,6 +1622,7 @@ export function submitSiteReport({ category, contact, description, userId, userN
   };
   reports.unshift(reportItem);
   setJson('site_issue_reports', reports);
+  updateServerSync('site_issue_reports', reports);
   return reportItem;
 }
 
@@ -1640,6 +1645,7 @@ export function modifyQuestion(qId, patchData, operatorUser) {
     modifiedAt: new Date().toISOString()
   };
   setJson('question_overrides', overrides);
+  updateServerSync('question_overrides', overrides);
 
   logAuditEvent({
     operatorId: operatorUser.id,
@@ -1771,7 +1777,9 @@ export function sendChatMessage(studentId, adminId = 'admin_super_jimmy', messag
   const updatedMsgs = [...existing, newMsg];
   allChats[threadKey] = updatedMsgs;
   setJson('support_chats', allChats);
+    updateServerSync('support_chats', allChats);
   setJson(`chat_${studentId}_${finalAdminId}`, updatedMsgs);
+    updateServerSync(`chat_${studentId}_${finalAdminId}`, updatedMsgs);
 
   return newMsg;
 }
@@ -1796,6 +1804,7 @@ export function markThreadAsRead(studentId, adminId = 'admin_super_jimmy') {
 
   if (changed) {
     setJson('support_chats', allChats);
+    updateServerSync('support_chats', allChats);
   }
 }
 
@@ -1816,6 +1825,7 @@ export function updateGlobalSettings(settingsPatch, operatorUser) {
   const current = getGlobalSettings();
   const updated = { ...current, ...settingsPatch };
   setJson('global_settings', updated);
+    updateServerSync('global_settings', updated);
 
   logAuditEvent({
     operatorId: operatorUser.id,
@@ -2013,6 +2023,7 @@ export function addAdminNotification(notifObj, operatorUser) {
 
   const updated = [newNotif, ...currentNotifs];
   setJson('admin_notifications', updated);
+    updateServerSync('admin_notifications', updated);
   return newNotif;
 }
 
@@ -2022,12 +2033,14 @@ export function deleteAdminNotification(notifId, operatorUser) {
   const target = currentNotifs.find(n => n.id === notifId);
   const filtered = currentNotifs.filter(n => n.id !== notifId);
   setJson('admin_notifications', filtered);
+    updateServerSync('admin_notifications', filtered);
 
   // 永久刪除名冊（Tombstone），防止預設清單或跨端回彈
   const deletedIds = getJson('deleted_notifications', []);
   if (!deletedIds.includes(notifId)) {
     deletedIds.push(notifId);
     setJson('deleted_notifications', deletedIds);
+    updateServerSync('deleted_notifications', deletedIds);
   }
 
   logAuditEvent({
@@ -2090,6 +2103,7 @@ export function addCommunityPost({ authorId, userName, userSchool, message }) {
   // FIFO 滾動視窗：最多保留 100 筆最新留言，杜絕塞爆 localStorage
   const updatedPosts = [newPost, ...posts].slice(0, 100);
   setJson('community_posts', updatedPosts);
+    updateServerSync('community_posts', updatedPosts);
   return newPost;
 }
 
@@ -2107,6 +2121,7 @@ export function likeCommunityPost(postId, userId) {
     post.likedBy = likedBy;
     post.likes = likedBy.length;
     setJson('community_posts', posts);
+    updateServerSync('community_posts', posts);
   }
   return posts;
 }
@@ -2123,12 +2138,14 @@ export function deleteCommunityPost(postId, operatorUser) {
 
   const filtered = posts.filter(p => p.id !== postId);
   setJson('community_posts', filtered);
+    updateServerSync('community_posts', filtered);
   
   // 寫入永久刪除名冊（Tombstone），確保全服與所有視窗絕對不可再見
   const deletedIds = getJson('deleted_community_post_ids', []);
   if (!deletedIds.includes(postId)) {
     deletedIds.push(postId);
     setJson('deleted_community_post_ids', deletedIds);
+    updateServerSync('deleted_community_post_ids', deletedIds);
   }
 
   if (operatorUser) {
@@ -2190,6 +2207,7 @@ export function reportCommunityPost({
 
   reports.unshift(newReport);
   setJson('community_reports', reports);
+    updateServerSync('community_reports', reports);
   return newReport;
 }
 
@@ -2246,6 +2264,7 @@ export function resolveCommunityReport(reportId, decision, operatorUser, reviewN
   }
 
   setJson('community_reports', reports);
+    updateServerSync('community_reports', reports);
   return reports;
 }
 
@@ -2299,6 +2318,7 @@ export function getDailyPracticeStats(userId = 'guest') {
   // 若發現實際歷史題數高於快取（代表在其他設備做過題），自動更新校準
   if (finalCount > (fromStorage.count || 0)) {
     setJson(todayKey, synced);
+    updateServerSync(todayKey, synced);
   }
 
   return synced;
@@ -2315,6 +2335,7 @@ export function incrementDailyPracticeStats(userId = 'guest', countIncrement = 1
     lastPracticedAt: new Date().toISOString()
   };
   setJson(todayKey, updated);
+    updateServerSync(todayKey, updated);
   return updated;
 }
 
@@ -2449,6 +2470,7 @@ export function savePrivacyConsent(userId, userInfo = {}) {
     consentedAt: new Date().toISOString()
   };
   setJson(`privacy_consent_${userId}`, consentRecord);
+  updateServerSync(`privacy_consent_${userId}`, consentRecord);
   return consentRecord;
 }
 
