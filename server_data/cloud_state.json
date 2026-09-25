@@ -7753,5 +7753,29 @@
       "userName": "總管理員 (Jimmy)",
       "userSchool": "系統總管理員"
     }
-  ]
+  ],
+  "privacy_consent_u_3dxaxgt6mb7a": {
+    "userId": "u_3dxaxgt6mb7a",
+    "userName": "測試同學",
+    "userEmail": "test@example.com",
+    "consented": true,
+    "version": "1.0.0",
+    "consentedAt": "2026-09-23T09:30:08.547Z"
+  },
+  "privacy_consent_u_xn2iagkpxmra": {
+    "userId": "u_xn2iagkpxmra",
+    "userName": "建中前鋒‧林同學",
+    "userEmail": "student.lin@gmail.com",
+    "consented": true,
+    "version": "1.0.0",
+    "consentedAt": "2026-09-23T09:57:25.087Z"
+  },
+  "privacy_consent_u_c4cxqtpa41vb": {
+    "userId": "u_c4cxqtpa41vb",
+    "userName": "測試同學",
+    "userEmail": "student.test@gmail.com",
+    "consented": true,
+    "version": "1.0.0",
+    "consentedAt": "2026-09-23T10:33:05.880Z"
+  }
 }

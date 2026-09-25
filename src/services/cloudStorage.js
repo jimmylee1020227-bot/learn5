@@ -1299,7 +1299,10 @@ export async function fetchCloudUserGameState(userId) {
       if (snap.exists()) {
         const val = snap.val();
         if (val) {
-          safeSetLocalStorage(STORAGE_PREFIX + gameKey, JSON.stringify(val));
+          const localVal = getJson(gameKey, null);
+          if (!localVal || (val.updatedAt || 0) > (localVal.updatedAt || 0)) {
+            safeSetLocalStorage(STORAGE_PREFIX + gameKey, JSON.stringify(val));
+          }
           return val;
         }
       }
@@ -1328,15 +1331,21 @@ export function getRegisteredStudents() {
 
   stream.forEach(s => {
     if (s.userId && s.userId !== 'admin_super_jimmy') {
+      const regEntry = registry[s.userId] || {};
       const existing = map.get(s.userId) || {
         id: s.userId,
-        name: s.userName || '會考戰友',
-        school: s.userSchool || '國中衝刺組',
+        name: s.userName || regEntry.name || '會考戰友',
+        email: regEntry.email || s.userEmail || '',
+        school: s.userSchool || regEntry.school || '國中衝刺組',
         totalQuizzes: 0,
         totalQuestions: 0,
         totalCorrect: 0,
         lastActive: s.timestamp
       };
+      // 補充缺失的 email（若 registry 後來有更新）
+      if (!existing.email && regEntry.email) {
+        existing.email = regEntry.email;
+      }
       existing.lastActive = s.timestamp || existing.lastActive;
       map.set(s.userId, existing);
     }

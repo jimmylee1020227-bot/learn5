@@ -10,7 +10,7 @@ const GameContext = createContext();
 const STORAGE_GAME_KEY = 'studyhub_game_state';
 
 const DEFAULT_GAME_STATE = {
-  tickets: 1,
+  tickets: 0,
   pityCount: 0,
   lastDailyClaimDate: '',
   personalMultiplier: 1,
@@ -54,11 +54,11 @@ export function GameProvider({ children }) {
           setGameState(prev => {
             const remoteTime = remoteData.updatedAt || 0;
             const localTime = prev.updatedAt || 0;
-            // 若遠端時間較新，或遠端票數顯著增加（管理員發放），採納遠端
-            if (remoteTime >= localTime || (remoteData.tickets || 0) > (prev.tickets || 0)) {
+            // 只有遠端時間較新時才採納遠端，避免覆蓋本地剛抽獎的扣票
+            if (remoteTime > localTime) {
               return {
                 ...remoteData,
-                tickets: remoteData.tickets ?? prev.tickets ?? 0,
+                tickets: remoteData.tickets ?? 0,
                 pityCount: remoteData.pityCount ?? prev.pityCount ?? 0
               };
             }
@@ -75,6 +75,7 @@ export function GameProvider({ children }) {
   // 當 userId 改變 (例如登入後或跨裝置切換)，主動自 Firebase 雲端讀取最新狀態
   useEffect(() => {
     isHydratedRef.current = false;
+    hasClaimedTodayRef.current = false;
     const localCached = getJson(`${STORAGE_GAME_KEY}_${userId}`, null);
     if (localCached) {
       setGameState(localCached);
@@ -84,20 +85,20 @@ export function GameProvider({ children }) {
     }
     
     if (userId && userId !== 'guest_student') {
-      // 主動自 Firebase 雲端拉取確認，以時間戳較新或具備資料者為準
+      // 主動自 Firebase 雲端拉取確認，以時間戳較新者為準
       fetchCloudUserGameState(userId).then(cloudState => {
         if (cloudState) {
           setGameState(prev => {
             const cloudTime = cloudState.updatedAt || 0;
             const localTime = prev.updatedAt || 0;
-            if (cloudTime >= localTime || (cloudState.tickets || 0) > (prev.tickets || 0)) {
+            // 只有雲端時間嚴格大於本地時才覆蓋，絕對不再用 tickets > prev.tickets 倒灌舊票！
+            if (cloudTime > localTime) {
               const merged = {
                 ...cloudState,
-                tickets: cloudState.tickets ?? prev.tickets ?? 0,
+                tickets: cloudState.tickets ?? 0,
                 pityCount: cloudState.pityCount ?? prev.pityCount ?? 0
               };
-              window.localStorage && localStorage.setItem('studyhub_' + `${STORAGE_GAME_KEY}_${userId}`, JSON.stringify(merged));
-              updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, merged);
+              setJson(`${STORAGE_GAME_KEY}_${userId}`, merged);
               return merged;
             }
             return prev;
@@ -114,20 +115,26 @@ export function GameProvider({ children }) {
 
   // 每日贈送一張抽獎券邏輯 (已水合後才觸發，嚴格採用台北 UTC+8 時區防誤判)
   useEffect(() => {
-    // 未水合前不執行，避免用預設值 lastDailyClaimDate 誤判
     if (!isHydratedRef.current) return;
     const todayStr = getTaiwanDateStr();
     
     // 如果今天還沒領過，且同步鎖定還沒開啟，才給予抽獎券
     if (gameState.lastDailyClaimDate !== todayStr && !hasClaimedTodayRef.current) {
       hasClaimedTodayRef.current = true; // 立即鎖定，防止 React 18 兩次執行
-      setGameState(prev => ({
-        ...prev,
-        tickets: (prev.tickets || 0) + 1,
-        lastDailyClaimDate: todayStr
-      }));
+      setGameState(prev => {
+        if (prev.lastDailyClaimDate === todayStr) return prev;
+        const nextState = {
+          ...prev,
+          tickets: (prev.tickets || 0) + 1,
+          lastDailyClaimDate: todayStr,
+          updatedAt: getRealTime()
+        };
+        setJson(`${STORAGE_GAME_KEY}_${userId}`, nextState);
+        updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, nextState);
+        return nextState;
+      });
     } else if (gameState.lastDailyClaimDate === todayStr) {
-      hasClaimedTodayRef.current = true; // 如果發現已經是今天，順便鎖定
+      hasClaimedTodayRef.current = true; // 已經是今天，鎖定
     }
   }, [gameState.lastDailyClaimDate, userId]);
 
@@ -135,16 +142,8 @@ export function GameProvider({ children }) {
   useEffect(() => {
     if (userId && userId !== 'guest_student') {
       if (isRemoteSyncingRef.current) return;
-      if (!isHydratedRef.current) {
-        // 若本機已確認有緩存數據方可認定水合
-        const currentInStorage = getJson(`${STORAGE_GAME_KEY}_${userId}`, null);
-        if (currentInStorage) {
-          isHydratedRef.current = true;
-        } else {
-          return; // 嚴禁以未水合之空預設值覆蓋雲端！
-        }
-      }
-      window.localStorage && localStorage.setItem('studyhub_' + `${STORAGE_GAME_KEY}_${userId}`, JSON.stringify(gameState));
+      if (!isHydratedRef.current) return;
+      setJson(`${STORAGE_GAME_KEY}_${userId}`, gameState);
       updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, gameState);
     }
   }, [gameState, userId]);
@@ -257,8 +256,8 @@ export function GameProvider({ children }) {
 
     // 同步立即寫入 localStorage 與 state，防止連點抽獎時狀態遺失或被舊快取反彈
     setGameState(updatedState);
+    setJson(`${STORAGE_GAME_KEY}_${userId}`, updatedState);
     if (userId && userId !== 'guest_student') {
-      window.localStorage && localStorage.setItem('studyhub_' + `${STORAGE_GAME_KEY}_${userId}`, JSON.stringify(updatedState));
       updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, updatedState);
     }
 

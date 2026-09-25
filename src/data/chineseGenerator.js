@@ -15,41 +15,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty = 'me
   }
 
 
-  // ── SVG 長條圖題（每 11 題出現一次）：古代文學體裁分類 ──
-  if (index % 11 === 0) {
-    const genres = ['詩', '詞', '散文', '小說'];
-    const counts = genres.map(() => Math.floor(rand() * 15) + 5);
-    const maxC = Math.max(...counts);
-    const maxGenre = genres[counts.indexOf(maxC)];
-    const w = 300, h = 160, padX = 35, padY = 20;
-    const barW = (w - padX * 2) / 4 - 8;
-    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" style="max-width:100%;border-radius:8px;background:#fdf4ff">
-  <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${h-padY}" stroke="#94a3b8" stroke-width="1.5"/>
-  <line x1="${padX}" y1="${h-padY}" x2="${w-padX}" y2="${h-padY}" stroke="#94a3b8" stroke-width="1.5"/>
-  ${counts.map((c, i) => {
-    const bH = Math.round(c / maxC * (h - padY * 2 - 10));
-    const bX = padX + i * ((w - padX * 2) / 4) + 4;
-    const bY = h - padY - bH;
-    const color = ['#c084fc','#818cf8','#38bdf8','#fb923c'][i];
-    return `<rect x="${bX}" y="${bY}" width="${barW}" height="${bH}" fill="${color}" rx="3"/><text x="${bX+barW/2}" y="${bY-4}" text-anchor="middle" font-size="10" fill="#374151" font-weight="bold">${c}</text><text x="${bX+barW/2}" y="${h-padY+13}" text-anchor="middle" font-size="10" fill="#374151">${genres[i]}</text>`;
-  }).join('')}
-  <text x="${w/2}" y="12" text-anchor="middle" font-size="11" fill="#581c87" font-weight="bold">課本各類文學體裁篇數統計</text>
-</svg>`;
-    return {
-      question: `【圖表判讀：文學體裁統計】${preamble}\n下圖為課本中詩、詞、散文、小說的篇數長條圖，請依圖回答：\n\n①篇數最多的體裁為何？②散文有幾篇？③四種體裁總篇數為多少？`,
-      options: [
-        `最多：${maxGenre}（${maxC} 篇）／散文 ${counts[2]} 篇／總計 ${counts.reduce((a, b) => a + b, 0)} 篇`,
-        `最多：詩（${counts[0]} 篇）／散文 ${counts[2]+2} 篇／總計 ${counts.reduce((a, b) => a + b, 0)+5} 篇`,
-        `最多：${maxGenre}（${maxC} 篇）／散文 ${counts[2]+1} 篇／總計 ${counts.reduce((a, b) => a + b, 0)-3} 篇`,
-        `最多：小說（${counts[3]} 篇）／散文 ${counts[2]} 篇／總計 ${counts.reduce((a, b) => a + b, 0)+2} 篇`
-      ],
-      answer: 0,
-      hint: `💡 提示：找最高長條即篇數最多的體裁；直接從圖讀取散文的數值；四個數字相加為總篇數。`,
-      explanation: `📖 詳解：由長條圖讀出：詩 ${counts[0]} 篇、詞 ${counts[1]} 篇、散文 ${counts[2]} 篇、小說 ${counts[3]} 篇，以 ${maxGenre}（${maxC} 篇）最多，總計 ${counts.reduce((a, b) => a + b, 0)} 篇。`,
-      isSvg: true,
-      svgContent
-    };
-  }
+
 
   // ============================================================
   // 國一 (七年級)

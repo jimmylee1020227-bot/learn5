@@ -219,6 +219,8 @@ export default function AdminDashboard() {
   const studentAnalytics = React.useMemo(() => {
     const studentMap = {};
     const conceptMap = {};
+    // 讀取 user_registry，補充 email 等完整資訊
+    const userRegistry = getJson('user_registry', {});
 
     // 1. 先用 registeredStudents 初始化名冊，保證即便本地尚未載入題目細節的學生也會顯示在名冊中
     registeredStudents.forEach(st => {
@@ -230,7 +232,7 @@ export default function AdminDashboard() {
         correct: st.totalCorrect || 0,
         wrong: Math.max(0, (st.totalQuestions || 0) - (st.totalCorrect || 0)),
         userId: st.id,
-        email: st.email || '',
+        email: st.email || (st.id && userRegistry[st.id]?.email) || '',
         lastActive: st.lastActive || '',
         accuracy: st.accuracy !== undefined ? st.accuracy : 0
       };
@@ -239,18 +241,24 @@ export default function AdminDashboard() {
     // 2. 用已載入的 allHistory 補充精確細節
     allHistory.forEach(log => {
       const sName = log.userName || '匿名同學';
+      // 透過 userId 查找 registry 中的 email
+      const regEntry = (log.userId && userRegistry[log.userId]) || {};
       if (!studentMap[sName]) {
         studentMap[sName] = {
           name: sName,
-          school: log.userSchool || '會考戰友',
+          school: log.userSchool || regEntry.school || '會考戰友',
           total: 0,
           correct: 0,
           wrong: 0,
           userId: log.userId,
-          email: '',
+          email: regEntry.email || log.userEmail || '',
           lastActive: log.timestamp || '',
           accuracy: 0
         };
+      }
+      // 若已存在的記錄缺少 email，嘗試從 registry 補充
+      if (!studentMap[sName].email && regEntry.email) {
+        studentMap[sName].email = regEntry.email;
       }
       studentMap[sName].total = Math.max(studentMap[sName].total, (studentMap[sName].total || 0) + 1);
       if (log.isCorrect) {
@@ -1387,11 +1395,9 @@ export default function AdminDashboard() {
                     >
                       <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
                         <span>👤 {student.name}</span>
-                        {student.email && (
-                          <span style={{ fontSize: '0.68rem', color: '#78818a', fontWeight: 600, fontFamily: 'monospace' }}>
-                            ✉ {student.email}
-                          </span>
-                        )}
+                        <span style={{ fontSize: '0.68rem', color: '#78818a', fontWeight: 600, fontFamily: 'monospace' }}>
+                          ✉ {student.email || '訪客 (未綁定 Email)'}
+                        </span>
                       </span>
                       <span 
                         style={{ 

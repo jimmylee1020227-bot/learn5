@@ -49,22 +49,22 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
   try {
     switch (subjectId) {
       case 'math':
-        qData = generateMathQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        qData = generateMathQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
         break;
       case 'english':
-        qData = generateEnglishQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        qData = generateEnglishQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
         break;
       case 'science':
-        qData = generateScienceQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        qData = generateScienceQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
         break;
       case 'chinese':
-        qData = generateChineseQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        qData = generateChineseQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
         break;
       case 'social':
-        qData = generateSocialQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        qData = generateSocialQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
         break;
       default:
-        qData = generateMathQuestion(gradeId, unitId, index, difficulty, rand, conceptTag);
+        qData = generateMathQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
         break;
     }
   } catch (err) {
