@@ -929,6 +929,12 @@ export function recordQuizPaperSession(paperSession) {
       set(ref(db, `studyhub/quiz_papers/${paperSession.id}`), sanitizeForFirebase(paperSession)).catch(() => {});
       set(ref(db, `studyhub/${userPapersKey}`), sanitizeForFirebase(userPapers)).catch(() => {});
     }
+
+    // 發送本地事件通知 UI (例如歷程錯題 Modal) 即時重啟渲染
+    if (typeof window !== 'undefined') {
+      const payload = { type: 'SYNC_UPDATE', key: userPapersKey, userId: finalUserId, timestamp: Date.now(), fromRemote: false };
+      localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
+    }
   } catch (e) {
     console.warn('Failed to save quiz paper', e);
   }
