@@ -300,8 +300,7 @@ export default function AdminDashboard() {
         };
       }
       
-      // 強制使用最新的 user_registry 名稱與信箱，覆蓋舊的歷史紀錄
-      if (regEntry.name) studentMap[key].name = regEntry.name;
+      // 不再強制使用 regEntry.name 覆蓋，以保留可能已在 registeredStudents 中處理過的後綴名
       if (targetEmail && !studentMap[key].email) studentMap[key].email = targetEmail;
       
       studentMap[key].total = (studentMap[key].total || 0) + 1;
@@ -332,7 +331,22 @@ export default function AdminDashboard() {
       }
     });
 
-    const studentsList = Object.values(studentMap);
+    let studentsList = Object.values(studentMap);
+    
+    // 根據最後活動時間(越早創建或活躍的排前面)處理同名後綴 (原名字1 依此類推)
+    studentsList.sort((a, b) => new Date(a.lastActive || 0) - new Date(b.lastActive || 0));
+    const nameCounts = {};
+    studentsList.forEach(s => {
+      const rawName = s.name || '會考戰友';
+      if (rawName === '總管理員') return;
+      if (!nameCounts[rawName]) {
+        nameCounts[rawName] = 1;
+      } else {
+        const count = nameCounts[rawName];
+        s.name = `${rawName} ${count}`;
+        nameCounts[rawName] = count + 1;
+      }
+    });
 
     // 高頻錯題類型 TOP 5 (錯誤次數與錯誤率最高)
     const topMistakeTypes = Object.values(conceptMap)

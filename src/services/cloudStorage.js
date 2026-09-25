@@ -1401,7 +1401,44 @@ export function getRegisteredStudents() {
     }
   });
 
-  return Array.from(map.values()).map(s => {
+  // 3. 合併同 Email 的帳號
+  const emailMap = new Map();
+  Array.from(map.values()).forEach(s => {
+    const email = (s.email || '').trim().toLowerCase();
+    const key = email || s.id;
+    if (emailMap.has(key)) {
+      const existing = emailMap.get(key);
+      existing.totalQuizzes = (existing.totalQuizzes || 0) + (s.totalQuizzes || 0);
+      existing.totalQuestions = (existing.totalQuestions || 0) + (s.totalQuestions || 0);
+      existing.totalCorrect = (existing.totalCorrect || 0) + (s.totalCorrect || 0);
+      if (new Date(s.lastActive || 0) > new Date(existing.lastActive || 0)) {
+        existing.lastActive = s.lastActive;
+        // 若現有名稱為匿名，則更新為較新的名稱
+        if (!existing.name || existing.name === '匿名同學' || existing.name === '會考戰友') {
+          existing.name = s.name;
+        }
+      }
+    } else {
+      emailMap.set(key, { ...s });
+    }
+  });
+
+  // 4. 根據最後活動時間(較早的排前面)處理同名後綴
+  let resultList = Array.from(emailMap.values()).sort((a, b) => new Date(a.lastActive || 0) - new Date(b.lastActive || 0));
+  const nameCounts = {};
+  resultList.forEach(s => {
+    const rawName = s.name || '會考戰友';
+    if (rawName === '總管理員') return; // 總管理員不加編號
+    if (!nameCounts[rawName]) {
+      nameCounts[rawName] = 1;
+    } else {
+      const count = nameCounts[rawName];
+      s.name = `${rawName} ${count}`;
+      nameCounts[rawName] = count + 1;
+    }
+  });
+
+  return resultList.map(s => {
     const accuracy = s.totalQuestions > 0 ? Math.round((s.totalCorrect / s.totalQuestions) * 100) : 0;
     return {
       ...s,

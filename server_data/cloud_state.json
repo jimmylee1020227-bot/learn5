@@ -802,13 +802,13 @@
     }
   },
   "studyhub_game_state_admin_super_jimmy": {
-    "tickets": 3,
-    "pityCount": 1,
+    "tickets": 0,
+    "pityCount": 4,
     "lastDailyClaimDate": "2026-09-26",
     "personalMultiplier": 1,
     "multiplierExpiresAt": 0,
     "unlockedBadges": [],
-    "updatedAt": 1790376489878
+    "updatedAt": 1790376859624
   },
   "privacy_consent_admin_super_jimmy": {
     "userId": "admin_super_jimmy",
