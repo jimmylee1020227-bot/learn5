@@ -303,7 +303,8 @@ export default function AdminDashboard() {
       // 強制使用最新的 user_registry 名稱與信箱，覆蓋舊的歷史紀錄
       if (regEntry.name) studentMap[key].name = regEntry.name;
       if (targetEmail && !studentMap[key].email) studentMap[key].email = targetEmail;
-      studentMap[key].total = Math.max(studentMap[key].total, (studentMap[key].total || 0) + 1);
+      
+      studentMap[key].total = (studentMap[key].total || 0) + 1;
       if (log.isCorrect) {
         studentMap[key].correct += 1;
       } else {
@@ -1423,11 +1424,11 @@ export default function AdminDashboard() {
                     (s.email || '').toLowerCase().includes(kw)
                   );
                 })
-                .map(student => {
+                .map((student, idx) => {
                   const isSelected = selectedStudent === student.name;
                   return (
                     <button
-                      key={student.name}
+                      key={student.email || student.userId || `student-${idx}`}
                       onClick={() => handleStudentChipClick(student)}
                       style={{
                         background: isSelected ? 'var(--theme-border, var(--theme-border, #17324d))' : 'var(--theme-card, var(--theme-card, #fffdf9))',

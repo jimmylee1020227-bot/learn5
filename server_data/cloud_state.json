@@ -1,7 +1,9 @@
 {
   "community_posts": [],
   "deleted_community_post_ids": [],
-  "deleted_redemption_codes": [],
+  "deleted_redemption_codes": [
+    "117"
+  ],
   "deleted_notifications": [],
   "question_overrides": {},
   "community_reports": [],
@@ -65,24 +67,115 @@
   ],
   "audit_logs": [
     {
-      "id": "log_1789872009925_w751",
-      "timestamp": "2026-09-20T02:40:09.925Z",
+      "id": "log_1790376542524_7n0j",
+      "timestamp": "2026-09-25T22:49:02.524Z",
       "operatorId": "admin_super_jimmy",
       "operatorName": "總管理員",
       "operatorRole": "super_admin",
-      "actionType": "RESOLVE_REPORT",
-      "details": "處理題目回報 #rep_1789870879345 (Q-G7-SC-U2-4348 - 答案錯誤)：管理員已核對並確認修正完畢",
+      "actionType": "CREATE_REDEMPTION_CODE",
+      "details": "建立新兌換碼【HAPPY_FESTIVAL】: 中秋快樂 (數值: 30)",
       "targetId": null
     },
     {
-      "id": "log_1789872007925_4nkz",
-      "timestamp": "2026-09-20T02:40:07.925Z",
+      "actionType": "DELETE_REDEMPTION_CODE",
+      "details": "撤銷並刪除兌換碼【HAPPY_FESTIVAL】",
+      "id": "log_1790375619107_n6q7",
       "operatorId": "admin_super_jimmy",
       "operatorName": "總管理員",
       "operatorRole": "super_admin",
+      "timestamp": "2026-09-25T22:33:39.107Z"
+    },
+    {
+      "actionType": "CREATE_REDEMPTION_CODE",
+      "details": "建立新兌換碼【HAPPY_FESTIVAL】: 中秋快樂 (數值: 30)",
+      "id": "log_1790347569680_7d62",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-25T14:46:09.680Z"
+    },
+    {
+      "actionType": "GRANT_TICKETS",
+      "details": "向玩家【Milk 斯】發放 1 張抽獎券",
+      "id": "log_1789877335647_2m31",
+      "operatorId": "u_knbo67cox0xp",
+      "operatorName": "Milk 斯",
+      "operatorRole": "admin",
+      "targetId": "u_knbo67cox0xp",
+      "timestamp": "2026-09-20T04:08:55.647Z"
+    },
+    {
+      "actionType": "DELETE_NOTIFICATION",
+      "details": "刪除系統通知公告：🎁 管理員發放新序號【117】！",
+      "id": "log_1789877296501_2xlr",
+      "operatorId": "u_knbo67cox0xp",
+      "operatorName": "Milk 斯",
+      "operatorRole": "admin",
+      "targetId": "notif_1789875608778",
+      "timestamp": "2026-09-20T04:08:16.501Z"
+    },
+    {
+      "actionType": "CREATE_REDEMPTION_CODE",
+      "details": "建立新兌換碼【117SUNDAY】: 管理員Milk 斯  空頭兌換碼（9/20） (數值: 1)",
+      "id": "log_1789875725557_2p6c",
+      "operatorId": "u_knbo67cox0xp",
+      "operatorName": "Milk 斯",
+      "operatorRole": "admin",
+      "timestamp": "2026-09-20T03:42:05.557Z"
+    },
+    {
+      "actionType": "DELETE_REDEMPTION_CODE",
+      "details": "撤銷並刪除兌換碼【117】",
+      "id": "log_1789875625637_u6g0",
+      "operatorId": "u_knbo67cox0xp",
+      "operatorName": "Milk 斯",
+      "operatorRole": "admin",
+      "timestamp": "2026-09-20T03:40:25.637Z"
+    },
+    {
+      "actionType": "CREATE_REDEMPTION_CODE",
+      "details": "建立新兌換碼【117】: 嘿嘿 (數值: 1)",
+      "id": "log_1789875608754_hgce",
+      "operatorId": "u_knbo67cox0xp",
+      "operatorName": "Milk 斯",
+      "operatorRole": "admin",
+      "timestamp": "2026-09-20T03:40:08.754Z"
+    },
+    {
+      "actionType": "RESOLVE_REPORT",
+      "details": "處理題目回報 #rep_1789873553133 (Q-G7-SC-U3-2071 - 答案錯誤)：管理員已核對並確認修正完畢",
+      "id": "log_1789873583209_gmar",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員 (Jimmy)",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-20T03:06:23.209Z"
+    },
+    {
+      "actionType": "RESOLVE_REPORT",
+      "details": "處理題目回報 #rep_1789873557699 (Q-G7-SC-U1-0665 - 答案錯誤)：管理員已核對並確認修正完畢",
+      "id": "log_1789873582375_ykoj",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員 (Jimmy)",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-20T03:06:22.375Z"
+    },
+    {
+      "actionType": "RESOLVE_REPORT",
+      "details": "處理題目回報 #rep_1789870879345 (Q-G7-SC-U2-4348 - 答案錯誤)：管理員已核對並確認修正完畢",
+      "id": "log_1789872009925_w751",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-20T02:40:09.925Z"
+    },
+    {
       "actionType": "RESOLVE_REPORT",
       "details": "處理題目回報 #rep_1789871819270 (Q-G7-SC-U4-2603 - 答案錯誤)：管理員已核對並確認修正完畢",
-      "targetId": null
+      "id": "log_1789872007925_4nkz",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-20T02:40:07.925Z"
     },
     {
       "actionType": "RESOLVE_REPORT",
@@ -103,7 +196,26 @@
       "timestamp": "2026-09-20T01:22:38.477Z"
     }
   ],
-  "redemption_codes": [],
+  "redemption_codes": [
+    {
+      "code": "HAPPY_FESTIVAL",
+      "type": "points",
+      "rewardValue": 30,
+      "label": "中秋快樂",
+      "expiresAt": "2026-09-30",
+      "createdAt": "2026-09-25T22:49:02.510Z",
+      "createdBy": "總管理員"
+    },
+    {
+      "code": "117SUNDAY",
+      "createdAt": "2026-09-20T03:42:05.541Z",
+      "createdBy": "Milk 斯",
+      "expiresAt": "2026-09-27",
+      "label": "管理員Milk 斯  空頭兌換碼（9/20）",
+      "rewardValue": 1,
+      "type": "lottery_ticket"
+    }
+  ],
   "support_chats": {
     "111725425020973278798__admin_super_jimmy": [
       {
@@ -307,13 +419,31 @@
   },
   "admin_notifications": [
     {
-      "id": "notif_launch",
-      "title": "🎉 歡迎來到會考讀書網！",
-      "message": "108 課綱全科複習網正式上線！每週一 00:00 排行榜歸零結算，答對一題即得 1 點積分，祝各位戰友穩穩上岸！",
-      "type": "announcement",
-      "sender": "總管理員 (Jimmy)",
-      "timestamp": "2026-09-19T00:00:00.000Z",
-      "isRead": false
+      "id": "notif_1790376542540",
+      "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL】！",
+      "message": "新兌換碼發布：中秋快樂，點擊即可一鍵領取！",
+      "type": "redemption",
+      "relatedCode": "HAPPY_FESTIVAL",
+      "sender": "總管理員",
+      "timestamp": "2026-09-25T22:49:02.540Z"
+    },
+    {
+      "id": "notif_1790347569701",
+      "message": "新兌換碼發布：中秋快樂，點擊即可一鍵領取！",
+      "relatedCode": "HAPPY_FESTIVAL",
+      "sender": "總管理員",
+      "timestamp": "2026-09-25T14:46:09.701Z",
+      "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL】！",
+      "type": "redemption"
+    },
+    {
+      "id": "notif_1789875725578",
+      "message": "新兌換碼發布：管理員Milk 斯  空頭兌換碼（9/20），點擊即可一鍵領取！",
+      "relatedCode": "117SUNDAY",
+      "sender": "Milk 斯",
+      "timestamp": "2026-09-20T03:42:05.578Z",
+      "title": "🎁 管理員發放新序號【117SUNDAY】！",
+      "type": "redemption"
     }
   ],
   "admins_list": [
@@ -672,13 +802,13 @@
     }
   },
   "studyhub_game_state_admin_super_jimmy": {
-    "tickets": 2,
+    "tickets": 3,
     "pityCount": 1,
-    "lastDailyClaimDate": "2026-09-25",
+    "lastDailyClaimDate": "2026-09-26",
     "personalMultiplier": 1,
     "multiplierExpiresAt": 0,
     "unlockedBadges": [],
-    "updatedAt": 1790357785953
+    "updatedAt": 1790376489878
   },
   "privacy_consent_admin_super_jimmy": {
     "userId": "admin_super_jimmy",
@@ -693,441 +823,452 @@
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLboIHW536zX2jEvcithca6343MnG-hm7qtZk8Qj1VsOwbzyf7x=s96-c",
       "displayName": "李肜",
       "email": "fuis2738@gmail.com",
-      "tickets": 1,
-      "totalPoints": 47,
-      "updatedAt": 1790085987273,
+      "tickets": 3,
+      "totalPoints": 49,
+      "updatedAt": 1790357784074,
       "userId": "u_uos8ebo51en",
       "weekId": "2026-W39",
-      "weeklyPoints": 47
+      "weeklyPoints": 49
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIANgF2ETQ2llbHNhbv4E5e_72FcSlJ9fWf5jfBsUS-PcaIyQ=s96-c",
       "displayName": "fternoon A",
       "email": "fternoona50@gmail.com",
-      "tickets": 1,
-      "totalPoints": 20,
-      "updatedAt": 1789999866899,
+      "tickets": 3,
+      "totalPoints": 22,
+      "updatedAt": 1790357784090,
       "userId": "u_z6zfph78ipyf",
       "weekId": "2026-W39",
-      "weeklyPoints": 20
+      "weeklyPoints": 22
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocK5d4tEHJZHxwEN29XNazYWK1_-pAQJ4IXCpoXAsNRSj_mRhg=s96-c",
       "displayName": "Faust China",
       "email": "faust.china@gmail.com",
-      "tickets": 1,
-      "totalPoints": 9,
-      "updatedAt": 1790065816488,
+      "tickets": 3,
+      "totalPoints": 11,
+      "updatedAt": 1790357784106,
       "userId": "u_e63qy64hs7ao",
       "weekId": "2026-W39",
-      "weeklyPoints": 9
+      "weeklyPoints": 11
     },
     {
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
       "displayName": "總管理員",
       "email": "jimmylee1020227@gmail.com",
-      "tickets": 7069,
-      "totalPoints": 65,
-      "updatedAt": 1790349381754,
+      "tickets": 7071,
+      "totalPoints": 67,
+      "updatedAt": 1790376177657,
       "userId": "admin_super_jimmy",
       "weekId": "2026-W39",
-      "weeklyPoints": 7
-    },
-    {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
-      "displayName": "小編",
-      "email": "happybrother0717@gmail.com",
-      "tickets": 1,
-      "totalPoints": 7,
-      "updatedAt": 1790347919412,
-      "userId": "u_knbo67cox0xp",
-      "weekId": "2026-W39",
-      "weeklyPoints": 7
+      "weeklyPoints": 9
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIUHnRSAzHCC5DGuKn_55lz0Wr_m4z3KEPeaQ_fiz4yLyep3g=s96-c",
       "displayName": "Gene Tung",
       "email": "genetung0716@gmail.com",
-      "tickets": 1,
-      "totalPoints": 7,
-      "updatedAt": 1790304134895,
+      "tickets": 3,
+      "totalPoints": 9,
+      "updatedAt": 1790357784168,
       "userId": "u_m2bi9x9ejwrd",
       "weekId": "2026-W39",
-      "weeklyPoints": 7
+      "weeklyPoints": 9
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJ2WSmtASYireJSKRIiQxlo8Cc7qFAEfNRs_eey81XF_R7KTw=s96-c",
       "displayName": "李京諺",
       "email": "jimmylee33good@gmail.com",
-      "tickets": 1,
-      "totalPoints": 7,
-      "updatedAt": 1790347452273,
+      "tickets": 3,
+      "totalPoints": 9,
+      "updatedAt": 1790357784198,
       "userId": "u_v7lyno254ul",
       "weekId": "2026-W39",
-      "weeklyPoints": 7
+      "weeklyPoints": 9
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKggCzcn4NCHHQhiQnbkseo1O6mzh8-vKkItpf8SIAeQ22LWe0=s96-c",
       "displayName": "李京諺",
       "email": "lijingyan41@gmail.com",
-      "tickets": 1,
-      "totalPoints": 43,
-      "updatedAt": 1790240008646,
+      "tickets": 3,
+      "totalPoints": 45,
+      "updatedAt": 1790357784235,
       "userId": "u_m5jdw8m0go8q",
       "weekId": "2026-W39",
-      "weeklyPoints": 6
+      "weeklyPoints": 8
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocK6JID9Wk179cj6pKAFIFCFBm68VOv7XEocN9Vo2U2yTEIDmQ=s96-c",
       "displayName": "二重國中吳安夏",
       "email": "ecjh114223@ecjh.hcc.edu.tw",
-      "tickets": 1,
-      "totalPoints": 4,
-      "updatedAt": 1789986859843,
+      "tickets": 3,
+      "totalPoints": 6,
+      "updatedAt": 1790357784254,
       "userId": "u_7nj4kzduco33",
       "weekId": "2026-W39",
-      "weeklyPoints": 4
+      "weeklyPoints": 6
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLqjMdMeNFbPY9BJhQE4MVv9DQ6ob4ahcEXq2WBkmDne_h5HQ=s96-c",
       "displayName": "李京諺114 國中部",
       "email": "t1140068@twnt5.thsh.tyc.edu.tw",
-      "tickets": 1,
-      "totalPoints": 2,
-      "updatedAt": 1790169048188,
+      "tickets": 3,
+      "totalPoints": 4,
+      "updatedAt": 1790357784280,
       "userId": "u_xznu07drsnwb",
       "weekId": "2026-W39",
-      "weeklyPoints": 2
+      "weeklyPoints": 4
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIeGv7PsPEIpB-OHBfIhLu2kLCem3_IXWbsvYDVvcH7kO6K4sY=s96-c",
       "displayName": "蔡宥緯{奶龍不甜}",
       "email": "50213youtn@gmail.com",
-      "tickets": 1,
-      "totalPoints": 1,
-      "updatedAt": 1790307692653,
+      "tickets": 3,
+      "totalPoints": 3,
+      "updatedAt": 1790357784313,
       "userId": "u_am9a08l9wgdy",
       "weekId": "2026-W39",
-      "weeklyPoints": 1
+      "weeklyPoints": 3
+    },
+    {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
+      "displayName": "小編",
+      "email": "happybrother0717@gmail.com",
+      "tickets": 3,
+      "totalPoints": 3,
+      "updatedAt": 1790357784345,
+      "userId": "u_knbo67cox0xp",
+      "weekId": "2026-W39",
+      "weeklyPoints": 3
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocL91Zq2pV6MQs_JlvBKU0PWde2DQ02X7mKVvkBzrYQbtanvyEg=s96-c",
       "displayName": "思博樂",
       "email": "spore.thinkforfun@gmail.com",
-      "tickets": 1,
-      "totalPoints": 1,
-      "updatedAt": 1790148433621,
+      "tickets": 3,
+      "totalPoints": 3,
+      "updatedAt": 1790357784362,
       "userId": "u_wwdhg99b9uuz",
       "weekId": "2026-W39",
-      "weeklyPoints": 1
+      "weeklyPoints": 3
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJO151pru2JAfmERgvS3ZqWCyxUu0_n-uCv8W9qPaKJhqVMeQ=s96-c",
       "displayName": "毛皮皮",
       "email": "pipimao2266@gmail.com",
-      "tickets": 1,
-      "totalPoints": 20,
-      "updatedAt": 1790085904476,
+      "tickets": 3,
+      "totalPoints": 22,
+      "updatedAt": 1790357784392,
       "userId": "u_369p5zkdp3k5",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLwYEtObFoUjkZi50ZfhTF-X-8ieQQKUX2Ljqs-NkUszpRX_2xbjQ=s96-c",
       "displayName": "蔡宜珊",
       "email": "anitatsai13@gmail.com",
-      "tickets": 1,
-      "totalPoints": 27,
-      "updatedAt": 1790085904447,
+      "tickets": 3,
+      "totalPoints": 29,
+      "updatedAt": 1790357784415,
       "userId": "u_51acd6ie4vuw",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJiQg4uA9yqKh7hqkrDSAvogyZShe9o2FobNOZS7W9G-VnrHxBm=s96-c",
       "displayName": "陳宣瑀",
       "email": "jerry0986112019@gmail.com",
-      "tickets": 1,
-      "totalPoints": 39,
-      "updatedAt": 1790085904415,
+      "tickets": 3,
+      "totalPoints": 41,
+      "updatedAt": 1790357784440,
       "userId": "u_5vfjjzo8mvkt",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJXwl0g1DLYlVMlIHJxKA9ODE0Eg8itNayR9-m06kbKRABbNiTD=s96-c",
       "displayName": "Howard Lin",
       "email": "firstsagittarius@gmail.com",
-      "tickets": 1,
-      "totalPoints": 67,
-      "updatedAt": 1790085904410,
+      "tickets": 3,
+      "totalPoints": 69,
+      "updatedAt": 1790357784453,
       "userId": "u_a42c728zmdek",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLZnQCuxvntHGbfpnIdZENhQJ5J8LqW5F8rI9xp1eH40LWUKQ=s96-c",
       "displayName": "吳速速",
       "email": "wususufold5@gmail.com",
-      "tickets": 1,
-      "totalPoints": 23,
-      "updatedAt": 1790085904464,
+      "tickets": 3,
+      "totalPoints": 25,
+      "updatedAt": 1790357784485,
       "userId": "u_bk5nf68qvdyo",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIuAKgTrC1GMaG-daRUu6iNO1FoZtyexmZAjKR6KdDnFX9jjA=s96-c",
       "displayName": "李京諺",
       "email": "lijingyan1020227@gmail.com",
-      "tickets": 2066,
-      "totalPoints": 24,
-      "updatedAt": 1790085904454,
+      "tickets": 2068,
+      "totalPoints": 26,
+      "updatedAt": 1790357784516,
       "userId": "u_bqwcrtljrwp7",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKpkRJ_PS77IdRLl5SSVWrR27MXaicvVDQ1_5U74aJ8yLWJ_9jT=s96-c",
       "displayName": "劉嘉棻",
       "email": "cing2199@gmail.com",
-      "tickets": 1,
-      "totalPoints": 20,
-      "updatedAt": 1790085904477,
+      "tickets": 3,
+      "totalPoints": 22,
+      "updatedAt": 1790357784530,
       "userId": "u_c3ybek86okx2",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLiyKdAhEA91EptVZL5YI_X393njW6IFb7ycQEy_dWzQPAqSg=s96-c",
       "displayName": "Ivy C",
       "email": "clmmlclove@gmail.com",
-      "tickets": 1,
-      "totalPoints": 23,
-      "updatedAt": 1790085904469,
+      "tickets": 3,
+      "totalPoints": 25,
+      "updatedAt": 1790357784561,
       "userId": "u_eea9m4320ebu",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLq2j7vHmBKI44voVyob-g4OAnXKoSRx7GCplWfqiDxcKeHNQnc=s96-c",
       "displayName": "玉宣（小玉）",
       "email": "yuxu1906@gmail.com",
-      "tickets": 1,
-      "totalPoints": 20,
-      "updatedAt": 1790085904480,
+      "tickets": 3,
+      "totalPoints": 22,
+      "updatedAt": 1790357784585,
       "userId": "u_gfcjw5foygdl",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLIZAopHigqIcg7_QH4CRomT-rpSjcE3ngD6FmCdhC_-Q-w9dQ=s96-c",
       "displayName": "Nini Linn",
       "email": "ninilinn922@gmail.com",
-      "tickets": 1,
-      "totalPoints": 20,
-      "updatedAt": 1790085904482,
+      "tickets": 3,
+      "totalPoints": 22,
+      "updatedAt": 1790357784611,
       "userId": "u_he94nct2fu1m",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJd2QNwV0lzESprdKQ9WLgh8pS4FxIkp0OL7DiTgZ_Ld3BzAovwRg=s96-c",
       "displayName": "Maggie",
       "email": "scharals@gmail.com",
-      "tickets": 1,
-      "totalPoints": 25,
-      "updatedAt": 1790085904452,
+      "tickets": 3,
+      "totalPoints": 27,
+      "updatedAt": 1790357784640,
       "userId": "u_hqx969af5kfh",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJWwIXMJ3B9-buVoWz6eLbJJmStIr7ckr8oN19fcIdVwrOiEznS=s96-c",
       "displayName": "葉小英",
       "email": "vita9003@gmail.com",
-      "tickets": 1,
-      "totalPoints": 23,
-      "updatedAt": 1790085904473,
+      "tickets": 3,
+      "totalPoints": 25,
+      "updatedAt": 1790357784654,
       "userId": "u_iovti4e318ue",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIxfE2HL2zVZiGKED_9Uo27OvSUp46tjTlTxCSYkzsvpfTMUQ=s96-c",
       "displayName": "lee jim y",
       "email": "leejimy6@gmail.com",
-      "tickets": 1,
-      "totalPoints": 20,
-      "updatedAt": 1790085904484,
+      "tickets": 3,
+      "totalPoints": 22,
+      "updatedAt": 1790357784680,
       "userId": "u_kshd2h11ttzf",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJp_nxzY23ZJHgKNLwY0aP0ottShbA1GRuU2QNuIukiPHISSQ=s96-c",
       "displayName": "胡明智",
       "email": "ghoop701@gmail.com",
-      "tickets": 1,
-      "totalPoints": 83,
-      "updatedAt": 1790085904399,
+      "tickets": 3,
+      "totalPoints": 85,
+      "updatedAt": 1790357784707,
       "userId": "u_maz0qbwbetnz",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKdjK2hVuHvr7HHyRxGvldhKeJDRp9BCdrl1o2AKXvoQ-4cDs6i=s96-c",
       "displayName": "張靜雯",
       "email": "wen19790210@gmail.com",
-      "tickets": 1,
-      "totalPoints": 24,
-      "updatedAt": 1790085904458,
+      "tickets": 3,
+      "totalPoints": 26,
+      "updatedAt": 1790357784719,
       "userId": "u_mo8jfnqvbi2n",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJWHDusEHHApOH0qgvHSNU7wtLj2ku1VJVLgwQUePlGdPOeXQ=s96-c",
       "displayName": "葉世熊熊（葉世雄熊）",
       "email": "a0906129686@gmail.com",
-      "tickets": 1,
-      "totalPoints": 36,
-      "updatedAt": 1790085904433,
+      "tickets": 3,
+      "totalPoints": 38,
+      "updatedAt": 1790357784747,
       "userId": "u_ms9b7cqv82mu",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIhlVrOp8ivU3nnCXp8d9dqlqKIa9UIJlnvOB1GORzKitn9Aw=s96-c",
       "displayName": "劉育伶",
       "email": "liuyuling1201@gmail.com",
-      "tickets": 1,
-      "totalPoints": 24,
-      "updatedAt": 1790085904460,
+      "tickets": 3,
+      "totalPoints": 26,
+      "updatedAt": 1790357784776,
       "userId": "u_ne52bufqrfn0",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKEyX3fIQlYp3jbOxkY_ZYoBr87VPK3q2xt2vfZQJAcSU2xDY8=s96-c",
       "displayName": "蘇昊",
       "email": "suuuuuhaooooo@gmail.com",
-      "tickets": 1,
-      "totalPoints": 24,
-      "updatedAt": 1790085904462,
+      "tickets": 3,
+      "totalPoints": 26,
+      "updatedAt": 1790357784804,
       "userId": "u_om74zoieyx5m",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJO-vbbz9WUz6FZyjqEHqKQIBBjWRK3DsPys1BP9aqRRIcefQ=s96-c",
       "displayName": "Eva Eva",
       "email": "mama881688@gmail.com",
-      "tickets": 1,
-      "totalPoints": 20,
-      "updatedAt": 1790085904485,
+      "tickets": 3,
+      "totalPoints": 22,
+      "updatedAt": 1790357784829,
       "userId": "u_onlxul4p4r29",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJE5vknCLO6jHI077B_6wTQ_nzeb8FAy3sE50quV_XjREIGOw=s96-c",
       "displayName": "乖巧寶（乖巧寶娘親）",
       "email": "candy885235@gmail.com",
-      "tickets": 1,
-      "totalPoints": 28,
-      "updatedAt": 1790085904444,
+      "tickets": 3,
+      "totalPoints": 30,
+      "updatedAt": 1790357784843,
       "userId": "u_r19dl81dvobu",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
+    },
+    {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJtzSTkA1QjCjTHweVDX9BlSgT5OnKxnq8RneFk1bQxr7VRVA=s96-c",
+      "displayName": "蔡賢銘",
+      "email": "x0x2x4x6@yahoo.com.tw",
+      "tickets": 3,
+      "totalPoints": 2,
+      "updatedAt": 1790357785046,
+      "userId": "u_r6jy2f1mxeln",
+      "weekId": "2026-W39",
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocL6MkOaQUNfucFyWuk5gROa5ts0MReqOEZWKN2mvgaatbWotrxW=s96-c",
       "displayName": "采紋",
       "email": "qoo214@gmail.com",
-      "tickets": 1,
-      "totalPoints": 29,
-      "updatedAt": 1790085904437,
+      "tickets": 3,
+      "totalPoints": 31,
+      "updatedAt": 1790357784872,
       "userId": "u_rc3g9udy5hog",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLDiMeinnJXMJjoDZv8cxutSzM1-XWmli27Us35hzYMn34RWw=s96-c",
       "displayName": "Shu-Ping Wu",
       "email": "doublesugar0715@gmail.com",
-      "tickets": 1,
-      "totalPoints": 59,
-      "updatedAt": 1789997305511,
+      "tickets": 3,
+      "totalPoints": 61,
+      "updatedAt": 1790357784898,
       "userId": "u_roqc80phmvpa",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKynGG5bvjPsLb2DHcaIZFscNSCQo1STMYHjdCWFCw6P1EPiQo=s96-c",
       "displayName": "賴奕霏",
       "email": "a14420@apps.ntpc.edu.tw",
-      "tickets": 1,
-      "totalPoints": 169,
-      "updatedAt": 1790085904378,
+      "tickets": 3,
+      "totalPoints": 171,
+      "updatedAt": 1790357784912,
       "userId": "u_tcx8vf58oebb",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJ7n302hhtrQbpzv-wX9jII-yEGS9BJKL3AZzQlzdcxfGuYBA=s96-c",
       "displayName": "Ot Bb",
       "email": "otb8377@gmail.com",
-      "tickets": 1,
-      "totalPoints": 38,
-      "updatedAt": 1790085904420,
+      "tickets": 3,
+      "totalPoints": 40,
+      "updatedAt": 1790357784936,
       "userId": "u_vggsaeugpr2s",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKE3dOalWYTpif8j_27D4XmF_ff2L0vC1jtnqThj8Xz4tPnEN0N=s96-c",
       "displayName": "陳子翗",
       "email": "11350122@cyhs.tp.edu.tw",
-      "tickets": 1,
-      "totalPoints": 75,
-      "updatedAt": 1790085904406,
+      "tickets": 3,
+      "totalPoints": 77,
+      "updatedAt": 1790357784960,
       "userId": "u_xsvsamtun7h8",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKSYKiMZRDcBUn8jnUPFCeOEk_WzYZ0qOPlGGdGWHr7SlkBmg=s96-c",
       "displayName": "Nice Lin",
       "email": "vickylin787@gmail.com",
-      "tickets": 1,
-      "totalPoints": 26,
-      "updatedAt": 1790085904450,
+      "tickets": 3,
+      "totalPoints": 28,
+      "updatedAt": 1790357784987,
       "userId": "u_yq4q3dcxu56t",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKv4Cdr_k0lPweO-VNg5T0aLNifS6MclY9P0fw-T_ySDKKOPfbQOw=s96-c",
       "displayName": "Anita Ho",
       "email": "anita730311@gmail.com",
-      "tickets": 1,
-      "totalPoints": 29,
-      "updatedAt": 1790085904442,
+      "tickets": 3,
+      "totalPoints": 31,
+      "updatedAt": 1790357785010,
       "userId": "u_z8h0ggo8sl3i",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a-/ALV-UjXTnsy-916zBC7DKlWjlyEZOoUik9EIOwUd4cHjs6fEtliBzPLIv52GaFkzziOoJEdkY5nNeVjmUUShGyTkiVMa_YKxYXF_i76B1XWlGOgn7R_SHU4n4m7Mtg3yBUHu5v-gGyXbqJapsBwI7uiMeuQ_MX7rZk2rSRwNokdXnmTr_PlDsC-4tmNJdsf3C_Z5pFLcZrYvNkZVokOZdhbktVoE0JKgvsLh0O82OBwq1HlsMTV_ys6JPulvez2_uq2w-XHNQdN59b9DgCWP99x41R4xpakKqs4aGVGD-EJn99g6Es6bEXO_eUmq_mzXYHrh4kZJvaP3QRFXZPWcAEnAO2kovA2pssGAcsjFbD4h5ZFq3rHJND0de5pFCzh4kCjmlMGKJe2uM0FTYh5WkHXNOM1O09Wx59zOdcLhmw7n3A9Fd8JreQqdog1zXMtCfDdNTlEJdf5DGzra5JbdrC7n_bfjPG4Rc3eIEFyH5uviCctWfXEBpIOKtgUhc6-vxtfB_Cdy6fh-vM4w1cnxQ8P4Q4Z4uwON3Gsz98CIbudI8FjOjRWWWdveUvndf5-qS3C1NdewHS1bDwnLkRpuvOZozE_TzZO_hYkAn_O4oNqbCbXZGJifW5YgI8lVSWxVbc1tLQQXtBfsWkdHb3u5d4vrOaGNKPCX2_Bji3BDVv8xxXDM0IJjODWLvh5nEuzP9CmwN2VgF59RTp9dI-nWMI3pvjebgWE1j2uF-XIUMQpcHwAXppM5ic9byx8qlIsUIs0IY2Grq4pi66Z2WZk48Fmo-3QAYiAe3vYFvmuU33m50SbkaFAfK662CxMlAJ3LxbV2_nS1IovclGPAmWHe1AxLwh1roq4z9a6bIUsd5jy8rigBp6vLp80XqMaMUyKFaH4qOPp0dzQtaR4W3aF_1UZDDfbi9cSIB4vlMAEGsuTn8KvuvZNy-KDYjYzddvW_aPnM84MtdoQOlmXbVw60IHINRXBy4EJap53c0cEMkv3OC6MeeovpJvu2K72AtysoC3ME-5DXboqVreUcaI0NWkUVPPtAnxVFNu6GkGQG3N-pT6_8vxev0qXIeuGCXjBZYTY7elDfblJDyV_TwAFS5ITlqFw=s96-c",
       "displayName": "劉佳宜",
       "email": "ff19900615@gmail.com",
-      "tickets": 1,
-      "totalPoints": 39,
-      "updatedAt": 1790085904417,
+      "tickets": 3,
+      "totalPoints": 41,
+      "updatedAt": 1790357785022,
       "userId": "u_z9bch3itsp1",
       "weekId": "2026-W39",
-      "weeklyPoints": 0
+      "weeklyPoints": 2
     }
   ],
   "studyhub_game_state_u_bqwcrtljrwp7": {
