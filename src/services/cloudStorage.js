@@ -2410,7 +2410,7 @@ if (typeof window !== 'undefined') {
 
           if (!currentRaw) {
             safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(v));
-            const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
+            const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now(), fromRemote: true };
             localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
             return;
           }
@@ -2424,7 +2424,7 @@ if (typeof window !== 'undefined') {
               const localTime = currentVal?.updatedAt || 0;
               if (remoteTime > localTime || (v.tickets || 0) > (currentVal?.tickets || 0)) {
                 safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(v));
-                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
+                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now(), fromRemote: true };
                 localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
               }
               return;
@@ -2441,7 +2441,7 @@ if (typeof window !== 'undefined') {
               const mergedRaw = JSON.stringify(merged);
               if (mergedRaw !== currentRaw) {
                 safeSetLocalStorage(STORAGE_PREFIX + k, mergedRaw);
-                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
+                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now(), fromRemote: true };
                 localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
               }
               return;
@@ -2456,7 +2456,7 @@ if (typeof window !== 'undefined') {
               const merged = Array.from(map.values()).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
               if (merged.length > currentArr.length) {
                 safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(merged));
-                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
+                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now(), fromRemote: true };
                 localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
               }
               return;
@@ -2466,7 +2466,7 @@ if (typeof window !== 'undefined') {
           const newRaw = JSON.stringify(v);
           if (currentRaw !== newRaw) {
             safeSetLocalStorage(STORAGE_PREFIX + k, newRaw);
-            const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now() };
+            const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now(), fromRemote: true };
             localSyncListeners.forEach(cb => {
               try { cb(payload); } catch (e) {}
             });

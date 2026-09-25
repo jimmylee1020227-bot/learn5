@@ -67,14 +67,23 @@
   ],
   "audit_logs": [
     {
-      "id": "log_1790376542524_7n0j",
-      "timestamp": "2026-09-25T22:49:02.524Z",
+      "id": "log_1790377009151_b8rx",
+      "timestamp": "2026-09-25T22:56:49.151Z",
       "operatorId": "admin_super_jimmy",
       "operatorName": "總管理員",
       "operatorRole": "super_admin",
       "actionType": "CREATE_REDEMPTION_CODE",
-      "details": "建立新兌換碼【HAPPY_FESTIVAL】: 中秋快樂 (數值: 30)",
+      "details": "建立新兌換碼【HAPPY_FESTIVAL1】: 中秋快樂 (數值: 2)",
       "targetId": null
+    },
+    {
+      "actionType": "CREATE_REDEMPTION_CODE",
+      "details": "建立新兌換碼【HAPPY_FESTIVAL】: 中秋快樂 (數值: 30)",
+      "id": "log_1790376542524_7n0j",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-25T22:49:02.524Z"
     },
     {
       "actionType": "DELETE_REDEMPTION_CODE",
@@ -198,13 +207,22 @@
   ],
   "redemption_codes": [
     {
-      "code": "HAPPY_FESTIVAL",
-      "type": "points",
-      "rewardValue": 30,
+      "code": "HAPPY_FESTIVAL1",
+      "type": "lottery_ticket",
+      "rewardValue": 2,
       "label": "中秋快樂",
       "expiresAt": "2026-09-30",
-      "createdAt": "2026-09-25T22:49:02.510Z",
+      "createdAt": "2026-09-25T22:56:49.133Z",
       "createdBy": "總管理員"
+    },
+    {
+      "code": "HAPPY_FESTIVAL",
+      "createdAt": "2026-09-25T22:49:02.510Z",
+      "createdBy": "總管理員",
+      "expiresAt": "2026-09-30",
+      "label": "中秋快樂",
+      "rewardValue": 30,
+      "type": "points"
     },
     {
       "code": "117SUNDAY",
@@ -419,13 +437,22 @@
   },
   "admin_notifications": [
     {
-      "id": "notif_1790376542540",
-      "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL】！",
+      "id": "notif_1790377009167",
+      "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL1】！",
       "message": "新兌換碼發布：中秋快樂，點擊即可一鍵領取！",
       "type": "redemption",
+      "relatedCode": "HAPPY_FESTIVAL1",
+      "sender": "總管理員",
+      "timestamp": "2026-09-25T22:56:49.167Z"
+    },
+    {
+      "id": "notif_1790376542540",
+      "message": "新兌換碼發布：中秋快樂，點擊即可一鍵領取！",
       "relatedCode": "HAPPY_FESTIVAL",
       "sender": "總管理員",
-      "timestamp": "2026-09-25T22:49:02.540Z"
+      "timestamp": "2026-09-25T22:49:02.540Z",
+      "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL】！",
+      "type": "redemption"
     },
     {
       "id": "notif_1790347569701",
@@ -802,13 +829,13 @@
     }
   },
   "studyhub_game_state_admin_super_jimmy": {
-    "tickets": 0,
+    "tickets": 2,
     "pityCount": 4,
     "lastDailyClaimDate": "2026-09-26",
     "personalMultiplier": 1,
     "multiplierExpiresAt": 0,
     "unlockedBadges": [],
-    "updatedAt": 1790376859624
+    "updatedAt": 1790377021675
   },
   "privacy_consent_admin_super_jimmy": {
     "userId": "admin_super_jimmy",
@@ -831,6 +858,17 @@
       "weeklyPoints": 49
     },
     {
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
+      "displayName": "總管理員",
+      "email": "jimmylee1020227@gmail.com",
+      "tickets": 7071,
+      "totalPoints": 97,
+      "updatedAt": 1790376546130,
+      "userId": "admin_super_jimmy",
+      "weekId": "2026-W39",
+      "weeklyPoints": 39
+    },
+    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIANgF2ETQ2llbHNhbv4E5e_72FcSlJ9fWf5jfBsUS-PcaIyQ=s96-c",
       "displayName": "fternoon A",
       "email": "fternoona50@gmail.com",
@@ -851,17 +889,6 @@
       "userId": "u_e63qy64hs7ao",
       "weekId": "2026-W39",
       "weeklyPoints": 11
-    },
-    {
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
-      "displayName": "總管理員",
-      "email": "jimmylee1020227@gmail.com",
-      "tickets": 7071,
-      "totalPoints": 67,
-      "updatedAt": 1790376177657,
-      "userId": "admin_super_jimmy",
-      "weekId": "2026-W39",
-      "weeklyPoints": 9
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIUHnRSAzHCC5DGuKn_55lz0Wr_m4z3KEPeaQ_fiz4yLyep3g=s96-c",
@@ -7982,5 +8009,10 @@
     "multiplierExpiresAt": 0,
     "unlockedBadges": [],
     "updatedAt": 1790348801876
-  }
+  },
+  "redeemed_history_admin_super_jimmy": [
+    "117SUNDAY",
+    "HAPPY_FESTIVAL",
+    "HAPPY_FESTIVAL1"
+  ]
 }
