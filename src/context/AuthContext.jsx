@@ -254,13 +254,20 @@ export function AuthProvider({ children }) {
     } catch (e) {
       // 雲端查詢失敗時，退回本地快速檢查
       const registry = JSON.parse(localStorage.getItem('studyhub_user_registry') || '{}');
-      const nameExists = Object.values(registry).some(u =>
-        u.id !== currentUser?.id &&
-        (u.name === trimmed || u.displayName === trimmed)
-      );
-      if (nameExists) {
-        trimmed = trimmed + '_' + Math.random().toString(36).substring(2, 6).toUpperCase();
-        alert(`⚠️ 該暱稱已被使用，系統已自動為您加上專屬後綴：${trimmed}`);
+      let counter = 2;
+      let tempName = trimmed;
+      while (
+        Object.values(registry).some(u =>
+          u.id !== currentUser?.id &&
+          (u.name === tempName || u.displayName === tempName)
+        )
+      ) {
+        tempName = `${trimmed}${counter}`;
+        counter++;
+      }
+      if (tempName !== trimmed) {
+        trimmed = tempName;
+        alert(`⚠️ 該暱稱已被使用，系統已自動為您加上數字後綴：${trimmed}`);
       }
     }
 
