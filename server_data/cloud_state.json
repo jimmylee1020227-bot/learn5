@@ -674,11 +674,11 @@
   "studyhub_game_state_admin_super_jimmy": {
     "tickets": 0,
     "pityCount": 1,
-    "lastDailyClaimDate": "",
+    "lastDailyClaimDate": "2026-09-25",
     "personalMultiplier": 1,
     "multiplierExpiresAt": 0,
     "unlockedBadges": [],
-    "updatedAt": 1790135734015
+    "updatedAt": 1790348038377
   },
   "privacy_consent_admin_super_jimmy": {
     "userId": "admin_super_jimmy",
@@ -7777,5 +7777,14 @@
     "consented": true,
     "version": "1.0.0",
     "consentedAt": "2026-09-23T10:33:05.880Z"
+  },
+  "studyhub_game_state_guest_student": {
+    "tickets": 1,
+    "pityCount": 0,
+    "lastDailyClaimDate": "2026-09-25",
+    "personalMultiplier": 1,
+    "multiplierExpiresAt": 0,
+    "unlockedBadges": [],
+    "updatedAt": 1790348477861
   }
 }

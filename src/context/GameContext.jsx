@@ -27,7 +27,7 @@ export function GameProvider({ children }) {
   
   // 學生個人遊戲狀態：抽獎券、點數倍率、每日簽到日期 (雲端即時同步)
   const [gameState, setLocalGameState] = useState(() => {
-    return getJson(`${STORAGE_GAME_KEY}_${userId}`, DEFAULT_GAME_STATE);
+    return getJson(`${STORAGE_GAME_KEY}_${userId}`, DEFAULT_GAME_STATE) || DEFAULT_GAME_STATE;
   });
 
   // 全域包裹 setGameState，確保從任何組件 (如兌換碼) 呼叫時，都會自動同步到雲端
