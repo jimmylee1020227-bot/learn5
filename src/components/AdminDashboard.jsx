@@ -369,6 +369,7 @@ export default function AdminDashboard() {
 
   // 篩選做題紀錄列表
   const filteredPracticeLogs = React.useMemo(() => {
+    const userRegistry = getJson('user_registry', {});
     return allHistory.filter(log => {
       // 學生姓名與 ID 快篩按鈕 (支援姓名與 userId 雙向精準匹配，杜絕任何過濾遺漏)
       if (selectedStudent !== 'ALL') {
@@ -405,10 +406,11 @@ export default function AdminDashboard() {
       }
       return true;
     });
-  }, [allHistory, selectedStudent, selectedStudentId, selectedStudentEmail, studentSearchKeyword, onlyMistakes, questionSearchKeyword, userRegistry]);
+  }, [allHistory, selectedStudent, selectedStudentId, selectedStudentEmail, studentSearchKeyword, onlyMistakes, questionSearchKeyword]);
 
   // 篩選完整試卷列表 (支援學生姓名、學校、題目關鍵字與科目快篩)
   const filteredQuizPapers = React.useMemo(() => {
+    const userRegistry = getJson('user_registry', {});
     return quizPapers.filter(paper => {
       if (selectedStudent !== 'ALL') {
         const sName = paper.userName || '匿名同學';
