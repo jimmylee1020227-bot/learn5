@@ -391,7 +391,14 @@ export default function AdminDashboard() {
         const sName = log.userName || '匿名同學';
         const matchName = sName === selectedStudent || sName.toLowerCase() === selectedStudent.toLowerCase();
         const matchId = log.userId && (log.userId === selectedStudent || (selectedStudentId !== 'ALL' && log.userId === selectedStudentId));
-        if (!matchName && !matchId) {
+        
+        // 追加 Email 跨帳號合併匹配
+        const regEntry = (log.userId && userRegistry[log.userId]) || {};
+        let targetEmail = regEntry.email || log.userEmail || '';
+        targetEmail = targetEmail.trim().toLowerCase();
+        const matchEmail = selectedStudentEmail !== 'ALL' && targetEmail && targetEmail === selectedStudentEmail.trim().toLowerCase();
+
+        if (!matchName && !matchId && !matchEmail) {
           return false;
         }
       }

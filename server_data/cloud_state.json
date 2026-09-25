@@ -829,13 +829,13 @@
     }
   },
   "studyhub_game_state_admin_super_jimmy": {
-    "tickets": 2,
-    "pityCount": 4,
+    "tickets": 0,
+    "pityCount": 6,
     "lastDailyClaimDate": "2026-09-26",
     "personalMultiplier": 1,
     "multiplierExpiresAt": 0,
     "unlockedBadges": [],
-    "updatedAt": 1790377021675
+    "updatedAt": 1790377253164
   },
   "privacy_consent_admin_super_jimmy": {
     "userId": "admin_super_jimmy",
@@ -862,11 +862,11 @@
       "displayName": "總管理員",
       "email": "jimmylee1020227@gmail.com",
       "tickets": 7071,
-      "totalPoints": 97,
-      "updatedAt": 1790376546130,
+      "totalPoints": 100,
+      "updatedAt": 1790377251289,
       "userId": "admin_super_jimmy",
       "weekId": "2026-W39",
-      "weeklyPoints": 39
+      "weeklyPoints": 42
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIANgF2ETQ2llbHNhbv4E5e_72FcSlJ9fWf5jfBsUS-PcaIyQ=s96-c",
