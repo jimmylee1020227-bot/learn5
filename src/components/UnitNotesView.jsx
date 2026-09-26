@@ -24,8 +24,11 @@ import {
   Flag,
   X,
   Send,
-  Check
+  Check,
+  Calculator,
+  Sigma
 } from 'lucide-react';
+import MathText from './MathText';
 
 const iconMap = {
   chinese: BookOpen,
@@ -510,7 +513,9 @@ export default function UnitNotesView({ onStartQuizForUnit }) {
                         </div>
                         <ul style={{ margin: 0, paddingLeft: '20px', color: '#334155', fontSize: '0.88rem', lineHeight: '1.6' }}>
                           {note.keyFormulas.map((f, i) => (
-                            <li key={i} style={{ marginBottom: '4px' }}>{f}</li>
+                            <li key={i} style={{ marginBottom: '6px' }}>
+                              <MathText text={f} />
+                            </li>
                           ))}
                         </ul>
                       </div>
@@ -528,9 +533,11 @@ export default function UnitNotesView({ onStartQuizForUnit }) {
                           <Lightbulb size={16} />
                           <span>解題推導脈絡與素養理解</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: '#451a03', fontSize: '0.88rem', lineHeight: '1.6' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: '#451a03', fontSize: '0.88rem', lineHeight: '1.6' }}>
                           {note.coreConcepts.map((c, i) => (
-                            <p key={i} style={{ margin: 0 }}>{c}</p>
+                            <div key={i} style={{ margin: 0 }}>
+                              <MathText text={c} />
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -550,13 +557,98 @@ export default function UnitNotesView({ onStartQuizForUnit }) {
                         </div>
                         <ul style={{ margin: 0, paddingLeft: '20px', color: '#7f1d1d', fontSize: '0.88rem', lineHeight: '1.6' }}>
                           {note.examTraps.map((t, i) => (
-                            <li key={i} style={{ marginBottom: '4px' }}>{t}</li>
+                            <li key={i} style={{ marginBottom: '6px' }}>
+                              <MathText text={t} />
+                            </li>
                           ))}
                         </ul>
                       </div>
                     )}
 
-                    {/* 4. 高分速記口訣 */}
+                    {/* 4. 經典題型與詳細算式推導 (Step-by-Step 解析) */}
+                    {note.calculations && note.calculations.length > 0 && (
+                      <div style={{
+                        background: '#f0fdf4',
+                        borderRadius: '14px',
+                        padding: '16px 18px',
+                        borderLeft: '4px solid #10b981',
+                        border: '1.5px solid #a7f3d0'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#065f46', fontWeight: 900, fontSize: '0.94rem' }}>
+                          <Sigma size={18} color="#059669" />
+                          <span>📐 經典題型與詳細算式推導 (Step-by-Step 完整演算)</span>
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                          {note.calculations.map((calc, cIdx) => (
+                            <div 
+                              key={cIdx}
+                              style={{
+                                background: '#ffffff',
+                                borderRadius: '12px',
+                                border: '1.5px solid #cbd5e1',
+                                padding: '14px 16px',
+                                boxShadow: '0 1px 4px rgba(0,0,0,0.04)'
+                              }}
+                            >
+                              {/* 範例標題 */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                <span style={{ fontWeight: 900, fontSize: '0.92rem', color: '#1e293b' }}>
+                                  📌 {calc.title || `經典算式範例 ${cIdx + 1}`}
+                                </span>
+                                <span style={{ fontSize: '0.72rem', background: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
+                                  含完整算式
+                                </span>
+                              </div>
+
+                              {/* 題目描述 */}
+                              <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.88rem', color: '#334155', marginBottom: '10px', lineHeight: 1.6 }}>
+                                <strong style={{ color: '#0f172a' }}>【題目】</strong>
+                                <MathText text={calc.question} />
+                              </div>
+
+                              {/* 破題思維 */}
+                              {calc.keyIdea && (
+                                <div style={{ fontSize: '0.84rem', color: '#0284c7', background: '#f0f9ff', padding: '8px 12px', borderRadius: '8px', marginBottom: '10px', border: '1px solid #bae6fd', lineHeight: 1.5 }}>
+                                  💡 <strong>破題思維與公式依據：</strong>
+                                  <MathText text={calc.keyIdea} />
+                                </div>
+                              )}
+
+                              {/* 詳細步驟算式 */}
+                              {calc.solutionSteps && calc.solutionSteps.length > 0 && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '8px 0' }}>
+                                  <div style={{ fontSize: '0.84rem', fontWeight: 800, color: '#475569' }}>
+                                    ✏️ <strong>逐步推導與計算算式：</strong>
+                                  </div>
+                                  <div style={{ paddingLeft: '6px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    {calc.solutionSteps.map((step, sIdx) => (
+                                      <div key={sIdx} style={{ fontSize: '0.88rem', color: '#1e293b', lineHeight: 1.6, display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                                        <span style={{ color: '#10b981', fontWeight: 900, whiteSpace: 'nowrap' }}>步驟 {sIdx + 1}：</span>
+                                        <div style={{ flex: 1 }}>
+                                          <MathText text={step} />
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* 最終答案 */}
+                              {calc.answer && (
+                                <div style={{ marginTop: '10px', padding: '8px 12px', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #6ee7b7', color: '#065f46', fontWeight: 800, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <Check size={16} />
+                                  <span>本題正解：</span>
+                                  <MathText text={calc.answer} />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 5. 高分速記口訣 */}
                     {note.mnemonics && (
                       <div style={{
                         background: 'linear-gradient(135deg, #fae8ff, #fdf4ff)',
@@ -571,7 +663,9 @@ export default function UnitNotesView({ onStartQuizForUnit }) {
                         gap: '8px'
                       }}>
                         <Sparkles size={16} color="#a855f7" />
-                        <span>{note.mnemonics}</span>
+                        <div>
+                          <MathText text={note.mnemonics} />
+                        </div>
                       </div>
                     )}
 

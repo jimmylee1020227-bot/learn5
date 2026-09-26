@@ -78,7 +78,7 @@ export default function RedemptionModal({ isOpen, onClose }) {
             <div>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>輸入兌換碼，領取獎勵</h3>
               <p style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 600 }}>
-                會考讀書網專屬序號兌換
+                讀書網專屬序號兌換
               </p>
             </div>
           </div>

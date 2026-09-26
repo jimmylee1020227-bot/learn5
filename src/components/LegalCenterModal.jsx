@@ -188,7 +188,7 @@ export default function LegalCenterModal({ isOpen, onClose, initialTab = 'privac
           {activeTab === 'terms' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '4px 0' }}>一、服務條款之認知與接受</h3>
-              <p>歡迎使用「學習網」（以下簡稱本平台）。當您使用本平台所提供之任何服務時，即表示您已充分閱讀、理解並同意接受本服務條款之所有規範。本條款之最新版本為 v2.0.0，2026 年陸續公布於平台服務條款中心。</p>
+              <p>歡迎使用「讀書網」（以下簡稱本平台）。當您使用本平台所提供之任何服務時，即表示您已充分閱讀、理解並同意接受本服務條款之所有規範。本條款之最新版本為 v2.0.0，2026 年陸續公布於平台服務條款中心。</p>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>二、使用者行為規範與違約限制</h3>
               <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
                 <li>嚴禁以自動化腳本、爬蟲、外掛軟體進行非正常頻率之作答、洗榜或干擾伺服器運作。</li>
@@ -264,7 +264,7 @@ export default function LegalCenterModal({ isOpen, onClose, initialTab = 'privac
                 ⚠️ <strong>法律責任限制與風險免責揭露 (Disclaimer & Risk Disclosure)</strong>
               </div>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '4px 0' }}>一、會考與大考非官方附屬宣告</h3>
-              <p>本平台為民間教育科技研究團隊自主維護之公益學習網站，非教育部國民及學前教育署、心測中心或任何官方升學大考機構。網站內之「會考等第推估」、「模擬分數」僅作為考生自主練習時之實力指標，不保證正式會考之落點結果。</p>
+              <p>本平台為民間教育科技研究團隊自主維護之公益讀書網站，非教育部國民及學前教育署、心測中心或任何官方升學大考機構。網站內之「會考等第推估」、「模擬分數」僅作為考生自主練習時之實力指標，不保證正式會考之落點結果。</p>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>二、演算法題目生成準確度提示</h3>
               <p>題庫包含自適應演算法動態衍生之素養變換題與破題解法。雖然管理組每日持續校驗，但文字描述若有少數勘誤，歡迎透過「題目疑義回報」功能指正，本會不承擔因練習答錯衍生之非本站直接相關責任。</p>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>三、網路與伺服器中斷風險</h3>

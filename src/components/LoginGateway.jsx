@@ -62,7 +62,7 @@ export default function LoginGateway() {
 
           <div>
             <h1 style={{ margin: 0, fontSize: '1.85rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', letterSpacing: '-0.02em' }}>
-              會考讀書網
+              讀書網
             </h1>
             <p style={{ margin: '6px 0 0 0', fontSize: '0.9rem', color: '#78818a', fontWeight: 600 }}>
               108 課綱專屬題庫・錯題加強・每週排行榜

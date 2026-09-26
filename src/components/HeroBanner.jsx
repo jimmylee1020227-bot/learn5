@@ -32,7 +32,8 @@ export default function HeroBanner({
   onStartReinforceTab, 
   onStartLeaderboardTab,
   onOpenRedemptionModal,
-  onOpenPrintExamModal
+  onOpenPrintExamModal,
+  onGoNotesTab
 }) {
   const { currentUser } = useAuth();
   const { isMobile } = useDevice();
@@ -140,11 +141,44 @@ export default function HeroBanner({
             {/* 核心行動按鈕 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
               <button 
+                type="button"
+                onClick={onGoNotesTab} 
+                className="btn"
+                style={{ 
+                  padding: '14px 26px', 
+                  fontSize: '1.02rem',
+                  fontWeight: 900,
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
+                  color: '#ffffff',
+                  border: '2.5px solid #312e81',
+                  borderRadius: '16px',
+                  boxShadow: '4px 4px 0px #312e81',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translate(-2px, -2px)';
+                  e.currentTarget.style.boxShadow = '6px 6px 0px #312e81';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'none';
+                  e.currentTarget.style.boxShadow = '4px 4px 0px #312e81';
+                }}
+                title="國中、高中各單元重點筆記、數學公式推導、題型範例與線上回報"
+              >
+                <BookOpen size={18} />
+                📖 國高中重點筆記專區
+              </button>
+
+              <button 
                 onClick={onStartQuizTab} 
                 className="btn btn-primary"
                 style={{ padding: '14px 28px', fontSize: '1.02rem' }}
               >
-                <BookOpen size={18} />
+                <FileText size={18} />
                 開始 AI 出題
               </button>
 

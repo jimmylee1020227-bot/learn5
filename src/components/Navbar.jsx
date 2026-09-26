@@ -107,14 +107,14 @@ export default function Navbar({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '1.2rem', fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
-                  會考讀書網
+                  讀書網
                 </span>
                 <span className="badge badge-coral" style={{ fontSize: '0.68rem', padding: '2px 8px' }}>
                   108 課綱
                 </span>
               </div>
               <div style={{ fontSize: '0.72rem', color: '#78818a', fontWeight: 600 }}>
-                國一至國三全科・破千題庫・一起穩穩上岸
+                國中高中全科・真題模擬考・一起穩穩上岸
               </div>
             </div>
           </div>
@@ -617,13 +617,64 @@ export default function Navbar({
 
           {/* 2. 核心功能網格 */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+            {/* 國高中重點筆記 (首選高亮) */}
+            <button
+              className="btn"
+              onClick={() => { setActiveTab('notes'); setIsMobileMenuOpen(false); }}
+              style={{ 
+                padding: '12px 10px', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                gap: '6px', 
+                borderRadius: '14px', 
+                background: 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)', 
+                color: '#ffffff',
+                border: '2px solid #4f46e5',
+                boxShadow: '2px 2px 0px #312e81'
+              }}
+            >
+              <FileText size={20} color="#ffffff" />
+              <span style={{ fontSize: '0.85rem', fontWeight: 900 }}>📖 重點筆記</span>
+            </button>
+
+            {/* AI 題庫出題 */}
+            <button
+              className="btn btn-secondary"
+              onClick={() => { setActiveTab('quiz'); setIsMobileMenuOpen(false); }}
+              style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px' }}
+            >
+              <BookOpen size={20} color="var(--theme-accent, #ef8354)" />
+              <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>📝 AI 題庫</span>
+            </button>
+
+            {/* 錯題加強突破 */}
+            <button
+              className="btn btn-secondary"
+              onClick={() => { setActiveTab('reinforce'); setIsMobileMenuOpen(false); }}
+              style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px' }}
+            >
+              <Sparkles size={20} color="#ef8354" />
+              <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>✨ 錯題加強</span>
+            </button>
+
+            {/* 每週排行榜 */}
+            <button
+              className="btn btn-secondary"
+              onClick={() => { setActiveTab('leaderboard'); setIsMobileMenuOpen(false); }}
+              style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px' }}
+            >
+              <Trophy size={20} color="#f59e0b" />
+              <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>🏆 排行榜</span>
+            </button>
+
             {/* 歷次完整測驗卷 */}
             <button
               className="btn btn-secondary"
               onClick={() => { setActiveTab('history'); setIsMobileMenuOpen(false); }}
               style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px' }}
             >
-              <BookOpen size={20} color="var(--theme-accent, #ef8354)" />
+              <Clock size={20} color="#6366f1" />
               <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>歷次測驗卷</span>
             </button>
 

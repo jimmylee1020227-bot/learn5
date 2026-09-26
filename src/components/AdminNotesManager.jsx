@@ -41,6 +41,7 @@ export default function AdminNotesManager({ currentUser }) {
   const [editConcepts, setEditConcepts] = useState('');
   const [editTraps, setEditTraps] = useState('');
   const [editMnemonics, setEditMnemonics] = useState('');
+  const [editCalculations, setEditCalculations] = useState('');
 
   // 重新從雲端抓取回報與自訂筆記
   const refreshData = async () => {
@@ -90,6 +91,7 @@ export default function AdminNotesManager({ currentUser }) {
     setEditConcepts((activeData.coreConcepts || note.coreConcepts || []).join('\n'));
     setEditTraps((activeData.examTraps || note.examTraps || []).join('\n'));
     setEditMnemonics(activeData.mnemonics || note.mnemonics || '');
+    setEditCalculations(JSON.stringify(activeData.calculations || note.calculations || [], null, 2));
   };
 
   // 載入某則回報對應的單元
@@ -111,6 +113,15 @@ export default function AdminNotesManager({ currentUser }) {
     if (!selectedNoteId) return;
 
     const baseNote = availableNotes.find(n => n.id === selectedNoteId) || {};
+    let parsedCalculations = baseNote.calculations || [];
+    try {
+      if (editCalculations && editCalculations.trim()) {
+        parsedCalculations = JSON.parse(editCalculations);
+      }
+    } catch (e) {
+      console.warn('解析 calculations JSON 失敗，保留原設定:', e);
+    }
+
     const updatedData = {
       ...baseNote,
       id: selectedNoteId,
@@ -119,7 +130,8 @@ export default function AdminNotesManager({ currentUser }) {
       keyFormulas: editFormulas.split('\n').map(l => l.trim()).filter(Boolean),
       coreConcepts: editConcepts.split('\n').map(l => l.trim()).filter(Boolean),
       examTraps: editTraps.split('\n').map(l => l.trim()).filter(Boolean),
-      mnemonics: editMnemonics.trim()
+      mnemonics: editMnemonics.trim(),
+      calculations: parsedCalculations
     };
 
     saveCustomNoteOverride(selectedNoteId, updatedData, currentUser);
@@ -386,6 +398,19 @@ export default function AdminNotesManager({ currentUser }) {
               value={editMnemonics}
               onChange={(e) => setEditMnemonics(e.target.value)}
               style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', background: '#0f172a', color: '#fff', border: '1px solid #334155' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#94a3b8', marginBottom: '4px' }}>
+              📐 經典題型與詳細算式推導（JSON 結構陣列，支援 LaTeX 數學符號與逐步算式）
+            </label>
+            <textarea
+              rows={6}
+              value={editCalculations}
+              onChange={(e) => setEditCalculations(e.target.value)}
+              placeholder='[ { "title": "題型範例", "question": "已知...", "keyIdea": "破題關鍵...", "solutionSteps": ["步驟1...", "步驟2..."], "answer": "正解..." } ]'
+              style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', background: '#0f172a', color: '#fff', border: '1px solid #334155', fontFamily: 'monospace', fontSize: '0.82rem' }}
             />
           </div>
 

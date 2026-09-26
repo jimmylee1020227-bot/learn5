@@ -225,6 +225,7 @@ function MainAppContent() {
                   onStartLeaderboardTab={() => setActiveTab('leaderboard')}
                   onOpenRedemptionModal={() => setIsRedemptionOpen(true)}
                   onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
+                  onGoNotesTab={() => setActiveTab('notes')}
                 />
 
                 <div id="scope-selector-section">

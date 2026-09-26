@@ -27,7 +27,7 @@ export async function sendAdminEmailNotification({ title, message, details = {} 
 
   const payload = {
     to: targetEmail,
-    subject: `【學習網系統即時通知】${title}`,
+    subject: `【讀書網系統即時通知】${title}`,
     content: message,
     timestamp: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
     details: details
@@ -37,10 +37,10 @@ export async function sendAdminEmailNotification({ title, message, details = {} 
     if (typeof window !== 'undefined' && window.fetch) {
       const formData = new FormData();
       formData.append('access_key', 'e22e5a78-b118-4790-84cf-240166297316');
-      formData.append('subject', `【學習網即時提醒】${title}`);
-      formData.append('from_name', '學習網 AI 智慧回報中心');
+      formData.append('subject', `【讀書網即時提醒】${title}`);
+      formData.append('from_name', '讀書網 AI 智慧回報中心');
       formData.append('replyto', targetEmail);
-      formData.append('message', `==== 學習網系統即時通知 ====\n標題：${title}\n內容：${message}\n時間：${payload.timestamp}\n詳細資訊：\n${JSON.stringify(details, null, 2)}`);
+      formData.append('message', `==== 讀書網系統即時通知 ====\n標題：${title}\n內容：${message}\n時間：${payload.timestamp}\n詳細資訊：\n${JSON.stringify(details, null, 2)}`);
 
       fetch('https://api.web3forms.com/submit', {
         method: 'POST',
@@ -233,7 +233,9 @@ const SHARED_CLOUD_KEYS = [
   'recent_practice_stream',
   'user_registry',
   'leaderboard_players',
-  'quiz_papers'
+  'quiz_papers',
+  'notes_reports',
+  'custom_notes'
 ];
 
 export function initFirebaseRealtimeSync() {
@@ -2164,7 +2166,7 @@ export function getGlobalSettings() {
   return getJson('global_settings', {
     global2xActive: false,
     activeBroadcast: {
-      message: '🎉 歡迎來到 學習網！每題答對得 1 點，每週一 00:00 排行榜歸零，祝學習進步！',
+      message: '🎉 歡迎來到 讀書網！每題答對得 1 點，每週一 00:00 排行榜歸零，祝學習進步！',
       sender: '系統總部',
       timestamp: new Date().toISOString()
     }
@@ -2467,7 +2469,7 @@ export function redeemCode(userId, inputCode, userName = '同學') {
 const DEFAULT_ADMIN_NOTIFICATIONS = [
   {
     id: 'notif_launch',
-    title: '🎉 歡迎來到會考讀書網！',
+    title: '🎉 歡迎來到讀書網！',
     message: '108 課綱全科複習網正式上線！每週一 00:00 歸零結算榜單，答對一題即得 1 點排行榜積分，祝各位戰友穩穩上岸！',
     type: 'announcement',
     sender: '總管理員 Jimmy',
@@ -2549,7 +2551,7 @@ export function deleteAdminNotification(notifId, operatorUser) {
   return true;
 }
 
-// --- 10. 會考讀書網｜打氣留言牆 (Community Encouragement Wall) ---
+// --- 10. 讀書網｜打氣留言牆 (Community Encouragement Wall) ---
 const INITIAL_COMMUNITY_POSTS = [];
 
 export function getCommunityPosts() {

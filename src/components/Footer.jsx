@@ -55,7 +55,7 @@ export default function Footer({ onOpenLegalModal }) {
                 108
               </div>
               <h2 style={{ fontSize: '1.18rem', fontWeight: 900, margin: 0, color: 'var(--theme-border, #17324d)' }}>
-                國中全科學習網
+                國中全科讀書網
               </h2>
             </div>
             <p style={{ fontSize: '0.86rem', color: '#5b6772', lineHeight: 1.7, margin: '0 0 14px 0', fontWeight: 600 }}>
@@ -162,7 +162,7 @@ export default function Footer({ onOpenLegalModal }) {
             </h3>
             <div style={{ fontSize: '0.84rem', color: '#475569', lineHeight: 1.8, display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <div><strong>營運屬性：</strong>個人獨立教育科技非營利公益專案</div>
-              <div><strong>維護團隊：</strong>學習網維護小組</div>
+              <div><strong>維護團隊：</strong>讀書網維護小組</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Mail size={13} color="var(--theme-accent, #ef8354)" />
                 <span><strong>問題回報與建議：</strong><a href="https://github.com/jimmylee1020227-bot/learn5/issues" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--theme-border, #17324d)', textDecoration: 'underline' }}>GitHub Issues</a></span>
@@ -190,7 +190,7 @@ export default function Footer({ onOpenLegalModal }) {
           }}
         >
           <div>
-            © 2024 - {currentYear} 學習網 (StudyHub Taiwan). 非營利教育公益專案
+            © 2024 - {currentYear} 讀書網 (StudyHub Taiwan). 非營利教育公益專案
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>

@@ -418,7 +418,7 @@ export default function QuizPlayer({ questions, onComplete, onExit, onOpenPrintE
   }
 
   // 🛡️ 動態產生防翻拍動態浮水印
-  const watermarkText = `學習網 線上作答測驗 • ${currentUser?.displayName || '會考考生'} • 嚴禁翻拍作弊`;
+  const watermarkText = `讀書網 線上作答測驗 • ${currentUser?.displayName || '考生'} • 嚴禁翻拍作弊`;
   const watermarks = Array.from({ length: 48 }).map((_, i) => (
     <div key={i} className="watermark-item">{watermarkText}</div>
   ));

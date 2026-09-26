@@ -118,7 +118,7 @@ export default function GoogleLoginModal() {
               官方 Google OAuth 2.0 跳轉授權設定
             </div>
             <p style={{ fontSize: '0.8rem', color: '#5b6772', marginBottom: '12px', lineHeight: 1.5, fontWeight: 600 }}>
-              填入您的 Google Cloud OAuth Client ID（以 .apps.googleusercontent.com 結尾），點擊下方按鈕將<strong>直接跳轉到 accounts.google.com 官方登入頁面</strong>，授權完成後自動重定向回本學習網導入資料。
+              填入您的 Google Cloud OAuth Client ID（以 .apps.googleusercontent.com 結尾），點擊下方按鈕將<strong>直接跳轉到 accounts.google.com 官方登入頁面</strong>，授權完成後自動重定向回本讀書網導入資料。
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
