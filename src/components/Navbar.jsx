@@ -107,7 +107,7 @@ export default function Navbar({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '1.2rem', fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
-                  讀書網
+                  學習網
                 </span>
                 <span className="badge badge-coral" style={{ fontSize: '0.68rem', padding: '2px 8px' }}>
                   108 課綱

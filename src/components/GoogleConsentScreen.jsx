@@ -57,7 +57,7 @@ export default function GoogleConsentScreen({ isOpen, onClose }) {
             選擇帳戶
           </h2>
           <p style={{ fontSize: '0.92rem', color: '#5f6368' }}>
-            以繼續前往「<strong>讀書網</strong>」
+            以繼續前往「<strong>學習網</strong>」
           </p>
         </div>
 
@@ -182,7 +182,7 @@ export default function GoogleConsentScreen({ isOpen, onClose }) {
             <ShieldCheck size={15} color="#1e8e3e" />
             Google 安全驗證
           </div>
-          如要繼續，Google 會將您的名稱、電子郵件地址與個人資料相片分享給「108 課綱讀書網」。登入前請參閱該服務的隱私權政策。
+          如要繼續，Google 會將您的名稱、電子郵件地址與個人資料相片分享給「108 課綱學習網」。登入前請參閱該服務的隱私權政策。
         </div>
 
         {/* 底部關閉 */}

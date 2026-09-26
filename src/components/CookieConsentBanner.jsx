@@ -103,7 +103,7 @@ export default function CookieConsentBanner({ onOpenLegalModal }) {
             🍪 我們尊重您的個人隱私與資料自主權 (Cookie & Privacy Consent)
           </h3>
           <p style={{ margin: 0, fontSize: '0.86rem', color: '#5b6772', lineHeight: 1.6, fontWeight: 600 }}>
-            本讀書網使用必要型 Cookie 與本機快取以儲存您的做題進度、錯題本與防作弊偵測狀態。我們遵循台灣《個人資料保護法》及 WCAG 2.1 AA 無障礙標準，絕無置入任何商業廣告追蹤器。您可以自由選擇是否啟用匿名學科效能統計。
+            本學習網使用必要型 Cookie 與本機快取以儲存您的做題進度、錯題本與防作弊偵測狀態。我們遵循台灣《個人資料保護法》及 WCAG 2.1 AA 無障礙標準，絕無置入任何商業廣告追蹤器。您可以自由選擇是否啟用匿名學科效能統計。
           </p>
         </div>
       </div>

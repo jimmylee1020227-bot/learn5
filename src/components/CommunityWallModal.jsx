@@ -18,7 +18,7 @@ const REPORT_REASONS = [
   '謾罵、人身攻擊、歧視或不當言詞',
   '商業廣告、色情或非學習外部連結',
   '洩漏他人隱私或散播不實資訊',
-  '其他違反讀書網學習秩序行為'
+  '其他違反學習網學習秩序行為'
 ];
 
 export default function CommunityWallModal({ isOpen, onClose }) {
@@ -320,7 +320,7 @@ export default function CommunityWallModal({ isOpen, onClose }) {
               <MessageSquareHeart size={22} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>讀書網｜一起讀，穩穩上岸</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>學習網｜一起讀，穩穩上岸</h3>
               <p style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 600 }}>
                 同學打氣留言牆・你不是一個人在戰鬥
               </p>

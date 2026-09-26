@@ -52,7 +52,7 @@ export default function GoogleAuthPage() {
           選擇帳戶
         </h1>
         <p style={{ fontSize: '15px', color: '#5f6368', margin: '0 0 28px 0', lineHeight: 1.4 }}>
-          以繼續前往「<strong>讀書網</strong>」
+          以繼續前往「<strong>學習網</strong>」
         </p>
 
         {/* 帳戶選項 */}
@@ -161,7 +161,7 @@ export default function GoogleAuthPage() {
 
         {/* 隱私與條款說明 */}
         <p style={{ fontSize: '12px', color: '#5f6368', lineHeight: 1.6, margin: '0 0 24px 0' }}>
-          若要繼續，Google 會將您的姓名、電子郵件地址與個人資料相片分享給 讀書網。在登入前，請檢閱該網站的服務條款及隱私權政策。
+          若要繼續，Google 會將您的姓名、電子郵件地址與個人資料相片分享給 學習網。在登入前，請檢閱該網站的服務條款及隱私權政策。
         </p>
 
         {/* 取消按鈕 */}
@@ -179,7 +179,7 @@ export default function GoogleAuthPage() {
               borderRadius: '6px'
             }}
           >
-            返回讀書網
+            返回學習網
           </button>
         </div>
       </div>

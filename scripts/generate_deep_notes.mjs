@@ -1,5 +1,5 @@
 // scripts/generate_deep_notes.mjs
-// 為 108 課綱讀書網生成極致詳細、包含真實 LaTeX 數學算式、公式推導與逐步題型演算的各科單元重點筆記
+// 為 108 課綱學習網生成極致詳細、包含真實 LaTeX 數學算式、公式推導與逐步題型演算的各科單元重點筆記
 
 import fs from 'fs';
 import path from 'path';
@@ -765,7 +765,7 @@ async function main() {
   }
 
   // 寫回 src/data/unitNotesData.js
-  const fileContent = `// 108 課綱讀書網全科各單元重點精華筆記（國高中國英數自社全覆蓋・含詳盡公式推導與逐步題型算式）\nexport const UNIT_NOTES = ${JSON.stringify(existingNotes, null, 2)};\n`;
+  const fileContent = `// 108 課綱學習網全科各單元重點精華筆記（國高中國英數自社全覆蓋・含詳盡公式推導與逐步題型算式）\nexport const UNIT_NOTES = ${JSON.stringify(existingNotes, null, 2)};\n`;
   fs.writeFileSync(unitNotesPath, fileContent, 'utf-8');
   console.log('✅ unitNotesData.js 已成功升級為詳細算式版本！檔案大小:', fileContent.length, 'bytes');
 }
