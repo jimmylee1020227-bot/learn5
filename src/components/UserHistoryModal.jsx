@@ -5,6 +5,7 @@ import {
   getMistakeNotebook, 
   fetchCloudUserPracticeHistory, 
   fetchCloudUserQuizPapers, 
+  fetchCloudUserMistakeNotebook,
   subscribeToCloudSync,
   hydrateQuestionDetails,
   getJson
@@ -48,24 +49,25 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
     const localPapers = getJson(`user_quiz_papers_${userId}`, []);
     setHistoryList(localHistory);
     setMistakeList(localMistakes);
-    if (localPapers.length > 0) setQuizPapers(localPapers);
+    setQuizPapers(localPapers);
 
     // 2. 非同步向 Firebase 更新（加 2.5 秒 timeout，超時靜默降級，不卡畫面）
     if (forceCloud || localHistory.length === 0) {
       setIsLoading(true);
       try {
         const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500));
-        const [cloudPapers, cloudHistory] = await Promise.race([
+        const [cloudPapers, cloudHistory, cloudMistakes] = await Promise.race([
           Promise.all([
             fetchCloudUserQuizPapers(userId),
-            fetchCloudUserPracticeHistory(userId)
+            fetchCloudUserPracticeHistory(userId),
+            fetchCloudUserMistakeNotebook(userId)
           ]),
           timeout.then(() => { throw new Error('TIMEOUT'); })
         ]);
 
-        if (Array.isArray(cloudPapers) && cloudPapers.length > 0) setQuizPapers(cloudPapers);
+        if (Array.isArray(cloudPapers)) setQuizPapers(cloudPapers);
         if (Array.isArray(cloudHistory) && cloudHistory.length > 0) setHistoryList(cloudHistory);
-        setMistakeList(getMistakeNotebook(userId));
+        if (Array.isArray(cloudMistakes) && cloudMistakes.length > 0) setMistakeList(cloudMistakes);
       } catch (err) {
         if (err.message !== 'TIMEOUT') console.warn('雲端歷程拉取異常:', err);
       } finally {

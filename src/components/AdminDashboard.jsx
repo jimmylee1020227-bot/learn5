@@ -472,7 +472,7 @@ export default function AdminDashboard() {
       }
       return true;
     });
-  }, [quizPapers, selectedStudent, selectedStudentId, studentSearchKeyword, questionSearchKeyword]);
+  }, [quizPapers, selectedStudent, selectedStudentId, selectedStudentEmail, studentSearchKeyword, questionSearchKeyword]);
 
   if (!isAuthorized) {
     return (

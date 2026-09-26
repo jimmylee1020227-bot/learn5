@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getMistakeNotebook, getUnresolvedErrorConcepts, subscribeToCloudSync, hydrateQuestionDetails } from '../services/cloudStorage';
+import { 
+  getMistakeNotebook, 
+  getUnresolvedErrorConcepts, 
+  subscribeToCloudSync, 
+  hydrateQuestionDetails,
+  fetchCloudUserMistakeNotebook
+} from '../services/cloudStorage';
 import { generateQuestion } from '../data/questionGenerator';
 import { CURRICULUM_UNITS } from '../data/curriculum108';
 import { 
@@ -43,6 +49,16 @@ export default function MistakeReinforceView({ onStartReinforceQuiz }) {
       setUnresolvedConcepts(getUnresolvedErrorConcepts(userId));
     };
     refresh();
+
+    // 跨裝置主動水合：若切換到新裝置本地尚無快取，自動自雲端調閱
+    if (userId && userId !== 'guest_student') {
+      fetchCloudUserMistakeNotebook(userId).then(cloudMistakes => {
+        if (Array.isArray(cloudMistakes) && cloudMistakes.length > 0) {
+          setMistakes(cloudMistakes);
+          setUnresolvedConcepts(getUnresolvedErrorConcepts(userId));
+        }
+      }).catch(() => {});
+    }
 
     const unsub = subscribeToCloudSync((ev) => {
       if (!ev.key || ev.key.startsWith('mistake_notebook') || ev.key.startsWith('practice_history') || ev.key === 'question_overrides') {

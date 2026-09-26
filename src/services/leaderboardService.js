@@ -3,6 +3,7 @@ import {
   logAuditEvent, 
   getJson, 
   setJson, 
+  updateServerSync,
   pushPlayerLeaderboardSync, 
   fetchCloudLeaderboardRaw,
   assertAdminPermission,
@@ -109,6 +110,7 @@ export function checkAndExecuteWeeklyReset() {
         runnersUp: board.slice(1, 3).map(u => `${u.displayName} (${u.weeklyPoints}分)`)
       });
       setJson(HALL_OF_FAME_KEY, fameList);
+      updateServerSync(HALL_OF_FAME_KEY, fameList);
     }
 
     // 每週一分數歸零！同時原子化更新雲端玩家節點

@@ -1617,19 +1617,25 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
           };
         },
         () => {
-          const m = 3 + Math.floor(rand() * 3);
-          const n = 5 + Math.floor(rand() * 3);
+          const m = 3 + Math.floor(rand() * 3); // 3, 4, 5
+          const n = 5 + Math.floor(rand() * 3); // 5, 6, 7
+          let N = 100;
+          while (N < 1000) {
+            if (N % m === 1 && N % n === 2) break;
+            N++;
+          }
+          if (N >= 1000) N = 106;
           return {
             question: `【私校衝刺-整數論同餘問題】${preamble}\n一正整數 $N$，被 ${m} 除餘 1，被 ${n} 除餘 2。請問滿足條件的三位數中，最小的正整數 $N$ 為多少？`,
             options: [
-              `計算滿足同餘方程組之最小三位數`,
-              `105`,
-              `112`,
-              `120`
+              `${N}`,
+              `${N + m * n}`,
+              `${N - m}`,
+              `${N + 7}`
             ],
             answer: 0,
             hint: `💡 提示：列出滿足 $N = ${m}x + 1 = ${n}y + 2$ 的整數通式，並尋找大於等於 100 的最小值。`,
-            explanation: `📖 詳解：由同餘方程組找到通解 $N \\equiv k \\pmod{${m * n}}$，再代入找出三位數最小解。`
+            explanation: `📖 詳解：由同餘方程組找到通解 $N \\equiv ${N % (m * n)} \\pmod{${m * n}}$，代入三位數驗證，最小正整數解為 ${N}。`
           };
         },
         () => {

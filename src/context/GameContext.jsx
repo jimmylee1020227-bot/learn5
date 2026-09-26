@@ -67,8 +67,8 @@ export function GameProvider({ children }) {
           setLocalGameState(prev => {
             const remoteTime = remoteData.updatedAt || 0;
             const localTime = prev.updatedAt || 0;
-            // 只有遠端時間較新，或者「抽獎券明顯增加」時才採納遠端，避免覆蓋本地剛抽獎的扣票
-            if (remoteTime > localTime || (remoteData.tickets || 0) > (prev.tickets || 0)) {
+            // 嚴格依據時間戳決定是否採納遠端資料，若本地尚未真正異動 (localTime === 0) 或遠端更新，立即同步
+            if (localTime === 0 || remoteTime >= localTime) {
               return {
                 ...remoteData,
                 tickets: remoteData.tickets ?? 0,
@@ -92,20 +92,18 @@ export function GameProvider({ children }) {
     const localCached = getJson(`${STORAGE_GAME_KEY}_${userId}`, null);
     if (localCached) {
       setLocalGameState(localCached);
-      isHydratedRef.current = true;
     } else {
       setLocalGameState(DEFAULT_GAME_STATE);
     }
     
     if (userId && userId !== 'guest_student') {
-      // 主動自 Firebase 雲端拉取確認，以時間戳較新者為準
+      // 主動自 Firebase 雲端拉取確認，新設備或時間戳較新者為準
       fetchCloudUserGameState(userId).then(cloudState => {
         if (cloudState) {
           setLocalGameState(prev => {
             const cloudTime = cloudState.updatedAt || 0;
             const localTime = prev.updatedAt || 0;
-            // 只有雲端時間嚴格大於本地時才覆蓋，絕對不再用 tickets > prev.tickets 倒灌舊票！
-            if (cloudTime > localTime) {
+            if (!localCached || cloudTime >= localTime) {
               const merged = {
                 ...cloudState,
                 tickets: cloudState.tickets ?? 0,

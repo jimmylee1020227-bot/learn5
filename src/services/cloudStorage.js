@@ -247,12 +247,12 @@ export async function adminPushGameStateTickets(userId, ticketDelta) {
     const updatedLocal = {
       ...localCached,
       tickets: Math.max(0, (localCached.tickets || 0) + ticketDelta),
-      updatedAt: Date.now()
+      updatedAt: getRealTime()
     };
     if (typeof window !== 'undefined' && window.localStorage) {
       safeSetLocalStorage(STORAGE_PREFIX + gameKey, JSON.stringify(updatedLocal));
     }
-    const payload = { type: 'SYNC_UPDATE', key: gameKey, userId, timestamp: Date.now(), fromRemote: true };
+    const payload = { type: 'SYNC_UPDATE', key: gameKey, userId, timestamp: getRealTime(), fromRemote: true };
     localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
     if (cloudBus) cloudBus.postMessage(payload);
   }
@@ -267,7 +267,7 @@ export async function adminPushGameStateTickets(userId, ticketDelta) {
         tickets: Math.max(0, (current.tickets || 0) + ticketDelta),
         pityCount: current.pityCount !== undefined ? current.pityCount : (localCached?.pityCount || 0),
         lastDailyClaimDate: current.lastDailyClaimDate || localCached?.lastDailyClaimDate || '',
-        updatedAt: Date.now()
+        updatedAt: getRealTime()
       };
       await set(ref(db, `studyhub/${gameKey}`), updatedCloud);
     } catch (err) {
@@ -726,6 +726,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
   const finalUserSchool = userSchool || '會考戰友';
   const perQTime = Math.max(1, Math.round((timeSpentSec || 15) / results.length));
   const nowIso = new Date().toISOString();
+  const correctCount = results.filter(r => r.isCorrect).length;
 
   // 1. 整理輕量化做題歷史記錄 (省略重覆冗長的題目與選項解析文字，節省 97% 體積)
   const userHistoryKey = `practice_history_${finalUserId}`;
@@ -761,7 +762,6 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
 
   // 3. 即時全服作答串流推播 (供管理員中台秒級即時監控做題狀況)
   try {
-    const correctCount = results.filter(r => r.isCorrect).length;
     const streamItem = {
       id: 'stream_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
       userId: finalUserId,
@@ -880,6 +880,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
       score: Math.round((correctCount / results.length) * 100),
       timeSpentSec: timeSpentSec || 15,
       timestamp: nowIso,
+      completedAt: nowIso,
       questions: results.map(item => ({
         id: item.id,
         subjectId: item.subjectId,
@@ -911,7 +912,12 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
 export function recordQuizPaperSession(paperSession) {
   if (!paperSession || !paperSession.id) return;
   try {
-    const finalUserId = paperSession.userId || 'guest_student';
+    const finalUserId = paperSession.userId || paperSession.ownerId || 'guest_student';
+    paperSession.userId = finalUserId;
+    paperSession.ownerId = finalUserId;
+    if (!paperSession.completedAt && paperSession.timestamp) {
+      paperSession.completedAt = paperSession.timestamp;
+    }
     const userPapersKey = `user_quiz_papers_${finalUserId}`;
     const userPapers = getJson(userPapersKey, []);
     userPapers.unshift(paperSession);
@@ -1396,11 +1402,15 @@ export function getRegisteredStudents() {
         totalQuizzes: 0,
         totalQuestions: 0,
         totalCorrect: 0,
+        createdAt: regEntry.createdAt || s.timestamp || new Date().toISOString(),
         lastActive: s.timestamp
       };
       // 補充缺失的 email（若 registry 後來有更新）
       if (!existing.email && regEntry.email) {
         existing.email = regEntry.email;
+      }
+      if (!existing.createdAt && regEntry.createdAt) {
+        existing.createdAt = regEntry.createdAt;
       }
       existing.lastActive = s.timestamp || existing.lastActive;
       map.set(s.userId, existing);
@@ -1409,17 +1419,28 @@ export function getRegisteredStudents() {
 
   // 3. 合併同 Email 的帳號
   const emailMap = new Map();
+  const obsoleteUserIds = new Set();
+
   Array.from(map.values()).forEach(s => {
     const email = (s.email || '').trim().toLowerCase();
     const key = email || s.id;
     if (emailMap.has(key)) {
       const existing = emailMap.get(key);
+      if (existing.id !== s.id) {
+        obsoleteUserIds.add(s.id);
+      }
       existing.totalQuizzes = (existing.totalQuizzes || 0) + (s.totalQuizzes || 0);
       existing.totalQuestions = (existing.totalQuestions || 0) + (s.totalQuestions || 0);
       existing.totalCorrect = (existing.totalCorrect || 0) + (s.totalCorrect || 0);
+      
+      const sCreated = new Date(s.createdAt || s.lastActive || 0).getTime();
+      const existCreated = new Date(existing.createdAt || existing.lastActive || 0).getTime();
+      if (sCreated > 0 && (existCreated === 0 || sCreated < existCreated)) {
+        existing.createdAt = s.createdAt;
+      }
+
       if (new Date(s.lastActive || 0) > new Date(existing.lastActive || 0)) {
         existing.lastActive = s.lastActive;
-        // 若現有名稱為匿名，則更新為較新的名稱
         if (!existing.name || existing.name === '匿名同學' || existing.name === '會考戰友') {
           existing.name = s.name;
         }
@@ -1429,20 +1450,69 @@ export function getRegisteredStudents() {
     }
   });
 
-  // 4. 根據最後活動時間(較早的排前面)處理同名後綴
-  let resultList = Array.from(emailMap.values()).sort((a, b) => new Date(a.lastActive || 0) - new Date(b.lastActive || 0));
-  const nameCounts = {};
+  // 4. 照帳號建立順序排序（越早建立的排前面）
+  let resultList = Array.from(emailMap.values()).sort((a, b) => {
+    const timeA = new Date(a.createdAt || a.lastActive || 0).getTime();
+    const timeB = new Date(b.createdAt || b.lastActive || 0).getTime();
+    return timeA - timeB;
+  });
+
+  // 同名改名改成：原名字1, 原名字2, 依此類推
+  const nameGroups = {};
   resultList.forEach(s => {
-    const rawName = s.name || '會考戰友';
-    if (rawName === '總管理員') return; // 總管理員不加編號
-    if (!nameCounts[rawName]) {
-      nameCounts[rawName] = 1;
-    } else {
-      const count = nameCounts[rawName];
-      s.name = `${rawName} ${count}`;
-      nameCounts[rawName] = count + 1;
+    let raw = (s.name || '會考戰友').trim();
+    if (raw === '總管理員') return;
+    const baseName = raw.replace(/\s*\d+$/, '').trim() || '會考戰友';
+    if (!nameGroups[baseName]) {
+      nameGroups[baseName] = [];
+    }
+    nameGroups[baseName].push(s);
+  });
+
+  let hasNameChanged = false;
+  Object.entries(nameGroups).forEach(([baseName, students]) => {
+    if (students.length > 1) {
+      students.forEach((s, idx) => {
+        const targetName = `${baseName}${idx + 1}`;
+        if (s.name !== targetName) {
+          s.name = targetName;
+          hasNameChanged = true;
+        }
+      });
     }
   });
+
+  // 5. 持久化回寫：若有同名修改或重複帳號合併，更新 user_registry 本地與雲端
+  if (hasNameChanged || obsoleteUserIds.size > 0) {
+    let registryUpdated = false;
+    obsoleteUserIds.forEach(delId => {
+      if (registry[delId]) {
+        delete registry[delId];
+        registryUpdated = true;
+        if (db) {
+          try {
+            set(ref(db, `studyhub/user_registry/${delId}`), null).catch(() => {});
+          } catch (e) {}
+        }
+      }
+    });
+
+    resultList.forEach(s => {
+      if (s.id && registry[s.id] && registry[s.id].name !== s.name) {
+        registry[s.id].name = s.name;
+        registryUpdated = true;
+        if (db) {
+          try {
+            set(ref(db, `studyhub/user_registry/${s.id}/name`), s.name).catch(() => {});
+          } catch (e) {}
+        }
+      }
+    });
+
+    if (registryUpdated) {
+      setJson('user_registry', registry);
+    }
+  }
 
   return resultList.map(s => {
     const accuracy = s.totalQuestions > 0 ? Math.round((s.totalCorrect / s.totalQuestions) * 100) : 0;
@@ -2038,7 +2108,8 @@ export function redeemCode(userId, inputCode, userName = '同學') {
         userId,
         userName,
         code: codeTrimmed,
-        claimedAt: new Date().toISOString()
+        claimedAt: new Date().toISOString(),
+        ts: Date.now()
       }).catch(() => {});
     } catch (e) {}
   }
