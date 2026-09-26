@@ -16,7 +16,7 @@ import {
   Award
 } from 'lucide-react';
 
-export default function ScopeSelector({ onStartQuiz, onOpenPrintExamModal }) {
+export default function ScopeSelector({ onStartQuiz }) {
   const { isMobile } = useDevice();
   // 學制選擇：'junior' (國中) 或 'senior' (高中)
   const [activeStage, setActiveStage] = useState('junior');
@@ -493,31 +493,6 @@ export default function ScopeSelector({ onStartQuiz, onOpenPrintExamModal }) {
             <Play size={20} fill="#ffffff" />
             <span>立即開始 AI 測驗 ({questionCount} 題)</span>
           </button>
-
-          {/* 紙本考卷列印輔助按鈕 */}
-          {onOpenPrintExamModal && (
-            <button
-              type="button"
-              onClick={onOpenPrintExamModal}
-              style={{
-                marginTop: '12px',
-                padding: '10px',
-                background: 'transparent',
-                border: 'none',
-                color: '#475569',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px'
-              }}
-            >
-              <FileText size={15} />
-              <span>切換至紙本考卷下載與列印專區</span>
-            </button>
-          )}
 
         </div>
 

@@ -21,7 +21,6 @@ import { DeviceProvider, useDevice } from './context/DeviceContext';
 import MobileBottomNav from './components/MobileBottomNav';
 import LoginGateway from './components/LoginGateway';
 import PrivacyPolicyModal from './components/PrivacyPolicyModal';
-import PrintExamModal from './components/PrintExamModal';
 import Footer from './components/Footer';
 import LegalCenterModal from './components/LegalCenterModal';
 import CookieConsentBanner from './components/CookieConsentBanner';
@@ -53,7 +52,6 @@ function MainAppContent() {
 
   const [activeTab, setActiveTab] = useState('quiz'); // 'quiz' | 'reinforce' | 'leaderboard' | 'history' | 'admin' | 'super_admin'
   const [isRedemptionOpen, setIsRedemptionOpen] = useState(false);
-  const [isPrintExamOpen, setIsPrintExamOpen] = useState(false);
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
   const [legalModalTab, setLegalModalTab] = useState('privacy');
 
@@ -206,7 +204,6 @@ function MainAppContent() {
           if (tab === 'quiz') setQuizState('idle');
         }}
         onOpenRedemptionModal={() => setIsRedemptionOpen(true)}
-        onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
         onOpenLegalModal={handleOpenLegalModal}
       />
 
@@ -224,14 +221,12 @@ function MainAppContent() {
                   onStartReinforceTab={() => setActiveTab('reinforce')}
                   onStartLeaderboardTab={() => setActiveTab('leaderboard')}
                   onOpenRedemptionModal={() => setIsRedemptionOpen(true)}
-                  onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
                   onGoNotesTab={() => setActiveTab('notes')}
                 />
 
                 <div id="scope-selector-section">
                   <ScopeSelector 
                     onStartQuiz={handleStartQuiz} 
-                    onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
                   />
                 </div>
               </>
@@ -242,7 +237,6 @@ function MainAppContent() {
                 questions={currentQuestions}
                 onComplete={handleCompleteQuiz}
                 onExit={() => setQuizState('idle')}
-                onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
               />
             )}
 
@@ -256,7 +250,6 @@ function MainAppContent() {
                   setActiveTab('reinforce');
                 }}
                 onBackHome={() => setQuizState('idle')}
-                onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
                 onGoHistory={() => {
                   setQuizState('idle');
                   setActiveTab('history');
@@ -331,7 +324,6 @@ function MainAppContent() {
             if (tab === 'quiz') setQuizState('idle');
           }}
           onOpenLuckyDraw={() => setIsLuckyDrawOpen(true)}
-          onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
         />
       )}
 
@@ -341,10 +333,6 @@ function MainAppContent() {
       <RedemptionModal 
         isOpen={isRedemptionOpen}
         onClose={() => setIsRedemptionOpen(false)}
-      />
-      <PrintExamModal 
-        isOpen={isPrintExamOpen}
-        onClose={() => setIsPrintExamOpen(false)}
       />
       <LegalCenterModal 
         isOpen={isLegalModalOpen}

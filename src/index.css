@@ -845,19 +845,11 @@ textarea:focus-visible {
 }
 
 /* ==========================================================================
-   📖 筆記專屬防偽防盜浮水印與列印支援 (Note Anti-counterfeit Watermark & Print)
+   📖 筆記專屬防偽防盜浮水印支援 (Note Anti-counterfeit Watermark)
    ========================================================================== */
 .note-watermark-overlay {
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
+  user-select: none;
+  pointer-events: none;
 }
 
-@media print {
-  .note-watermark-overlay {
-    opacity: 0.12 !important;
-    display: block !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-}
 

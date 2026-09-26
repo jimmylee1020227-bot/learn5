@@ -32,7 +32,6 @@ export default function HeroBanner({
   onStartReinforceTab, 
   onStartLeaderboardTab,
   onOpenRedemptionModal,
-  onOpenPrintExamModal,
   onGoNotesTab
 }) {
   const { currentUser } = useAuth();
@@ -198,31 +197,6 @@ export default function HeroBanner({
               >
                 <Gift size={18} />
                 天天抽獎 ({gameState?.tickets ?? 1}張)
-              </button>
-
-              <button 
-                type="button"
-                onClick={onOpenPrintExamModal} 
-                className="btn"
-                style={{ 
-                  padding: '14px 22px', 
-                  fontSize: '0.98rem',
-                  fontWeight: 800,
-                  background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                  color: '#1e40af',
-                  border: '2.5px solid #3b82f6',
-                  borderRadius: '16px',
-                  boxShadow: '4px 4px 0px #3b82f6',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-                }}
-                title="紙本考卷列印下載 (直通官方下載中心 https://examcommunit-mdqeyikj.manus.space/ 與 A4 考卷輸出)"
-              >
-                <FileText size={18} color="#2563eb" />
-                紙本考卷列印下載
               </button>
 
               <a 

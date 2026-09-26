@@ -304,7 +304,7 @@ export default function PrivacyPolicyModal({ isOpen, user, onAccept, onDecline }
               </h3>
             </div>
             <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
-              <li><strong>查詢與下載</strong>：您可隨時於個人歷程中心檢視所有作答歷程，並支援匯出與離線紙本考卷列印。</li>
+              <li><strong>查詢與檢視</strong>：您可隨時於個人歷程中心檢視所有作答歷程與成績分析。</li>
               <li><strong>即時清除快取</strong>：您可隨時透過瀏覽器或設定清除所有 LocalStorage 本機暫存數據。</li>
               <li><strong>永久銷毀帳戶</strong>：使用者或家長若欲註銷帳號，可聯繫管理團隊，我們將於 48 小時內自雲端資料庫中永久抹除您的 Email、暱稱、歷史積分與所有作答軌跡。</li>
             </ul>

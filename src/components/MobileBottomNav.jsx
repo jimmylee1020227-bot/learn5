@@ -16,8 +16,7 @@ import {
 export default function MobileBottomNav({ 
   activeTab, 
   setActiveTab, 
-  onOpenLuckyDraw,
-  onOpenPrintExamModal
+  onOpenLuckyDraw
 }) {
   const { currentUser } = useAuth();
   const { gameState } = useGame();

@@ -249,7 +249,7 @@ export default function LegalCenterModal({ isOpen, onClose, initialTab = 'privac
                 💡 <strong>100% 免費公益教育平台與退款宣告 (Refund Policy)</strong>
               </div>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '4px 0' }}>一、永久免費使用宣告</h3>
-              <p>本平台所有功能——包括 108 課綱國中五科全題庫刷題、自適應弱點診斷、專項突破、錯題本、排行榜競技與 A4 雙欄紙本試卷列印，<strong>皆「100% 永久完全免費」向全國學子及家長開放</strong>，絕無任何強制收費或訂閱門檻。</p>
+              <p>本平台所有功能——包括 108 課綱國中五科全題庫刷題、自適應弱點診斷、專項突破、錯題本、重點筆記專區與排行榜競技，<strong>皆「100% 永久完全免費」向全國學子及家長開放</strong>，絕無任何強制收費或訂閱門檻。</p>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>二、遊戲化虛擬道具之法律性質</h3>
               <p>站內所提供之「幸運抽獎券」、「答題積分」、「連勝雙倍 Buff」及榮譽稱號，純屬提升學習動機之遊戲化激勵機制，非真實貨幣亦非電子代幣，不可折換現金、不可轉讓，亦不開放任何法幣儲值交易。</p>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, #17324d)', margin: '10px 0 4px' }}>三、自願性公益捐贈之退款規範</h3>

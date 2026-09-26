@@ -38,7 +38,6 @@ export default function Navbar({
   activeTab, 
   setActiveTab,
   onOpenRedemptionModal,
-  onOpenPrintExamModal,
   onOpenLegalModal
 }) {
   const { 
@@ -194,32 +193,6 @@ export default function Navbar({
           >
             <BookOpen size={15} />
             歷程錯題
-          </button>
-
-          {/* 紙本考卷列印下載 */}
-          <button 
-            type="button"
-            className="btn"
-            onClick={onOpenPrintExamModal}
-            style={{ 
-              fontSize: '0.86rem', 
-              padding: '7px 14px', 
-              background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-              color: '#1e40af',
-              border: '2px solid #3b82f6',
-              borderRadius: '10px',
-              fontWeight: 800,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              boxShadow: '2px 2px 0px #3b82f6',
-              transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-            }}
-            title="紙本考卷列印下載 (官方檔案下載中心 https://examcommunit-mdqeyikj.manus.space/ 與 A4 考卷輸出)"
-          >
-            <FileText size={15} color="#2563eb" />
-            <span>紙本考卷列印下載</span>
           </button>
 
           {/* 兌換碼捷徑 */}
@@ -777,16 +750,6 @@ export default function Navbar({
             >
               <Ticket size={20} color="#806523" />
               <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>輸入兌換碼</span>
-            </button>
-
-            {/* 紙本考卷列印下載 */}
-            <button
-              className="btn btn-secondary"
-              onClick={() => { onOpenPrintExamModal?.(); setIsMobileMenuOpen(false); }}
-              style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px', color: '#1e40af', background: '#eff6ff', borderColor: '#3b82f6' }}
-            >
-              <FileText size={20} color="#2563eb" />
-              <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>紙本考卷列印</span>
             </button>
 
             {/* 天天幸運抽獎 */}

@@ -13,7 +13,6 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   PlayCircle, 
-  Printer, 
   ChevronDown, 
   ChevronUp, 
   FileText,
@@ -413,7 +412,7 @@ export default function UnitNotesView({ onStartQuizForUnit }) {
               alignItems: 'center',
               gap: '6px'
             }}
-            title="本專區所有重點筆記與公式推導均已嵌入『學習網』專屬官方防偽防盜浮水印，列印與在線閱讀均受版權保護"
+            title="本專區所有重點筆記與公式推導均已嵌入『學習網』專屬官方防偽防盜浮水印，在線閱讀均受版權保護"
           >
             <Shield size={14} color="#059669" />
             <span>官方防偽浮水印保護中</span>
@@ -742,27 +741,6 @@ export default function UnitNotesView({ onStartQuizForUnit }) {
                       </button>
 
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                          type="button"
-                          onClick={() => window.print()}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            fontSize: '0.78rem',
-                            fontWeight: 700,
-                            border: '1px solid #cbd5e1',
-                            background: '#ffffff',
-                            color: '#475569',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <Printer size={13} />
-                          列印本單元
-                        </button>
-
                         {onStartQuizForUnit && (
                           <button
                             type="button"
