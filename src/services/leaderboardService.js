@@ -365,3 +365,21 @@ export function adminGrantTickets(targetUserId, ticketCount, operatorUser) {
     targetId: targetUserId
   });
 }
+
+// 取得指定學生的當週累積排行榜點數 (精準對齊週次與跨帳號 Email)
+export function getStudentWeeklyPoints(userOrId) {
+  if (!userOrId) return 0;
+  const uid = typeof userOrId === 'string' ? userOrId : (userOrId.id || userOrId.userId);
+  const email = typeof userOrId === 'object' ? userOrId.email : null;
+  const cleanEmail = email ? email.trim().toLowerCase() : '';
+  const board = getLeaderboard();
+  const currentWeekId = getTaiwanWeekId();
+  
+  let player = board.find(x => x && (x.userId === uid || (cleanEmail && x.email && x.email.trim().toLowerCase() === cleanEmail)));
+  if (!player && uid) {
+    player = board.find(x => x && x.userId === uid);
+  }
+  if (!player) return 0;
+  if (player.weekId && player.weekId !== currentWeekId) return 0;
+  return player.weeklyPoints || 0;
+}

@@ -189,19 +189,25 @@ export function AuthProvider({ children }) {
     }
   }, [currentUser?.id]);
 
-  // 1.3 跨裝置個人資料完整水合（抽獎券、點數、試卷、做題歷史、錯題本，保證換設備數據 100% 完全相同）
+  // 1.3 跨裝置個人資料完整水合（抽獎券、點數、試卷、做題歷史、錯題本、兌換碼與公告，保證換設備數據 100% 完全相同）
   useEffect(() => {
     if (currentUser?.id && currentUser.id !== 'guest_student') {
       import('../services/cloudStorage').then(({ 
         fetchCloudUserGameState, 
         fetchCloudUserQuizPapers, 
         fetchCloudUserPracticeHistory, 
-        fetchCloudUserMistakeNotebook 
+        fetchCloudUserMistakeNotebook,
+        fetchCloudUserRedeemedCodes,
+        fetchCloudRedemptionCodes,
+        fetchCloudAdminNotifications
       }) => {
         fetchCloudUserGameState(currentUser.id);
         fetchCloudUserQuizPapers(currentUser.id);
         fetchCloudUserPracticeHistory(currentUser.id);
         fetchCloudUserMistakeNotebook(currentUser.id);
+        fetchCloudUserRedeemedCodes(currentUser.id);
+        fetchCloudRedemptionCodes();
+        fetchCloudAdminNotifications();
       }).catch(() => {});
     }
   }, [currentUser?.id]);

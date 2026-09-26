@@ -3,9 +3,12 @@ import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
 import { 
   getAdminNotifications, 
+  fetchCloudAdminNotifications,
   getRedemptionCodes, 
+  fetchCloudRedemptionCodes,
   getUserRedeemedCodes, 
-  redeemCode,
+  fetchCloudUserRedeemedCodes,
+  redeemCodeAsync,
   subscribeToCloudSync
 } from '../services/cloudStorage';
 import { 
@@ -20,7 +23,8 @@ import {
   Flame, 
   Ticket, 
   Award,
-  ChevronRight
+  ChevronRight,
+  Loader2
 } from 'lucide-react';
 
 export default function NotificationBellModal({ isOpen, onClose }) {
@@ -33,18 +37,32 @@ export default function NotificationBellModal({ isOpen, onClose }) {
   const [redeemedCodes, setRedeemedCodes] = useState([]);
   const [copiedCode, setCopiedCode] = useState(null);
   const [claimSuccessMsg, setClaimSuccessMsg] = useState('');
+  const [claimingCode, setClaimingCode] = useState(null);
 
   const userId = currentUser?.id || 'guest_student';
 
   useEffect(() => {
     if (isOpen) {
+      // 1. 本地秒級顯示
       setNotifications(getAdminNotifications());
       setCodes(getRedemptionCodes());
       setRedeemedCodes(getUserRedeemedCodes(userId));
       setClaimSuccessMsg('');
 
+      // 2. 跨裝置主動非同步向 Firebase 雲端調閱最新公告、兌換碼與使用者兌換歷史
+      Promise.all([
+        fetchCloudAdminNotifications(),
+        fetchCloudRedemptionCodes(),
+        fetchCloudUserRedeemedCodes(userId)
+      ]).then(([latestNotifs, latestCodes, latestRedeemed]) => {
+        if (latestNotifs) setNotifications(latestNotifs);
+        if (latestCodes) setCodes(latestCodes);
+        if (latestRedeemed) setRedeemedCodes(latestRedeemed);
+      }).catch(() => {});
+
       const unsubscribe = subscribeToCloudSync((event) => {
         if (
+          !event?.key ||
           event.key === 'admin_notifications' ||
           event.key === 'deleted_notifications' ||
           event.key === 'redemption_codes' ||
@@ -68,9 +86,11 @@ export default function NotificationBellModal({ isOpen, onClose }) {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const handleClaimCode = (codeItem) => {
+  const handleClaimCode = async (codeItem) => {
+    if (claimingCode) return;
+    setClaimingCode(codeItem.code);
     try {
-      const res = redeemCode(userId, codeItem.code, currentUser?.displayName);
+      const res = await redeemCodeAsync(userId, codeItem.code, currentUser?.displayName);
 
       // 發放獎勵
       if (res.type === 'points') {
@@ -91,6 +111,8 @@ export default function NotificationBellModal({ isOpen, onClose }) {
       setRedeemedCodes(getUserRedeemedCodes(userId));
     } catch (err) {
       alert(err.message);
+    } finally {
+      setClaimingCode(null);
     }
   };
 

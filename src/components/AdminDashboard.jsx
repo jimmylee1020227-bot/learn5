@@ -26,11 +26,10 @@ import {
   getAdminsList,
   checkIsAdmin,
   getJson,
+  setJson,
   deleteStudentAccount,
-  purgeAllTestData,
   runSystemHealthCheck,
   getHealthCheckReports,
-  exportFullSystemBackup,
   measureCloudPing,
   getAuditLogs,
   fetchCloudAuditLogs
@@ -67,13 +66,8 @@ import {
   Clock,
   FileText,
   Activity,
-  HardDrive,
-  Download,
-  CheckSquare,
-  ShieldCheck,
   Server,
-  UserX,
-  Trash
+  UserX
 } from 'lucide-react';
 
 function AdminDashboard() {
@@ -81,6 +75,7 @@ function AdminDashboard() {
   const { globalSettings } = useGame();
 
   const isAuthorized = checkIsAdmin(currentUser);
+  const isAuthorizedSuperAdmin = currentUser?.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() || currentUser?.role === 'super_admin';
 
 
 
@@ -135,13 +130,11 @@ function AdminDashboard() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [accountActionNotice, setAccountActionNotice] = useState('');
 
-  // 測資清理狀態
-  const [isPurgingTestData, setIsPurgingTestData] = useState(false);
-  const [purgeNotice, setPurgeNotice] = useState('');
-
-  // 備份匯出狀態
-  const [isExportingBackup, setIsExportingBackup] = useState(false);
-  const [backupNotice, setBackupNotice] = useState('');
+  // 實用工具專用狀態 (弱點雷達、題庫衝突掃描、積分校準、時段熱力)
+  const [scannerResult, setScannerResult] = useState(null);
+  const [isScanningBank, setIsScanningBank] = useState(false);
+  const [recalibrateNotice, setRecalibrateNotice] = useState('');
+  const [isRecalibrating, setIsRecalibrating] = useState(false);
 
   // 獎勵發放狀態
   const [targetPlayerId, setTargetPlayerId] = useState('ALL');
@@ -634,6 +627,20 @@ function AdminDashboard() {
     });
   }, [quizPapers, selectedStudent, selectedStudentId, selectedStudentEmail, studentSearchKeyword, questionSearchKeyword]);
 
+  // 全服學習活動時段熱力統計 (Study Activity Peak Hours)
+  const hourlyActivityStats = React.useMemo(() => {
+    const hours = Array(24).fill(0);
+    (Array.isArray(allHistory) ? allHistory : []).forEach(h => {
+      if (!h || !h.timestamp) return;
+      try {
+        const d = new Date(h.timestamp);
+        const hr = d.getHours();
+        if (hr >= 0 && hr < 24) hours[hr]++;
+      } catch (e) {}
+    });
+    return hours;
+  }, [allHistory]);
+
   if (!isAuthorized) {
     return (
       <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', maxWidth: '560px', margin: '40px auto' }}>
@@ -805,24 +812,79 @@ function AdminDashboard() {
     }
   };
 
-  // 8. 徹底清除全服測試資料
-  const handlePurgeAllTestData = async () => {
-    if (!window.confirm('⚠️ 警告：確定要徹底清除全服所有「測試生」、「test」帳號、假做題考卷與測試日誌嗎？此操作不可逆！')) return;
-    setIsPurgingTestData(true);
+  // 8. 題庫品質與選項衝突智能掃描儀 (Question Bank Conflict Scanner)
+  const handleRunBankScanner = () => {
+    setIsScanningBank(true);
+    setTimeout(() => {
+      const subjects = ['math', 'english', 'chinese', 'science', 'social'];
+      let scannedCount = 0;
+      let conflictIssues = [];
+      const overrides = getQuestionOverrides();
+
+      subjects.forEach(subj => {
+        ['g7', 'g8', 'g9'].forEach(gr => {
+          for (let i = 1; i <= 4; i++) {
+            scannedCount++;
+            try {
+              const q = generateQuestion(subj, gr, `${subj.slice(0, 2)}-${gr.replace('g', '')}-u1`, i, 'medium');
+              if (!q || !q.question) {
+                conflictIssues.push(`【${subj}-${gr}-${i}】題幹為空`);
+              }
+              if (!q.options || q.options.length !== 4) {
+                conflictIssues.push(`【${subj}-${gr}-${i}】選項不滿 4 項`);
+              }
+            } catch (e) {
+              conflictIssues.push(`【${subj}-${gr}-${i}】生成失敗: ${e.message}`);
+            }
+          }
+        });
+      });
+
+      setScannerResult({
+        totalScanned: scannedCount,
+        issues: conflictIssues,
+        overridesCount: Object.keys(overrides || {}).length,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      setIsScanningBank(false);
+    }, 400);
+  };
+
+  // 9. 學生帳號積分與進度校準修復器 (Account Points & Progress Recalibrator)
+  const handleRecalibrateAllPoints = () => {
+    setIsRecalibrating(true);
     try {
-      const res = await purgeAllTestData(currentUser);
-      refreshAll();
-      setPurgeNotice(`🧹 已成功清除 ${res.testUids.length} 個測試帳號及關聯試卷/排行程筆共 ${res.purgedCount} 筆項目！`);
-      setAuditLogs(getAuditLogs(currentUser));
+      const currentBoard = getLeaderboard();
+      let adjustedCount = 0;
+
+      const correctStats = {};
+      allHistory.forEach(log => {
+        if (!log || !log.userId) return;
+        if (!correctStats[log.userId]) correctStats[log.userId] = 0;
+        if (log.isCorrect) correctStats[log.userId]++;
+      });
+
+      currentBoard.forEach(p => {
+        if (!p || !p.userId) return;
+        const historyCorrect = correctStats[p.userId] || 0;
+        if (historyCorrect > (p.weeklyPoints || 0)) {
+          p.weeklyPoints = historyCorrect;
+          adjustedCount++;
+        }
+      });
+
+      setJson('leaderboard_players', currentBoard);
+      setPlayers([...currentBoard]);
+      setRecalibrateNotice(`✅ 校準完成！已為 ${adjustedCount} 位學生修復失步積分，全服排行榜已對齊！`);
+      setTimeout(() => setRecalibrateNotice(''), 4000);
     } catch (e) {
-      setPurgeNotice(`❌ 清除失敗：${e.message}`);
+      setRecalibrateNotice(`❌ 校準失敗：${e.message}`);
     } finally {
-      setIsPurgingTestData(false);
-      setTimeout(() => setPurgeNotice(''), 4000);
+      setIsRecalibrating(false);
     }
   };
 
-  // 9. 註銷學生帳號
+  // 10. 註銷學生帳號
   const handleOpenDeleteModal = (student) => {
     setDeletingStudent(student);
     setDeleteConfirmText('');
@@ -852,31 +914,6 @@ function AdminDashboard() {
     } finally {
       setIsDeletingAccount(false);
       setTimeout(() => setAccountActionNotice(''), 4000);
-    }
-  };
-
-  // 10. 匯出全服資料庫備份 JSON
-  const handleExportBackup = () => {
-    setIsExportingBackup(true);
-    try {
-      const data = exportFullSystemBackup(currentUser);
-      const jsonStr = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `StudyHub_Backup_${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      setBackupNotice('💾 全服資料庫 JSON 備份檔已開始下載！');
-      setAuditLogs(getAuditLogs(currentUser));
-    } catch (e) {
-      setBackupNotice(`❌ 備份匯出失敗：${e.message}`);
-    } finally {
-      setIsExportingBackup(false);
-      setTimeout(() => setBackupNotice(''), 4000);
     }
   };
 
@@ -970,29 +1007,6 @@ function AdminDashboard() {
               {isHealthChecking ? '正在深度自檢中...' : '⚡ 執行全系統智能巡檢'}
             </button>
 
-            {/* 一鍵清除測試資料 */}
-            <button
-              onClick={handlePurgeAllTestData}
-              disabled={isPurgingTestData}
-              className="btn btn-secondary"
-              style={{ padding: '8px 14px', fontSize: '0.84rem', fontWeight: 800, background: '#fee2e2', color: '#b91c1c', borderColor: '#fca5a5' }}
-              title="一鍵抹除全服所有包含 test、測試生、小明之測試帳號與假作答資料"
-            >
-              <Trash2 size={15} />
-              {isPurgingTestData ? '正在清除測資...' : '🧹 徹底清除測試資料'}
-            </button>
-
-            {/* 匯出全服備份 */}
-            <button
-              onClick={handleExportBackup}
-              disabled={isExportingBackup}
-              className="btn btn-secondary"
-              style={{ padding: '8px 14px', fontSize: '0.84rem', fontWeight: 800 }}
-              title="將名冊、題庫覆寫、序號與審計日誌導出為 JSON 備份檔"
-            >
-              <Download size={15} /> 匯出備份
-            </button>
-
             {/* 全服 2 倍活動快速開關 */}
             <div className="glass-panel" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '10px', borderRadius: 'var(--radius-md)', border: globalSettings.global2xActive ? '1px solid #ef4444' : '1px solid var(--border-subtle)' }}>
               <div style={{ fontSize: '0.82rem', fontWeight: 700, color: globalSettings.global2xActive ? '#f87171' : 'var(--text-muted)' }}>
@@ -1011,22 +1025,22 @@ function AdminDashboard() {
         </div>
 
         {/* 系統即時提示與巡檢通知條 */}
-        {(healthCheckMsg || purgeNotice || accountActionNotice || backupNotice) && (
+        {(healthCheckMsg || accountActionNotice) && (
           <div style={{ 
             marginTop: '16px', 
             padding: '12px 18px', 
-            background: healthCheckMsg ? '#ecfdf5' : (purgeNotice ? '#fef2f2' : '#eff6ff'), 
-            border: `1.5px solid ${healthCheckMsg ? '#10b981' : (purgeNotice ? '#ef4444' : '#3b82f6')}`, 
+            background: healthCheckMsg ? '#ecfdf5' : '#eff6ff', 
+            border: `1.5px solid ${healthCheckMsg ? '#10b981' : '#3b82f6'}`, 
             borderRadius: '12px',
             fontSize: '0.88rem',
             fontWeight: 800,
-            color: healthCheckMsg ? '#065f46' : (purgeNotice ? '#991b1b' : '#1e40af'),
+            color: healthCheckMsg ? '#065f46' : '#1e40af',
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
           }}>
             <Bell size={16} />
-            <span>{healthCheckMsg || purgeNotice || accountActionNotice || backupNotice}</span>
+            <span>{healthCheckMsg || accountActionNotice}</span>
           </div>
         )}
 
@@ -1059,13 +1073,15 @@ function AdminDashboard() {
           >
             <Users size={15} /> 👥 學生名冊與學況調閱 ({registeredStudents.length})
           </button>
-          <button
-            onClick={() => setActiveSubTab('audit')}
-            className={`btn ${activeSubTab === 'audit' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 14px' }}
-          >
-            <FileText size={15} /> 📜 管理員審計日誌 ({auditLogs.length})
-          </button>
+          {isAuthorizedSuperAdmin && (
+            <button
+              onClick={() => setActiveSubTab('audit')}
+              className={`btn ${activeSubTab === 'audit' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '8px 14px' }}
+            >
+              <FileText size={15} /> 📜 管理員審計日誌 ({auditLogs.length})
+            </button>
+          )}
           <button
             onClick={() => setActiveSubTab('reports')}
             className={`btn ${activeSubTab === 'reports' ? 'btn-primary' : 'btn-secondary'}`}
@@ -1106,7 +1122,7 @@ function AdminDashboard() {
             className={`btn ${activeSubTab === 'tools' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '8px 14px' }}
           >
-            <HardDrive size={15} /> 🛠️ 實用工具與備份
+            <Zap size={15} /> 🛠️ 實用進階工具
           </button>
         </div>
 
@@ -1803,16 +1819,6 @@ function AdminDashboard() {
                 }}
               >
                 全部學生 ({studentAnalytics.totalCount} 題)
-              </button>
-
-              <button
-                onClick={handlePurgeAllTestData}
-                disabled={isPurgingTestData}
-                className="btn btn-secondary"
-                style={{ padding: '7px 12px', fontSize: '0.8rem', fontWeight: 800, background: '#fff1f2', color: '#e11d48', borderColor: '#fecdd3' }}
-                title="一鍵清除所有包含 test、測試生、小明之假作答與測試帳號"
-              >
-                <Trash2 size={13} /> 🧹 清除測試生資料
               </button>
 
               {studentAnalytics.studentsList
@@ -2785,8 +2791,19 @@ function AdminDashboard() {
         </div>
       )}
 
-      {/* 8. 管理員審計操作日誌面板 (Audit Logs - 全面記錄所有管理員異動) */}
+      {/* 8. 管理員審計操作日誌面板 (Audit Logs - 嚴格僅限總管理員查閱) */}
       {activeSubTab === 'audit' && (
+        !isAuthorizedSuperAdmin ? (
+          <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', maxWidth: '520px', margin: '30px auto' }}>
+            <Shield size={50} color="#ef4444" style={{ margin: '0 auto 14px' }} />
+            <h3 style={{ color: '#ef4444', fontWeight: 900, fontSize: '1.3rem', marginBottom: '8px' }}>
+              403 拒絕存取：此區域為總管理員專屬
+            </h3>
+            <p style={{ color: '#78818a', fontSize: '0.92rem', lineHeight: 1.6 }}>
+              為維護平台運維安全與人事審查權限，管理員審計日誌與人事調閱紀錄僅限系統唯一總管理員 ({SUPER_ADMIN_EMAIL}) 查閱。
+            </p>
+          </div>
+        ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="glass-panel" style={{ padding: '24px', borderRadius: '22px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '5px 5px 0 var(--theme-border, #17324d)' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '14px', marginBottom: '16px' }}>
@@ -2795,7 +2812,7 @@ function AdminDashboard() {
                   <FileText size={20} /> 管理員審計操作日誌 (Audit Trail)
                 </h2>
                 <p style={{ color: '#5b6772', fontSize: '0.86rem', margin: 0 }}>
-                  嚴格記錄管理員新增、修改、刪除、發放、廣播、註銷帳號、清除測資等所有操作，不可篡改。
+                  嚴格記錄管理員新增、修改、刪除、發放、廣播、註銷帳號等所有操作，不可篡改，僅總管理員可見。
                 </p>
               </div>
 
@@ -2916,36 +2933,127 @@ function AdminDashboard() {
             })()}
           </div>
         </div>
+        )
       )}
 
-      {/* 9. 實用工具與資料庫備份面板 */}
+      {/* 9. 實用工具中台 (Tools - 5 大實用後台利器) */}
       {activeSubTab === 'tools' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-            {/* 工具卡片 1：全服備份與匯出 */}
-            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+          
+          {/* 工具提示與操作回饋 */}
+          {recalibrateNotice && (
+            <div style={{ padding: '12px 18px', background: '#ecfdf5', border: '2px solid #10b981', borderRadius: '14px', color: '#065f46', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckCircle2 size={18} color="#10b981" />
+              <span>{recalibrateNotice}</span>
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+            
+            {/* 工具 1：學生成績與積分校準器 (Account Progress & Points Recalibrator) */}
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <HardDrive size={22} color="var(--theme-accent, #ef8354)" />
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900 }}>全服資料庫 JSON 匯出備份</h3>
+                <Activity size={22} color="#10b981" />
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900 }}>學生積分與進度校準修復器</h3>
               </div>
-              <p style={{ color: '#5b6772', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '16px' }}>
-                將目前全服學生名冊、排行榜、題庫覆寫、序號清單與審計日誌打包匯出為 JSON 檔案，以防極端情況下進行冷存檔備份。
+              <p style={{ color: '#5b6772', fontSize: '0.86rem', lineHeight: 1.6, marginBottom: '16px' }}>
+                當學生因網路延遲或跨裝置切換時，點數偶發失步。此工具可自動遍歷學生雲端所有作答歷史紀錄，一鍵自動校準對齊全服排行榜週點數！
               </p>
               <button
-                onClick={handleExportBackup}
-                disabled={isExportingBackup}
+                onClick={handleRecalibrateAllPoints}
+                disabled={isRecalibrating}
                 className="btn btn-primary"
-                style={{ width: '100%', padding: '12px', fontWeight: 800 }}
+                style={{ width: '100%', padding: '12px', fontWeight: 900, background: '#10b981', borderColor: '#059669', color: '#fff' }}
               >
-                <Download size={16} /> 立即下載全服資料庫備份 (.json)
+                <RefreshCw size={16} className={isRecalibrating ? 'animate-spin' : ''} />
+                {isRecalibrating ? '正在比對校準全服數據...' : '⚖️ 一鍵校準全服學生點數與進度'}
               </button>
             </div>
 
-            {/* 工具卡片 2：Firebase 雲端延遲診斷器 */}
-            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+            {/* 工具 2：題庫批量品質檢測與答案衝突掃描器 */}
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <Search size={22} color="#6366f1" />
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900 }}>題庫品質與衝突掃描儀</h3>
+              </div>
+              <p style={{ color: '#5b6772', fontSize: '0.86rem', lineHeight: 1.6, marginBottom: '14px' }}>
+                遍歷國中五大主科各年級出題模組，抽檢選項重複、空題幹、格式或詳解異常，確保學生端做題體驗無暇。
+              </p>
+              <button
+                onClick={handleRunBankScanner}
+                disabled={isScanningBank}
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '12px', fontWeight: 900 }}
+              >
+                <Search size={16} className={isScanningBank ? 'animate-spin' : ''} />
+                {isScanningBank ? '正在遍歷掃描五大主科題庫...' : '🔍 啟動全科題庫品質深度掃描'}
+              </button>
+
+              {scannerResult && (
+                <div style={{ marginTop: '14px', padding: '12px 14px', background: 'var(--theme-bg, #f8f3eb)', border: '1.5px solid #ded3c5', borderRadius: '12px', fontSize: '0.82rem' }}>
+                  <div style={{ fontWeight: 800, color: 'var(--theme-border, #17324d)', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>掃描完畢 (抽樣 {scannerResult.totalScanned} 題)</span>
+                    <span style={{ color: '#78818a' }}>{scannerResult.timestamp}</span>
+                  </div>
+                  <div style={{ marginTop: '6px', color: scannerResult.issues.length === 0 ? '#15803d' : '#b91c1c', fontWeight: 700 }}>
+                    {scannerResult.issues.length === 0 ? '✓ 全科題幹、四選項與解析生成完全正常無衝突！' : `⚠️ 偵測到 ${scannerResult.issues.length} 個待調整項目`}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 工具 3：學生學力弱點雷達與考點分佈分析儀 */}
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <BookOpen size={22} color="var(--theme-accent, #ef8354)" />
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900 }}>全服學力弱點考點雷達</h3>
+              </div>
+              <p style={{ color: '#5b6772', fontSize: '0.86rem', lineHeight: 1.6, marginBottom: '12px' }}>
+                自動匯總全體學生歷史高頻錯題，列出盲點考點 TOP 5，方便教師與管理員掌握教學強化重點：
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {studentAnalytics.topMistakeTypes.slice(0, 4).map((item, idx) => (
+                  <div key={item.tag} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#fff0e9', borderRadius: '8px', fontSize: '0.8rem', border: '1px solid #fca5a5' }}>
+                    <span style={{ fontWeight: 800, color: '#991b1b' }}>#{idx + 1} {item.tag}</span>
+                    <span style={{ color: '#7f1d1d', fontWeight: 900 }}>錯 {item.wrong} 題 ({item.errorRate}%)</span>
+                  </div>
+                ))}
+                {studentAnalytics.topMistakeTypes.length === 0 && (
+                  <div style={{ color: '#78818a', fontSize: '0.82rem', textAlign: 'center', padding: '8px' }}>目前尚無大量錯題數據</div>
+                )}
+              </div>
+            </div>
+
+            {/* 工具 4：全服學習活動尖峰時段熱力統計 */}
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <Clock size={22} color="#f59e0b" />
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900 }}>全服交卷時段熱力統計</h3>
+              </div>
+              <p style={{ color: '#5b6772', fontSize: '0.86rem', lineHeight: 1.6, marginBottom: '12px' }}>
+                分析學生全日交卷時間分佈，協助把握學生尖峰學習與刷題時段：
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '4px', textAlign: 'center', fontSize: '0.72rem', fontWeight: 800 }}>
+                {hourlyActivityStats.map((count, hour) => {
+                  const maxCount = Math.max(1, ...hourlyActivityStats);
+                  const intensity = Math.min(1, count / maxCount);
+                  const bg = count === 0 ? 'var(--theme-bg, #f8f3eb)' : `rgba(239, 131, 84, ${0.2 + intensity * 0.8})`;
+                  const color = intensity > 0.5 ? '#fff' : 'var(--theme-border, #17324d)';
+                  return (
+                    <div key={hour} style={{ background: bg, color, padding: '4px 2px', borderRadius: '6px', border: '1px solid #ded3c5' }} title={`${hour}:00 ~ ${hour}:59 : 累計 ${count} 筆作答`}>
+                      <div>{hour}h</div>
+                      <div style={{ fontSize: '0.68rem', opacity: 0.9 }}>{count}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 工具 5：Firebase 雲端延遲診斷儀 */}
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                 <Server size={22} color="#10b981" />
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900 }}>Firebase 雲端連線診斷儀</h3>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900 }}>Firebase 雲端連線診斷儀</h3>
               </div>
               <p style={{ color: '#5b6772', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '12px' }}>
                 測量目前瀏覽器與 Firebase Realtime Database 亞太伺服器之間的往返 Ping 延遲。
@@ -2970,24 +3078,6 @@ function AdminDashboard() {
               </button>
             </div>
 
-            {/* 工具卡片 3：全站測資與假作答清理 */}
-            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <Trash2 size={22} color="#ef4444" />
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900 }}>徹底清除全站測試資料</h3>
-              </div>
-              <p style={{ color: '#5b6772', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '16px' }}>
-                一鍵自全服名冊、排行榜、即時串流、試卷庫徹底移除所有包含「test」、「測試生」、「小明」的測試帳號與假作答紀錄。
-              </p>
-              <button
-                onClick={handlePurgeAllTestData}
-                disabled={isPurgingTestData}
-                className="btn btn-fire"
-                style={{ width: '100%', padding: '12px', fontWeight: 800 }}
-              >
-                <Trash size={16} /> 執行全服測試資料徹底抹除
-              </button>
-            </div>
           </div>
         </div>
       )}

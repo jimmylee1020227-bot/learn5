@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
-import { redeemCode } from '../services/cloudStorage';
-import { Ticket, Sparkles, CheckCircle2, AlertCircle, X, ArrowRight, Gift } from 'lucide-react';
+import { redeemCodeAsync, fetchCloudRedemptionCodes } from '../services/cloudStorage';
+import { Ticket, Sparkles, CheckCircle2, AlertCircle, X, ArrowRight, Gift, Loader2 } from 'lucide-react';
 
 export default function RedemptionModal({ isOpen, onClose }) {
   const { currentUser } = useAuth();
@@ -11,19 +11,29 @@ export default function RedemptionModal({ isOpen, onClose }) {
   const [inputCode, setInputCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successReward, setSuccessReward] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 開啟 Modal 時，主動拉取 Firebase 雲端最新兌換碼庫 (跨裝置即時同步)
+  useEffect(() => {
+    if (isOpen) {
+      setErrorMsg('');
+      setSuccessReward(null);
+      fetchCloudRedemptionCodes().catch(() => {});
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-
-  const handleRedeem = (codeToUse) => {
+  const handleRedeem = async (codeToUse) => {
     const targetCode = (codeToUse || inputCode).trim();
     if (!targetCode) {
       setErrorMsg('請輸入兌換碼！');
       return;
     }
     setErrorMsg('');
+    setIsSubmitting(true);
     try {
-      const reward = redeemCode(currentUser?.id || 'guest_student', targetCode, currentUser?.displayName);
+      const reward = await redeemCodeAsync(currentUser?.id || 'guest_student', targetCode, currentUser?.displayName);
       
       // 套用獎勵
       if (reward.type === 'points') {
@@ -41,6 +51,8 @@ export default function RedemptionModal({ isOpen, onClose }) {
       setInputCode('');
     } catch (err) {
       setErrorMsg(err.message || '兌換失敗，請確認序號是否正確');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -132,10 +144,11 @@ export default function RedemptionModal({ isOpen, onClose }) {
                   />
                   <button 
                     onClick={() => handleRedeem()}
+                    disabled={isSubmitting}
                     className="btn btn-primary"
-                    style={{ padding: '0 20px', borderRadius: '12px', fontWeight: 800 }}
+                    style={{ padding: '0 20px', borderRadius: '12px', fontWeight: 800, opacity: isSubmitting ? 0.7 : 1 }}
                   >
-                    兌換
+                    {isSubmitting ? '驗證中...' : '兌換'}
                   </button>
                 </div>
               </div>
