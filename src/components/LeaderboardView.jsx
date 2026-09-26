@@ -42,6 +42,17 @@ export default function LeaderboardView() {
     }
   };
 
+  const displayBoard = React.useMemo(() => {
+    if (!board || !Array.isArray(board)) return [];
+    const seen = new Set();
+    return board.filter(p => {
+      if (!p || !p.userId) return false;
+      if (seen.has(p.userId)) return false;
+      seen.add(p.userId);
+      return true;
+    });
+  }, [board]);
+
   useEffect(() => {
     refreshBoard();
 
@@ -207,7 +218,7 @@ export default function LeaderboardView() {
             boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
           }}
         >
-          {board.length === 0 ? (
+          {displayBoard.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '50px 20px' }}>
               <Sparkles size={48} color="var(--theme-accent, var(--theme-accent, #ef8354))" style={{ margin: '0 auto 16px', display: 'block' }} />
               <h3 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', marginBottom: '8px' }}>
@@ -227,44 +238,44 @@ export default function LeaderboardView() {
           ) : (
             <>
               {/* 前三名領獎台 (Podium) */}
-              {board.length >= 3 && (
+              {displayBoard.length >= 3 && (
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '16px', margin: '20px 0 40px', flexWrap: 'wrap' }}>
                   
                   {/* 第 2 名 (銀牌) */}
                   <div style={{ textAlign: 'center', order: 1 }}>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={board[1].avatar} alt={`${board[1].displayName} 的第二名選手頭像`} style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid var(--theme-border, #17324d)', background: '#dbe5ea' }} />
+                      <img src={displayBoard[1].avatar} alt={`${displayBoard[1].displayName} 的第二名選手頭像`} style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid var(--theme-border, #17324d)', background: '#dbe5ea' }} />
                       <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#dbe5ea', color: '#58717d', border: '1.5px solid var(--theme-border, #17324d)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 900 }}>
                         #2
                       </span>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: '0.92rem', marginTop: '14px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{board[1].displayName}</div>
-                    <div style={{ color: '#58717d', fontWeight: 900, fontSize: '1.1rem' }}>{board[1].weeklyPoints} 點</div>
+                    <div style={{ fontWeight: 800, fontSize: '0.92rem', marginTop: '14px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{displayBoard[1].displayName}</div>
+                    <div style={{ color: '#58717d', fontWeight: 900, fontSize: '1.1rem' }}>{displayBoard[1].weeklyPoints} 點</div>
                   </div>
 
                   {/* 第 1 名 (置頂凸顯金牌) */}
                   <div style={{ textAlign: 'center', order: 2, transform: 'translateY(-14px)' }}>
                     <Crown size={28} color="var(--theme-accent, var(--theme-accent, #ef8354))" style={{ margin: '0 auto 4px' }} />
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={board[0].avatar} alt={`${board[0].displayName} 的第一名領先選手頭像`} style={{ width: '80px', height: '80px', borderRadius: '50%', border: '3.5px solid var(--theme-border, #17324d)', background: '#fff7d9', boxShadow: '0 0 0 3px #f7cf68' }} />
+                      <img src={displayBoard[0].avatar} alt={`${displayBoard[0].displayName} 的第一名領先選手頭像`} style={{ width: '80px', height: '80px', borderRadius: '50%', border: '3.5px solid var(--theme-border, #17324d)', background: '#fff7d9', boxShadow: '0 0 0 3px #f7cf68' }} />
                       <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#f7cf68', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid var(--theme-border, #17324d)', padding: '2px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 900 }}>
                         #1 領先
                       </span>
                     </div>
-                    <div style={{ fontWeight: 900, fontSize: '1.05rem', marginTop: '16px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{board[0].displayName}</div>
-                    <div style={{ color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontWeight: 900, fontSize: '1.35rem' }}>{board[0].weeklyPoints} 點</div>
+                    <div style={{ fontWeight: 900, fontSize: '1.05rem', marginTop: '16px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{displayBoard[0].displayName}</div>
+                    <div style={{ color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontWeight: 900, fontSize: '1.35rem' }}>{displayBoard[0].weeklyPoints} 點</div>
                   </div>
 
                   {/* 第 3 名 (銅牌) */}
                   <div style={{ textAlign: 'center', order: 3 }}>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={board[2].avatar} alt={`${board[2].displayName} 的第三名選手頭像`} style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid var(--theme-border, #17324d)', background: '#efc4a5' }} />
+                      <img src={displayBoard[2].avatar} alt={`${displayBoard[2].displayName} 的第三名選手頭像`} style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid var(--theme-border, #17324d)', background: '#efc4a5' }} />
                       <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#efc4a5', color: '#995f3b', border: '1.5px solid var(--theme-border, #17324d)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 900 }}>
                         #3
                       </span>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: '0.92rem', marginTop: '14px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{board[2].displayName}</div>
-                    <div style={{ color: '#995f3b', fontWeight: 900, fontSize: '1.1rem' }}>{board[2].weeklyPoints} 點</div>
+                    <div style={{ fontWeight: 800, fontSize: '0.92rem', marginTop: '14px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>{displayBoard[2].displayName}</div>
+                    <div style={{ color: '#995f3b', fontWeight: 900, fontSize: '1.1rem' }}>{displayBoard[2].weeklyPoints} 點</div>
                   </div>
 
                 </div>
@@ -272,7 +283,7 @@ export default function LeaderboardView() {
 
               {/* 排行名單列表 */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {board.map((player, index) => {
+                {displayBoard.map((player, index) => {
                   const isCurrentUser = player.userId === (currentUser?.id || 'guest_student');
                   return (
                     <div

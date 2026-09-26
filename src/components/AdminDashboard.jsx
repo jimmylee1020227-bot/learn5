@@ -436,6 +436,7 @@ function AdminDashboard() {
       const sName = log.userName || '匿名同學';
       if (isTestData(regEntry.name || sName, targetEmail, log.userId)) return;
       
+      const key = targetEmail || log.userId || log.userName || '匿名同學';
       if (!studentMap[key]) {
         studentMap[key] = {
           name: regEntry.name || sName,
@@ -898,7 +899,14 @@ function AdminDashboard() {
         }
       });
 
-      setJson('leaderboard_players', currentBoard);
+      const playerObj = {};
+      currentBoard.forEach(p => {
+        if (!p || !p.userId) return;
+        playerObj[p.userId] = p;
+        pushPlayerLeaderboardSync(p.userId, p);
+      });
+      setJson('leaderboard_players', playerObj);
+      setJson('studyhub_weekly_leaderboard', currentBoard);
       setPlayers([...currentBoard]);
       setRecalibrateNotice(`✅ 校準完成！已為 ${adjustedCount} 位學生修復失步積分，全服排行榜已對齊！`);
       setTimeout(() => setRecalibrateNotice(''), 4000);

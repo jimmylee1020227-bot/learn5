@@ -137,11 +137,20 @@ export function checkAndExecuteWeeklyReset() {
   }
 }
 
-// 取得當週即時排行榜 (本地快取並排序)
+// 取得當週即時排行榜 (本地快取並排序 + 唯一去重)
 export function getLeaderboard() {
   checkAndExecuteWeeklyReset();
   const list = getJson(LEADERBOARD_KEY, INITIAL_LEADERBOARD);
-  return list.sort((a, b) => (b.weeklyPoints || 0) - (a.weeklyPoints || 0));
+  const rawArr = Array.isArray(list) ? list : Object.values(list);
+  const pMap = new Map();
+  rawArr.forEach(p => {
+    if (!p || !p.userId) return;
+    const existing = pMap.get(p.userId);
+    if (!existing || (p.updatedAt || 0) > (existing.updatedAt || 0) || (p.weeklyPoints || 0) > (existing.weeklyPoints || 0)) {
+      pMap.set(p.userId, p);
+    }
+  });
+  return Array.from(pMap.values()).sort((a, b) => (b.weeklyPoints || 0) - (a.weeklyPoints || 0));
 }
 
 // 主動向 Firebase RTDB 拉取最新全服榜單，確保跨裝置 100% 同步

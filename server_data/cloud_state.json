@@ -3,12 +3,41 @@
   "deleted_community_post_ids": [],
   "deleted_redemption_codes": [
     "117",
-    "SYNC_TEST_2026"
+    "SYNC_TEST_2026",
+    "SYNC_VERIFY_999"
   ],
   "deleted_notifications": [],
   "question_overrides": {},
   "community_reports": [],
   "question_reports": [
+    {
+      "comment": "",
+      "id": "rep_1789873557699",
+      "questionId": "Q-G7-SC-U1-0665",
+      "reason": "答案錯誤",
+      "reporterId": "admin_super_jimmy",
+      "reporterName": "總管理員 (Jimmy)",
+      "resolutionNote": "管理員已核對並確認修正完畢",
+      "resolvedAt": "2026-09-20T03:06:22.366Z",
+      "resolvedBy": "總管理員 (Jimmy)",
+      "status": "resolved",
+      "timestamp": "2026-09-20T03:05:57.699Z",
+      "unitName": "生物單元 1：生命現象與細胞構造"
+    },
+    {
+      "comment": "",
+      "id": "rep_1789873553133",
+      "questionId": "Q-G7-SC-U3-2071",
+      "reason": "答案錯誤",
+      "reporterId": "admin_super_jimmy",
+      "reporterName": "總管理員 (Jimmy)",
+      "resolutionNote": "管理員已核對並確認修正完畢",
+      "resolvedAt": "2026-09-20T03:06:23.199Z",
+      "resolvedBy": "總管理員 (Jimmy)",
+      "status": "resolved",
+      "timestamp": "2026-09-20T03:05:53.133Z",
+      "unitName": "生物單元 3：生物體的運輸作用"
+    },
     {
       "comment": "",
       "id": "rep_1789871824437",
@@ -30,12 +59,12 @@
       "reason": "答案錯誤",
       "reporterId": "admin_super_jimmy",
       "reporterName": "總管理員",
+      "resolutionNote": "管理員已核對並確認修正完畢",
+      "resolvedAt": "2026-09-20T02:40:07.921Z",
+      "resolvedBy": "總管理員",
       "status": "resolved",
       "timestamp": "2026-09-20T02:36:59.270Z",
-      "unitName": "生物單元 4：生物體的協調與恆定性",
-      "resolvedBy": "總管理員",
-      "resolvedAt": "2026-09-20T02:40:07.921Z",
-      "resolutionNote": "管理員已核對並確認修正完畢"
+      "unitName": "生物單元 4：生物體的協調與恆定性"
     },
     {
       "comment": "",
@@ -44,12 +73,12 @@
       "reason": "答案錯誤",
       "reporterId": "admin_super_jimmy",
       "reporterName": "總管理員",
+      "resolutionNote": "管理員已核對並確認修正完畢",
+      "resolvedAt": "2026-09-20T02:40:09.921Z",
+      "resolvedBy": "總管理員",
       "status": "resolved",
       "timestamp": "2026-09-20T02:21:19.345Z",
-      "unitName": "生物單元 2：生物體的養分與酵素作用",
-      "resolvedBy": "總管理員",
-      "resolvedAt": "2026-09-20T02:40:09.921Z",
-      "resolutionNote": "管理員已核對並確認修正完畢"
+      "unitName": "生物單元 2：生物體的養分與酵素作用"
     },
     {
       "comment": "",
@@ -68,8 +97,8 @@
   ],
   "audit_logs": [
     {
-      "id": "log_1790396789243_vc4m",
-      "timestamp": "2026-09-26T04:26:29.243Z",
+      "id": "log_1790397211606_wk8w",
+      "timestamp": "2026-09-26T04:33:31.606Z",
       "operatorId": "admin_super_jimmy",
       "operatorName": "總管理員",
       "operatorRole": "super_admin",
@@ -79,91 +108,27 @@
     },
     {
       "actionType": "CREATE_REDEMPTION_CODE",
-      "details": "建立新兌換碼【HAPPY_FESTIVAL1】: 中秋快樂 (數值: 3)",
-      "id": "log_1790396527453_1t9s",
-      "operatorId": "admin_super_jimmy",
-      "operatorName": "總管理員",
-      "operatorRole": "super_admin",
-      "timestamp": "2026-09-26T04:22:07.453Z"
-    },
-    {
-      "actionType": "CREATE_REDEMPTION_CODE",
       "details": "建立新兌換碼【HAPPY_FESTIVAL】: 中秋快樂 (數值: 20)",
-      "id": "log_1790396507351_3nuc",
+      "id": "log_1790396971580_4a1h",
       "operatorId": "admin_super_jimmy",
       "operatorName": "總管理員",
       "operatorRole": "super_admin",
-      "timestamp": "2026-09-26T04:21:47.351Z"
+      "timestamp": "2026-09-26T04:29:31.580Z"
     },
     {
       "actionType": "SYSTEM_HEALTH_CHECK",
-      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 100 分，狀態【PASS】。全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
-      "id": "log_1790396464118_i2uv",
-      "operatorId": "admin_super_jimmy",
-      "operatorName": "總管理員",
-      "operatorRole": "super_admin",
-      "timestamp": "2026-09-26T04:21:04.118Z"
-    },
-    {
-      "actionType": "SYSTEM_HEALTH_CHECK",
-      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 90 分，狀態【WARNING】。全功能自檢完成：4 項通過、1 項警示、0 項異常，系統總健康評分：90 分。",
-      "id": "log_1790395079300_r3pc",
-      "operatorId": "admin_super_jimmy",
-      "operatorName": "總管理員",
-      "operatorRole": "super_admin",
-      "timestamp": "2026-09-26T03:57:59.300Z"
-    },
-    {
-      "actionType": "SYSTEM_HEALTH_CHECK",
-      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 90 分，狀態【WARNING】。全功能自檢完成：4 項通過、1 項警示、0 項異常，系統總健康評分：90 分。",
-      "id": "log_1790394992968_uzv0",
-      "operatorId": "admin_super_jimmy",
-      "operatorName": "總管理員",
-      "operatorRole": "super_admin",
-      "timestamp": "2026-09-26T03:56:32.968Z"
-    },
-    {
-      "actionType": "SYSTEM_HEALTH_CHECK",
-      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 90 分，狀態【WARNING】。全功能自檢完成：4 項通過、1 項警示、0 項異常，系統總健康評分：90 分。",
-      "id": "log_1790394974746_s94g",
-      "operatorId": "admin_super_jimmy",
-      "operatorName": "總管理員",
-      "operatorRole": "super_admin",
-      "timestamp": "2026-09-26T03:56:14.746Z"
-    },
-    {
-      "actionType": "DELETE_REDEMPTION_CODE",
-      "details": "撤銷並刪除兌換碼【SYNC_TEST_2026】",
-      "id": "log_1790394926392_tgrg",
-      "operatorId": "admin_super_jimmy",
-      "operatorName": "總管理員",
-      "operatorRole": "super_admin",
-      "timestamp": "2026-09-26T03:55:26.392Z"
-    },
-    {
-      "actionType": "PURGE_TEST_DATA",
-      "details": "管理員執行一鍵徹底清除測試資料，清除了 0 個測試帳號及關聯試卷/排行程筆共 0 筆項目",
-      "id": "log_1790394884836_m76x",
-      "operatorId": "admin_super_jimmy",
-      "operatorName": "總管理員",
-      "operatorRole": "super_admin",
-      "targetId": "ALL_TEST_DATA",
-      "timestamp": "2026-09-26T03:54:44.836Z"
-    },
-    {
-      "actionType": "CREATE_REDEMPTION_CODE",
-      "details": "建立新兌換碼【SYNC_TEST_2026】: 同步測試禮包 (數值: 3)",
-      "id": "log_1790386142633_v0gh",
-      "operatorId": "admin_test",
-      "operatorName": "管理員",
-      "operatorRole": "super_admin",
-      "timestamp": "2026-09-26T01:29:02.633Z"
+      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 95 分，狀態【WARNING】。全系統 12 大維度深度自檢完成：11 項通過、1 項警示、0 項異常，系統總健康評分：95 分。",
+      "id": "log_1790396820689_yxhu",
+      "operatorId": "system",
+      "operatorName": "系統自檢",
+      "operatorRole": "system",
+      "timestamp": "2026-09-26T04:27:00.689Z"
     }
   ],
   "redemption_codes": [
     {
       "code": "HAPPY_FESTIVAL1",
-      "createdAt": "2026-09-26T04:22:07.393Z",
+      "createdAt": "2026-09-26T04:36:20.547Z",
       "createdBy": "總管理員",
       "expiresAt": "2026-09-30",
       "label": "中秋快樂",
@@ -172,7 +137,7 @@
     },
     {
       "code": "HAPPY_FESTIVAL",
-      "createdAt": "2026-09-26T04:21:47.296Z",
+      "createdAt": "2026-09-26T04:29:31.516Z",
       "createdBy": "總管理員",
       "expiresAt": "2026-09-30",
       "label": "中秋快樂",
@@ -383,39 +348,22 @@
   },
   "admin_notifications": [
     {
-      "id": "notif_1790396527488",
-      "message": "新兌換碼發布：中秋快樂，點擊即可一鍵領取！",
-      "relatedCode": "HAPPY_FESTIVAL1",
+      "id": "notif_1790397519165",
+      "message": "新兌換碼發布：跨裝置即時同步測試禮包，點擊即可一鍵領取！",
+      "relatedCode": "SYNC_VERIFY_999",
       "sender": "總管理員",
-      "timestamp": "2026-09-26T04:22:07.488Z",
-      "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL1】！",
+      "timestamp": "2026-09-26T04:38:39.165Z",
+      "title": "🎁 管理員發放新序號【SYNC_VERIFY_999】！",
       "type": "redemption"
     },
     {
-      "id": "notif_1790396507388",
-      "message": "新兌換碼發布：中秋快樂，點擊即可一鍵領取！",
-      "relatedCode": "HAPPY_FESTIVAL",
-      "sender": "總管理員",
-      "timestamp": "2026-09-26T04:21:47.388Z",
-      "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL】！",
-      "type": "redemption"
-    },
-    {
-      "id": "notif_1790386142634",
-      "message": "新兌換碼發布：同步測試禮包，點擊即可一鍵領取！",
-      "relatedCode": "SYNC_TEST_2026",
-      "sender": "管理員",
-      "timestamp": "2026-09-26T01:29:02.634Z",
-      "title": "🎁 管理員發放新序號【SYNC_TEST_2026】！",
-      "type": "redemption"
-    },
-    {
-      "id": "notif_1790386142632",
-      "message": "系統已全面優化",
-      "sender": "管理員",
-      "timestamp": "2026-09-26T01:29:02.632Z",
-      "title": "全服維護通知",
-      "type": "system"
+      "id": "notif_launch",
+      "isRead": false,
+      "message": "108 課綱全科複習網正式上線！每週一 00:00 歸零結算榜單，答對一題即得 1 點排行榜積分，祝各位戰友穩穩上岸！",
+      "sender": "總管理員 Jimmy",
+      "timestamp": "2026-09-26T04:38:39.155Z",
+      "title": "🎉 歡迎來到會考讀書網！",
+      "type": "announcement"
     }
   ],
   "admins_list": [
@@ -764,6 +712,17 @@
       "weeklyPoints": 47
     },
     {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKggCzcn4NCHHQhiQnbkseo1O6mzh8-vKkItpf8SIAeQ22LWe0=s96-c",
+      "displayName": "李",
+      "email": "lijingyan41@gmail.com",
+      "tickets": 3,
+      "totalPoints": 70,
+      "updatedAt": 1790397449350,
+      "userId": "u_m5jdw8m0go8q",
+      "weekId": "2026-W39",
+      "weeklyPoints": 39
+    },
+    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLqjMdMeNFbPY9BJhQE4MVv9DQ6ob4ahcEXq2WBkmDne_h5HQ=s96-c",
       "displayName": "66666",
       "email": "t1140068@twnt5.thsh.tyc.edu.tw",
@@ -874,17 +833,6 @@
       "weeklyPoints": 16
     },
     {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKggCzcn4NCHHQhiQnbkseo1O6mzh8-vKkItpf8SIAeQ22LWe0=s96-c",
-      "displayName": "李京諺",
-      "email": "lijingyan41@gmail.com",
-      "tickets": 3,
-      "totalPoints": 45,
-      "updatedAt": 1790357784235,
-      "userId": "u_m5jdw8m0go8q",
-      "weekId": "2026-W39",
-      "weeklyPoints": 14
-    },
-    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocK5d4tEHJZHxwEN29XNazYWK1_-pAQJ4IXCpoXAsNRSj_mRhg=s96-c",
       "displayName": "Faust China",
       "email": "faust.china@gmail.com",
@@ -918,17 +866,6 @@
       "weeklyPoints": 9
     },
     {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJ2WSmtASYireJSKRIiQxlo8Cc7qFAEfNRs_eey81XF_R7KTw=s96-c",
-      "displayName": "李京諺",
-      "email": "jimmylee33good@gmail.com",
-      "tickets": 3,
-      "totalPoints": 9,
-      "updatedAt": 1790357784198,
-      "userId": "u_v7lyno254ul",
-      "weekId": "2026-W39",
-      "weeklyPoints": 9
-    },
-    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocL6MkOaQUNfucFyWuk5gROa5ts0MReqOEZWKN2mvgaatbWotrxW=s96-c",
       "displayName": "采紋",
       "email": "qoo214@gmail.com",
@@ -936,6 +873,17 @@
       "totalPoints": 31,
       "updatedAt": 1790357784872,
       "userId": "u_rc3g9udy5hog",
+      "weekId": "2026-W39",
+      "weeklyPoints": 9
+    },
+    {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJ2WSmtASYireJSKRIiQxlo8Cc7qFAEfNRs_eey81XF_R7KTw=s96-c",
+      "displayName": "李京諺",
+      "email": "jimmylee33good@gmail.com",
+      "tickets": 3,
+      "totalPoints": 9,
+      "updatedAt": 1790357784198,
+      "userId": "u_v7lyno254ul",
       "weekId": "2026-W39",
       "weeklyPoints": 9
     },
@@ -1006,17 +954,6 @@
       "weeklyPoints": 6
     },
     {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLOdEYE79-bfkvLlKhH4v9ReB1lgusT5x8fOMWJO0MEj8g5CDYm=s96-c",
-      "displayName": "黃尹芃",
-      "email": "book102121211@gmail.com",
-      "tickets": 1,
-      "totalPoints": 5,
-      "updatedAt": 1790394305429,
-      "userId": "u_l273emducboc",
-      "weekId": "2026-W39",
-      "weeklyPoints": 5
-    },
-    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJd2QNwV0lzESprdKQ9WLgh8pS4FxIkp0OL7DiTgZ_Ld3BzAovwRg=s96-c",
       "displayName": "Maggie",
       "email": "scharals@gmail.com",
@@ -1028,15 +965,15 @@
       "weeklyPoints": 5
     },
     {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIgGTA1mKOqIVYAL6gt-zO7Nz_54I393KcDpfVwpVTmGK1j01Fu=s96-c",
-      "displayName": "陳柏睿",
-      "email": "cbr0618@apps.ntpc.edu.tw",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLOdEYE79-bfkvLlKhH4v9ReB1lgusT5x8fOMWJO0MEj8g5CDYm=s96-c",
+      "displayName": "黃尹芃",
+      "email": "book102121211@gmail.com",
       "tickets": 1,
-      "totalPoints": 4,
-      "updatedAt": 1790394385981,
-      "userId": "u_vz4g9nw35ypl",
+      "totalPoints": 5,
+      "updatedAt": 1790394305429,
+      "userId": "u_l273emducboc",
       "weekId": "2026-W39",
-      "weeklyPoints": 4
+      "weeklyPoints": 5
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIhlVrOp8ivU3nnCXp8d9dqlqKIa9UIJlnvOB1GORzKitn9Aw=s96-c",
@@ -1061,6 +998,17 @@
       "weeklyPoints": 4
     },
     {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIgGTA1mKOqIVYAL6gt-zO7Nz_54I393KcDpfVwpVTmGK1j01Fu=s96-c",
+      "displayName": "陳柏睿",
+      "email": "cbr0618@apps.ntpc.edu.tw",
+      "tickets": 1,
+      "totalPoints": 4,
+      "updatedAt": 1790394385981,
+      "userId": "u_vz4g9nw35ypl",
+      "weekId": "2026-W39",
+      "weeklyPoints": 4
+    },
+    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIeGv7PsPEIpB-OHBfIhLu2kLCem3_IXWbsvYDVvcH7kO6K4sY=s96-c",
       "displayName": "蔡宥緯{奶龍不甜}",
       "email": "50213youtn@gmail.com",
@@ -1068,17 +1016,6 @@
       "totalPoints": 3,
       "updatedAt": 1790357784313,
       "userId": "u_am9a08l9wgdy",
-      "weekId": "2026-W39",
-      "weeklyPoints": 3
-    },
-    {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocL91Zq2pV6MQs_JlvBKU0PWde2DQ02X7mKVvkBzrYQbtanvyEg=s96-c",
-      "displayName": "思博樂",
-      "email": "spore.thinkforfun@gmail.com",
-      "tickets": 3,
-      "totalPoints": 3,
-      "updatedAt": 1790357784362,
-      "userId": "u_wwdhg99b9uuz",
       "weekId": "2026-W39",
       "weeklyPoints": 3
     },
@@ -1123,6 +1060,17 @@
       "totalPoints": 25,
       "updatedAt": 1790357784654,
       "userId": "u_iovti4e318ue",
+      "weekId": "2026-W39",
+      "weeklyPoints": 3
+    },
+    {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocL91Zq2pV6MQs_JlvBKU0PWde2DQ02X7mKVvkBzrYQbtanvyEg=s96-c",
+      "displayName": "思博樂",
+      "email": "spore.thinkforfun@gmail.com",
+      "tickets": 3,
+      "totalPoints": 3,
+      "updatedAt": 1790357784362,
+      "userId": "u_wwdhg99b9uuz",
       "weekId": "2026-W39",
       "weeklyPoints": 3
     },
@@ -8258,20 +8206,20 @@
   "all_quiz_papers": [],
   "admin_health_check_reports": [
     {
-      "id": "report_1790396789140",
-      "timestamp": "2026-09-26T04:26:29.140Z",
+      "id": "report_1790397211484",
+      "timestamp": "2026-09-26T04:33:31.484Z",
       "isScheduled": false,
       "overallStatus": "PASS",
       "healthScore": 100,
-      "durationMs": 27,
+      "durationMs": 17,
       "summary": "全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
       "checks": [
         {
           "id": "cloud_sync",
           "title": "Firebase 雲端即時連線與同步延遲",
           "status": "PASS",
-          "latencyMs": 24,
-          "details": "連線正常！雲端延遲往返時間：24 ms (極速連線 (雲端秒級同步))"
+          "latencyMs": 16,
+          "details": "連線正常！雲端延遲往返時間：16 ms (極速連線 (雲端秒級同步))"
         },
         {
           "id": "lottery_security",
@@ -8295,13 +8243,13 @@
           "id": "leaderboard_points",
           "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)",
           "status": "PASS",
-          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。"
+          "details": "全服排行榜格式正常（共 47 位在榜學生），當前台北週次：2026-W39，積點無溢出。"
         },
         {
           "id": "papers_integrity",
           "title": "歷次實戰試卷庫與整卷詳解完整度",
           "status": "PASS",
-          "details": "試卷庫數據健全無損（已調閱存檔 108 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。"
+          "details": "試卷庫數據健全無損（已調閱存檔 18 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。"
         },
         {
           "id": "user_registry",
@@ -8319,7 +8267,7 @@
           "id": "redemption_codes",
           "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖",
           "status": "PASS",
-          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。"
+          "details": "全站共有 1 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。"
         },
         {
           "id": "live_stream",
@@ -8344,9 +8292,9 @@
     {
       "checks": [
         {
-          "details": "連線正常！雲端延遲往返時間：33 ms (極速連線 (雲端秒級同步))",
+          "details": "連線正常！雲端延遲往返時間：58 ms (極速連線 (雲端秒級同步))",
           "id": "cloud_sync",
-          "latencyMs": 33,
+          "latencyMs": 58,
           "status": "PASS",
           "title": "Firebase 雲端即時連線與同步延遲"
         },
@@ -8363,27 +8311,27 @@
           "title": "題庫動態生成引擎與隨機出題演算法"
         },
         {
-          "details": "題庫覆寫節點同步良好，目前全站共有 2 題經管理員核准校對並更新詳解與答案。",
+          "details": "題庫覆寫節點同步良好，目前全站共有 0 題經管理員核准校對並更新詳解與答案。",
           "id": "question_overrides",
           "status": "PASS",
           "title": "管理員題目修正與題庫覆寫節點 (Overrides)"
         },
         {
-          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
+          "details": "全服排行榜格式正常（共 0 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
           "id": "leaderboard_points",
           "status": "PASS",
           "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)"
         },
         {
-          "details": "試卷庫數據健全無損（已調閱存檔 108 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
+          "details": "試卷庫數據健全無損（已調閱存檔 0 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
           "id": "papers_integrity",
           "status": "PASS",
           "title": "歷次實戰試卷庫與整卷詳解完整度"
         },
         {
-          "details": "學生名冊檔案完好，累計登記 47 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
+          "details": "學生名冊檔案完好，累計登記 0 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
           "id": "user_registry",
-          "status": "PASS",
+          "status": "WARNING",
           "title": "全服註冊學生名冊與多帳號映射表 (User Registry)"
         },
         {
@@ -8417,139 +8365,13 @@
           "title": "LocalStorage 快取配額與資料庫防遺失雙層保險機制"
         }
       ],
-      "durationMs": 45,
-      "healthScore": 100,
-      "id": "report_1790396464047",
-      "isScheduled": false,
-      "overallStatus": "PASS",
-      "summary": "全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
-      "timestamp": "2026-09-26T04:21:04.047Z"
-    },
-    {
-      "checks": [
-        {
-          "details": "連線正常！雲端延遲往返時間：19 ms (極速連線 (雲端秒級同步))",
-          "id": "cloud_sync",
-          "latencyMs": 19,
-          "status": "PASS",
-          "title": "Firebase 雲端即時連線與同步延遲"
-        },
-        {
-          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
-          "id": "lottery_security",
-          "status": "PASS",
-          "title": "抽獎券防重複領取與防刷原子鎖"
-        },
-        {
-          "details": "國中 5 大科目（國、英、數、自、社）出題引擎、四選一選項架構及解析皆運作順暢！",
-          "id": "quiz_generator",
-          "status": "PASS",
-          "title": "題庫動態生成引擎與解析完整性"
-        },
-        {
-          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
-          "id": "leaderboard_points",
-          "status": "PASS",
-          "title": "積分排行榜與每週結算系統"
-        },
-        {
-          "details": "⚠️ 試卷庫中偵測到 56 份破損試卷，建議點擊一鍵清理",
-          "id": "papers_integrity",
-          "status": "WARNING",
-          "title": "全服試卷庫與學生作答歷程完整度"
-        }
-      ],
-      "durationMs": 22,
-      "healthScore": 90,
-      "id": "report_1790395079278",
+      "durationMs": 59,
+      "healthScore": 95,
+      "id": "report_1790396820684",
       "isScheduled": false,
       "overallStatus": "WARNING",
-      "summary": "全功能自檢完成：4 項通過、1 項警示、0 項異常，系統總健康評分：90 分。",
-      "timestamp": "2026-09-26T03:57:59.278Z"
-    },
-    {
-      "checks": [
-        {
-          "details": "連線正常！雲端延遲往返時間：13 ms (極速連線 (雲端秒級同步))",
-          "id": "cloud_sync",
-          "latencyMs": 13,
-          "status": "PASS",
-          "title": "Firebase 雲端即時連線與同步延遲"
-        },
-        {
-          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
-          "id": "lottery_security",
-          "status": "PASS",
-          "title": "抽獎券防重複領取與防刷原子鎖"
-        },
-        {
-          "details": "國中 5 大科目（國、英、數、自、社）出題引擎、四選一選項架構及解析皆運作順暢！",
-          "id": "quiz_generator",
-          "status": "PASS",
-          "title": "題庫動態生成引擎與解析完整性"
-        },
-        {
-          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
-          "id": "leaderboard_points",
-          "status": "PASS",
-          "title": "積分排行榜與每週結算系統"
-        },
-        {
-          "details": "⚠️ 試卷庫中偵測到 56 份破損試卷，建議點擊一鍵清理",
-          "id": "papers_integrity",
-          "status": "WARNING",
-          "title": "全服試卷庫與學生作答歷程完整度"
-        }
-      ],
-      "durationMs": 16,
-      "healthScore": 90,
-      "id": "report_1790394992953",
-      "isScheduled": false,
-      "overallStatus": "WARNING",
-      "summary": "全功能自檢完成：4 項通過、1 項警示、0 項異常，系統總健康評分：90 分。",
-      "timestamp": "2026-09-26T03:56:32.953Z"
-    },
-    {
-      "checks": [
-        {
-          "details": "連線正常！雲端延遲往返時間：8 ms (極速連線 (雲端秒級同步))",
-          "id": "cloud_sync",
-          "latencyMs": 8,
-          "status": "PASS",
-          "title": "Firebase 雲端即時連線與同步延遲"
-        },
-        {
-          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
-          "id": "lottery_security",
-          "status": "PASS",
-          "title": "抽獎券防重複領取與防刷原子鎖"
-        },
-        {
-          "details": "國中 5 大科目（國、英、數、自、社）出題引擎、四選一選項架構及解析皆運作順暢！",
-          "id": "quiz_generator",
-          "status": "PASS",
-          "title": "題庫動態生成引擎與解析完整性"
-        },
-        {
-          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
-          "id": "leaderboard_points",
-          "status": "PASS",
-          "title": "積分排行榜與每週結算系統"
-        },
-        {
-          "details": "⚠️ 試卷庫中偵測到 56 份破損試卷，建議點擊一鍵清理",
-          "id": "papers_integrity",
-          "status": "WARNING",
-          "title": "全服試卷庫與學生作答歷程完整度"
-        }
-      ],
-      "durationMs": 11,
-      "healthScore": 90,
-      "id": "report_1790394974731",
-      "isScheduled": false,
-      "overallStatus": "WARNING",
-      "summary": "全功能自檢完成：4 項通過、1 項警示、0 項異常，系統總健康評分：90 分。",
-      "timestamp": "2026-09-26T03:56:14.731Z"
+      "summary": "全系統 12 大維度深度自檢完成：11 項通過、1 項警示、0 項異常，系統總健康評分：95 分。",
+      "timestamp": "2026-09-26T04:27:00.684Z"
     }
   ],
   "user_quiz_papers_admin_super_jimmy": [

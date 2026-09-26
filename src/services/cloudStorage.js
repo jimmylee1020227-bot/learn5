@@ -197,12 +197,19 @@ export function initFirebaseRealtimeSync() {
 
           // 若更新的是各玩家即時點數 (leaderboard_players)，自動匯總轉為排行榜陣列並存入快取！
           if (key === 'leaderboard_players') {
-            let playersArr = [];
+            let rawArr = [];
             if (val && typeof val === 'object') {
-              playersArr = Array.isArray(val) ? val : Object.values(val);
+              rawArr = Array.isArray(val) ? val : Object.values(val);
             }
-            playersArr = playersArr
-              .filter(p => p && p.userId)
+            const pMap = new Map();
+            rawArr.forEach(p => {
+              if (!p || !p.userId) return;
+              const existing = pMap.get(p.userId);
+              if (!existing || (p.updatedAt || 0) > (existing.updatedAt || 0) || (p.weeklyPoints || 0) > (existing.weeklyPoints || 0)) {
+                pMap.set(p.userId, p);
+              }
+            });
+            const playersArr = Array.from(pMap.values())
               .sort((a, b) => (b.weeklyPoints || 0) - (a.weeklyPoints || 0));
             const arrStr = JSON.stringify(playersArr);
             safeSetLocalStorage(STORAGE_PREFIX + 'studyhub_weekly_leaderboard', arrStr);
@@ -306,15 +313,31 @@ export async function fetchCloudLeaderboardRaw() {
     const val = snap.val();
     if (val && typeof val === 'object') {
       const arr = Array.isArray(val) ? val : Object.values(val);
-      return arr
-        .filter(p => p && p.userId)
+      const pMap = new Map();
+      arr.forEach(p => {
+        if (!p || !p.userId) return;
+        const existing = pMap.get(p.userId);
+        if (!existing || (p.updatedAt || 0) > (existing.updatedAt || 0) || (p.weeklyPoints || 0) > (existing.weeklyPoints || 0)) {
+          pMap.set(p.userId, p);
+        }
+      });
+      return Array.from(pMap.values())
         .sort((a, b) => (b.weeklyPoints || 0) - (a.weeklyPoints || 0));
     }
     // Fallback: 若 leaderboard_players 尚無，讀取 studyhub_weekly_leaderboard
     const fallbackSnap = await get(ref(db, 'studyhub/studyhub_weekly_leaderboard'));
     const fallbackVal = fallbackSnap.val();
-    if (Array.isArray(fallbackVal)) {
-      return fallbackVal.sort((a, b) => (b.weeklyPoints || 0) - (a.weeklyPoints || 0));
+    if (fallbackVal && typeof fallbackVal === 'object') {
+      const arr = Array.isArray(fallbackVal) ? fallbackVal : Object.values(fallbackVal);
+      const pMap = new Map();
+      arr.forEach(p => {
+        if (!p || !p.userId) return;
+        const existing = pMap.get(p.userId);
+        if (!existing || (p.updatedAt || 0) > (existing.updatedAt || 0)) {
+          pMap.set(p.userId, p);
+        }
+      });
+      return Array.from(pMap.values()).sort((a, b) => (b.weeklyPoints || 0) - (a.weeklyPoints || 0));
     }
     return null;
   } catch (e) {
@@ -2869,11 +2892,15 @@ export async function deleteStudentAccount(targetUserId, operatorUser) {
   updateServerSync('user_registry', userRegistry);
 
   // 2. 從 leaderboard_players 移除
-  const leaderboard = getJson('leaderboard_players', []);
+  const leaderboard = getJson('leaderboard_players', {});
   const nextLeaderboard = (Array.isArray(leaderboard) ? leaderboard : Object.values(leaderboard))
     .filter(p => p && p.userId !== targetUserId);
-  setJson('leaderboard_players', nextLeaderboard);
-  updateServerSync('leaderboard_players', nextLeaderboard);
+  const playerObj = {};
+  nextLeaderboard.forEach(p => {
+    if (p && p.userId) playerObj[p.userId] = p;
+  });
+  setJson('leaderboard_players', playerObj);
+  updateServerSync('leaderboard_players', playerObj);
 
   // 3. 從 recent_practice_stream 移除
   const stream = getJson('recent_practice_stream', []);
@@ -2955,7 +2982,7 @@ export async function purgeAllTestData(operatorUser) {
   updateServerSync('user_registry', userRegistry);
 
   // 2. leaderboard_players
-  const leaderboard = getJson('leaderboard_players', []);
+  const leaderboard = getJson('leaderboard_players', {});
   const cleanLeaderboard = (Array.isArray(leaderboard) ? leaderboard : Object.values(leaderboard))
     .filter(p => {
       const isTest = (p?.userId && (p.userId.includes('test') || testUids.includes(p.userId))) ||
@@ -2964,8 +2991,12 @@ export async function purgeAllTestData(operatorUser) {
       if (isTest) purgedCount++;
       return !isTest;
     });
-  setJson('leaderboard_players', cleanLeaderboard);
-  updateServerSync('leaderboard_players', cleanLeaderboard);
+  const cleanPlayerObj = {};
+  cleanLeaderboard.forEach(p => {
+    if (p && p.userId) cleanPlayerObj[p.userId] = p;
+  });
+  setJson('leaderboard_players', cleanPlayerObj);
+  updateServerSync('leaderboard_players', cleanPlayerObj);
 
   // 3. recent_practice_stream
   const stream = getJson('recent_practice_stream', []);
