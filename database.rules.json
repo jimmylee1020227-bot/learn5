@@ -113,6 +113,11 @@
         ".write": "newData.exists()"
       },
 
+      "all_quiz_papers": {
+        ".read": true,
+        ".write": "newData.exists()"
+      },
+
       "redeemed_ledger": {
         ".read": true,
         ".write": "newData.exists()"

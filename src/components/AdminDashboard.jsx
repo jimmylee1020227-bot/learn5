@@ -34,7 +34,8 @@ import {
   getHealthCheckReports,
   measureCloudPing,
   getAuditLogs,
-  fetchCloudAuditLogs
+  fetchCloudAuditLogs,
+  pushPlayerLeaderboardSync
 } from '../services/cloudStorage';
 import { 
   adminGrantPoints, 

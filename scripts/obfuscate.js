@@ -22,12 +22,11 @@ for (const file of jsFiles) {
 
   const obfuscatedResult = JavaScriptObfuscator.obfuscate(code, {
     compact: true,
-    controlFlowFlattening: true,
-    controlFlowFlatteningThreshold: 0.75,
-    numbersToExpressions: true,
+    controlFlowFlattening: false,
+    numbersToExpressions: false,
     simplify: true,
     stringArray: true,
-    stringArrayEncoding: ['base64', 'rc4'],
+    stringArrayEncoding: ['base64'],
     stringArrayThreshold: 0.8,
     splitStrings: false,
     transformObjectKeys: false,
