@@ -12,8 +12,12 @@ import {
   registerCloudUser,
   purgeAllTestData,
   checkNicknameAvailable,
-  saveUserAvatarToCloud
+  saveUserAvatarToCloud,
+  fetchCloudUserProfile,
+  subscribeToUserProfile
 } from '../services/cloudStorage';
+import { generateInitialsAvatar } from '../utils/avatarHelper.jsx';
+import siteLogo from '../assets/logo.jpg';
 import { 
   redirectToGoogleLogin, 
   parseGoogleAuthCallback, 
@@ -132,8 +136,8 @@ export function AuthProvider({ children }) {
           } catch (_) {}
 
           const resolvedAvatar = savedAvatar || (isJimmy 
-            ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227' 
-            : (googleUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(googleUser.email)}`));
+            ? siteLogo 
+            : (googleUser.avatar || generateInitialsAvatar(resolvedDisplayName, googleUser.email)));
 
           const newUser = {
             id: deterministicId,
@@ -299,6 +303,25 @@ export function AuthProvider({ children }) {
     }
     if (currentUser?.id) {
       subscribeUserRealtimeSync(currentUser.id);
+      // 實時訂閱使用者雲端個人資料節點（包含跨裝置頭像與暱稱）
+      const unsubProfile = subscribeToUserProfile(currentUser.id, (profile) => {
+        if (profile && profile.avatar && profile.avatar !== currentUser.avatar) {
+          console.log('[AuthContext] 偵測到雲端頭像跨裝置更新:', profile.avatar.slice(0, 30));
+          setCurrentUser(prev => {
+            if (!prev) return prev;
+            const next = { ...prev, avatar: profile.avatar, photoURL: profile.avatar, customAvatar: profile.avatar };
+            const safe = { ...next };
+            delete safe.accessToken; delete safe.authProof; delete safe.adminSessionProof;
+            localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safe));
+            localStorage.setItem('studyhub_auth_user', JSON.stringify(safe));
+            if (prev.email) {
+              localStorage.setItem(`studyhub_custom_avatar_${prev.email.toLowerCase()}`, profile.avatar);
+            }
+            return next;
+          });
+        }
+      });
+      return () => unsubProfile();
     }
   }, [currentUser]);
 
@@ -443,14 +466,15 @@ export function AuthProvider({ children }) {
       savedAvatar = localStorage.getItem(avatarKey);
     } catch (_) {}
 
+    const resolvedDisplayName = displayName.trim() || (isJimmy ? '總管理員 (Jimmy)' : cleanEmail.split('@')[0]);
     const resolvedAvatar = savedAvatar || (isJimmy
-      ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227'
-      : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`);
+      ? siteLogo
+      : generateInitialsAvatar(resolvedDisplayName, cleanEmail));
 
     const user = {
       id: deterministicId,
       email: cleanEmail,
-      displayName: displayName.trim() || (isJimmy ? '總管理員 (Jimmy)' : cleanEmail.split('@')[0]),
+      displayName: resolvedDisplayName,
       avatar: resolvedAvatar,
       photoURL: resolvedAvatar,
       customAvatar: savedAvatar || null,
@@ -466,6 +490,21 @@ export function AuthProvider({ children }) {
     localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
     localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
     registerCloudUser(user);
+
+    // 異步向雲端拉取最新自訂個資 (跨裝置漫遊自訂頭像秒級更新)
+    fetchCloudUserProfile(deterministicId).then(profile => {
+      if (profile && profile.avatar && profile.avatar !== resolvedAvatar) {
+        console.log('[directLoginWithEmail] 成功自雲端還原跨裝置自訂頭像');
+        setCurrentUser(prev => {
+          if (!prev || prev.id !== deterministicId) return prev;
+          const next = { ...prev, avatar: profile.avatar, photoURL: profile.avatar, customAvatar: profile.avatar };
+          localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(next));
+          localStorage.setItem('studyhub_auth_user', JSON.stringify(next));
+          localStorage.setItem(`studyhub_custom_avatar_${cleanEmail.toLowerCase()}`, profile.avatar);
+          return next;
+        });
+      }
+    }).catch(() => {});
   };
 
   // 7. 快速切換測試身分（僅限總管理員使用，安全防護：一般使用者無法提權）

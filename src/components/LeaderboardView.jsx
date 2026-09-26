@@ -8,6 +8,7 @@ import {
   fetchCloudLeaderboard 
 } from '../services/leaderboardService';
 import { subscribeToCloudSync } from '../services/cloudStorage';
+import { AvatarImage } from '../utils/avatarHelper.jsx';
 import { 
   Trophy, 
   Clock, 
@@ -244,7 +245,14 @@ export default function LeaderboardView() {
                   {/* 第 2 名 (銀牌) */}
                   <div style={{ textAlign: 'center', order: 1 }}>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={displayBoard[1].avatar} alt={`${displayBoard[1].displayName} 的第二名選手頭像`} style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid var(--theme-border, #17324d)', background: '#dbe5ea' }} />
+                      <AvatarImage 
+                        src={displayBoard[1].avatar} 
+                        name={displayBoard[1].displayName} 
+                        seed={displayBoard[1].id} 
+                        alt={`${displayBoard[1].displayName} 的第二名選手頭像`} 
+                        size={64}
+                        style={{ border: '3px solid var(--theme-border, #17324d)', background: '#dbe5ea' }} 
+                      />
                       <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#dbe5ea', color: '#58717d', border: '1.5px solid var(--theme-border, #17324d)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 900 }}>
                         #2
                       </span>
@@ -257,7 +265,14 @@ export default function LeaderboardView() {
                   <div style={{ textAlign: 'center', order: 2, transform: 'translateY(-14px)' }}>
                     <Crown size={28} color="var(--theme-accent, var(--theme-accent, #ef8354))" style={{ margin: '0 auto 4px' }} />
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={displayBoard[0].avatar} alt={`${displayBoard[0].displayName} 的第一名領先選手頭像`} style={{ width: '80px', height: '80px', borderRadius: '50%', border: '3.5px solid var(--theme-border, #17324d)', background: '#fff7d9', boxShadow: '0 0 0 3px #f7cf68' }} />
+                      <AvatarImage 
+                        src={displayBoard[0].avatar} 
+                        name={displayBoard[0].displayName} 
+                        seed={displayBoard[0].id} 
+                        alt={`${displayBoard[0].displayName} 的第一名領先選手頭像`} 
+                        size={80}
+                        style={{ border: '3.5px solid var(--theme-border, #17324d)', background: '#fff7d9', boxShadow: '0 0 0 3px #f7cf68' }} 
+                      />
                       <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#f7cf68', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid var(--theme-border, #17324d)', padding: '2px 10px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 900 }}>
                         #1 領先
                       </span>
@@ -269,7 +284,14 @@ export default function LeaderboardView() {
                   {/* 第 3 名 (銅牌) */}
                   <div style={{ textAlign: 'center', order: 3 }}>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={displayBoard[2].avatar} alt={`${displayBoard[2].displayName} 的第三名選手頭像`} style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid var(--theme-border, #17324d)', background: '#efc4a5' }} />
+                      <AvatarImage 
+                        src={displayBoard[2].avatar} 
+                        name={displayBoard[2].displayName} 
+                        seed={displayBoard[2].id} 
+                        alt={`${displayBoard[2].displayName} 的第三名選手頭像`} 
+                        size={64}
+                        style={{ border: '3px solid var(--theme-border, #17324d)', background: '#efc4a5' }} 
+                      />
                       <span style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', background: '#efc4a5', color: '#995f3b', border: '1.5px solid var(--theme-border, #17324d)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 900 }}>
                         #3
                       </span>
@@ -310,7 +332,14 @@ export default function LeaderboardView() {
                           #{index + 1}
                         </div>
 
-                        <img src={player.avatar} alt={`${player.displayName} 的選手頭像`} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1.5px solid var(--theme-border, #17324d)' }} />
+                        <AvatarImage 
+                          src={player.avatar} 
+                          name={player.displayName} 
+                          seed={player.id || player.userId} 
+                          alt={`${player.displayName} 的選手頭像`} 
+                          size={40}
+                          style={{ border: '1.5px solid var(--theme-border, #17324d)' }} 
+                        />
 
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -372,7 +401,14 @@ export default function LeaderboardView() {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, minWidth: '260px' }}>
-                  <img src={fame.champion.avatar} alt={`${fame.champion.displayName} 的週總冠軍榮譽頭像`} style={{ width: '56px', height: '56px', borderRadius: '50%', border: '2px solid var(--theme-border, #17324d)' }} />
+                  <AvatarImage 
+                    src={fame.champion.avatar} 
+                    name={fame.champion.displayName} 
+                    seed={fame.champion.id || fame.champion.displayName} 
+                    alt={`${fame.champion.displayName} 的週總冠軍榮譽頭像`} 
+                    size={56}
+                    style={{ border: '2px solid var(--theme-border, #17324d)' }} 
+                  />
                   <div>
                     <div style={{ fontSize: '0.8rem', color: '#78818a', fontWeight: 700 }}>週總冠軍霸主</div>
                     <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>

@@ -532,6 +532,58 @@ function pushServerSync(key, value) {
     const cleanPayload = sanitizeForFirebase(value);
     if (cleanPayload === undefined) return;
 
+    // ── 🛡️ 鋼鐵防覆寫保護 (Anti-Overwrite Protection) ──
+    // 嚴防 user_registry 因單一客戶端快取不足而整包覆寫雲端上百位學生資料
+    if (key === 'user_registry' && typeof cleanPayload === 'object' && cleanPayload !== null) {
+      const localCount = Object.keys(cleanPayload).length;
+      get(ref(db, 'studyhub/user_registry')).then(snap => {
+        const cloudVal = snap.val() || {};
+        const cloudCount = Object.keys(cloudVal).length;
+        if (cloudCount > localCount) {
+          // 雲端資料筆數更多！絕不可覆寫，只能進行聯集合併 (Union Merge)
+          const merged = { ...cloudVal, ...cleanPayload };
+          set(ref(db, 'studyhub/user_registry'), merged).catch(() => {});
+          safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(merged));
+          return;
+        } else {
+          set(ref(db, 'studyhub/user_registry'), cleanPayload).catch(() => {});
+        }
+      }).catch(() => {
+        set(ref(db, 'studyhub/user_registry'), cleanPayload).catch(() => {});
+      });
+      return;
+    }
+
+    // 嚴防 quiz_papers / all_quiz_papers 因本地只有少數考卷而覆蓋雲端現存上百份考卷
+    if (key === 'quiz_papers' || key === 'all_quiz_papers') {
+      const localList = Array.isArray(cleanPayload) ? cleanPayload : Object.values(cleanPayload || {});
+      const localCount = localList.length;
+      get(ref(db, 'studyhub/quiz_papers')).then(snap => {
+        const cloudVal = snap.val() || {};
+        const cloudList = Array.isArray(cloudVal) ? cloudVal : Object.values(cloudVal);
+        if (cloudList.length > localCount) {
+          // 雲端試卷更多，絕不可覆寫，只能以 ID 進行聯集合併
+          const paperMap = new Map();
+          cloudList.forEach(p => { if (p && p.id) paperMap.set(p.id, p); });
+          localList.forEach(p => { if (p && p.id) paperMap.set(p.id, p); });
+          const mergedList = Array.from(paperMap.values()).sort((a, b) => 
+            new Date(b.completedAt || b.timestamp || 0) - new Date(a.completedAt || a.timestamp || 0)
+          );
+          const mergedObj = {};
+          mergedList.forEach(p => { mergedObj[p.id] = p; });
+          set(ref(db, 'studyhub/quiz_papers'), mergedObj).catch(() => {});
+          set(ref(db, 'studyhub/all_quiz_papers'), mergedList).catch(() => {});
+          safeSetLocalStorage(STORAGE_PREFIX + 'all_quiz_papers', JSON.stringify(mergedList));
+          return;
+        } else {
+          set(ref(db, `studyhub/${key}`), cleanPayload).catch(() => {});
+        }
+      }).catch(() => {
+        set(ref(db, `studyhub/${key}`), cleanPayload).catch(() => {});
+      });
+      return;
+    }
+
     const r = ref(db, `studyhub/${key}`);
     set(r, cleanPayload).catch(err => {
       console.error(`[Firebase Write Error on key: ${key}]`, err);
@@ -541,19 +593,57 @@ function pushServerSync(key, value) {
   }
 }
 
+import { INITIAL_USER_REGISTRY, INITIAL_QUIZ_PAPERS } from '../data/cloudSnapshot.js';
+
 const memoryStore = new Map();
 
+// 初始化種入 103 位學員名冊與 134 份試卷快照，保證 0 毫秒零等待秒顯，杜絕任何空資料狀態
+if (INITIAL_USER_REGISTRY && Object.keys(INITIAL_USER_REGISTRY).length > 0) {
+  memoryStore.set(STORAGE_PREFIX + 'user_registry', INITIAL_USER_REGISTRY);
+}
+if (Array.isArray(INITIAL_QUIZ_PAPERS) && INITIAL_QUIZ_PAPERS.length > 0) {
+  memoryStore.set(STORAGE_PREFIX + 'all_quiz_papers', INITIAL_QUIZ_PAPERS);
+  const quizObj = {};
+  INITIAL_QUIZ_PAPERS.forEach(p => { if (p && p.id) quizObj[p.id] = p; });
+  memoryStore.set(STORAGE_PREFIX + 'quiz_papers', quizObj);
+}
+
 export function getJson(key, defaultValue) {
+  let localVal = null;
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       const raw = window.localStorage.getItem(STORAGE_PREFIX + key);
-      if (raw) return JSON.parse(raw);
+      if (raw) localVal = JSON.parse(raw);
     }
   } catch (e) {}
+
   if (memoryStore.has(STORAGE_PREFIX + key)) {
-    return memoryStore.get(STORAGE_PREFIX + key);
+    const memVal = memoryStore.get(STORAGE_PREFIX + key);
+    // 🛡️ 鋼鐵聯集守護：若快照/記憶體中的名冊或試卷筆數更多，自動保護不被本地空快取縮水！
+    if (key === 'user_registry' && memVal && typeof memVal === 'object') {
+      const memCount = Object.keys(memVal).length;
+      const localCount = localVal ? Object.keys(localVal).length : 0;
+      if (memCount > localCount) {
+        const merged = { ...memVal, ...(localVal || {}) };
+        memoryStore.set(STORAGE_PREFIX + key, merged);
+        return merged;
+      }
+    }
+    if ((key === 'all_quiz_papers' || key === 'quiz_papers') && memVal) {
+      const memList = Array.isArray(memVal) ? memVal : Object.values(memVal);
+      const localList = Array.isArray(localVal) ? localVal : Object.values(localVal || {});
+      if (memList.length > localList.length) {
+        const map = new Map();
+        memList.forEach(p => { if (p && p.id) map.set(p.id, p); });
+        localList.forEach(p => { if (p && p.id) map.set(p.id, p); });
+        const merged = Array.from(map.values());
+        return key === 'all_quiz_papers' ? merged : Object.fromEntries(map.entries());
+      }
+    }
+    if (localVal !== null && localVal !== undefined) return localVal;
+    return memVal;
   }
-  return defaultValue;
+  return localVal !== null && localVal !== undefined ? localVal : defaultValue;
 }
 
 export function setJson(key, value) {
@@ -708,7 +798,7 @@ export async function fetchCloudAdminsList() {
   try {
     const snap = await Promise.race([
       get(ref(db, 'studyhub/admins_list')),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
     ]);
     const val = snap.val();
     if (val) {
@@ -1102,21 +1192,28 @@ export async function fetchAllCloudQuizPapers() {
     localAll.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
   }
 
-  // 2. 向 Firebase 雲端直接讀取 quiz_papers 節點 (增加 2.5 秒超時保護，避免長卡死)
+  // 2. 向 Firebase 雲端直接讀取 quiz_papers 與 all_quiz_papers 節點 (增加 12 秒寬裕保護與雙節點聯集)
   if (db) {
     try {
-      const snap = await Promise.race([
-        get(ref(db, 'studyhub/quiz_papers')),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500))
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 12000));
+      const [snapPapers, snapAll] = await Promise.race([
+        Promise.allSettled([
+          get(ref(db, 'studyhub/quiz_papers')),
+          get(ref(db, 'studyhub/all_quiz_papers'))
+        ]),
+        timeoutPromise
       ]);
-      const val = snap?.val();
-      if (val && typeof val === 'object') {
-        const list = Array.isArray(val) ? val : Object.values(val);
-        list.forEach(p => {
-          if (p && p.id) {
-            papersMap.set(p.id, p);
-          }
-        });
+
+      if (snapPapers && snapPapers.status === 'fulfilled' && snapPapers.value?.exists()) {
+        const val = snapPapers.value.val();
+        const list = Array.isArray(val) ? val : Object.values(val || {});
+        list.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
+      }
+
+      if (snapAll && snapAll.status === 'fulfilled' && snapAll.value?.exists()) {
+        const val = snapAll.value.val();
+        const list = Array.isArray(val) ? val : Object.values(val || {});
+        list.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
       }
     } catch (e) {
       console.warn('[Fetch Cloud Quiz Papers Error / Timeout]', e);
@@ -1205,7 +1302,7 @@ export async function fetchCloudUserQuizPapers(userId) {
     try {
       const snap = await Promise.race([
         get(ref(db, `studyhub/${userPapersKey}`)),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
       ]);
       const val = snap.val();
       if (val) {
@@ -1216,7 +1313,7 @@ export async function fetchCloudUserQuizPapers(userId) {
       if (papersMap.size === 0) {
         const snapAll = await Promise.race([
           get(ref(db, 'studyhub/quiz_papers')),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
         ]);
         const valAll = snapAll?.val();
         if (valAll && typeof valAll === 'object') {
@@ -1358,7 +1455,7 @@ export async function fetchCloudUserAllMistakesAndLogs(userId, userName, userSch
           get(ref(db, `studyhub/practice_history_${userId}`)),
           get(ref(db, `studyhub/mistake_notebook_${userId}`))
         ]),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
       ]);
 
       const hist = histSnap.val();
@@ -1723,7 +1820,7 @@ export async function fetchCloudUserRegistry() {
   return getJson('user_registry', {});
 }
 
-// 註冊或更新學生雲端資料至註冊名冊 (確保跨裝置實名制且管理員可見)
+// 註冊或更新學生雲端資料至註冊名冊 (確保跨裝置實名制且管理員可見，具備自訂頭像防洗掉鋼鐵鎖)
 export function registerCloudUser(user) {
   if (!user || !user.id) return;
   const userPayload = {
@@ -1731,6 +1828,7 @@ export function registerCloudUser(user) {
     email: user.email || '',
     name: user.displayName || user.email?.split('@')[0] || '國中同學',
     avatar: user.avatar || '',
+    photoURL: user.avatar || '',
     role: user.role || 'student',
     school: user.school || (user.role === 'super_admin' ? '系統總管理員' : '會考戰友'),
     lastActive: new Date().toISOString()
@@ -1738,30 +1836,87 @@ export function registerCloudUser(user) {
 
   // 1. 同步更新本地端
   const registry = getJson('user_registry', {});
-  registry[user.id] = { ...(registry[user.id] || {}), ...userPayload };
+  const existingLocal = registry[user.id] || {};
+  // 若本地原有自訂頭像而新 payload 為空，保留原有頭像
+  if (!userPayload.avatar && existingLocal.avatar) {
+    userPayload.avatar = existingLocal.avatar;
+    userPayload.photoURL = existingLocal.avatar;
+  }
+  registry[user.id] = { ...existingLocal, ...userPayload };
   safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(registry));
 
-  // 2. 直接寫入 Firebase 單一使用者節點，避免整包覆寫造成 Racing Condition
+  // 2. 寫入 Firebase 單一使用者節點 (使用 update 且嚴防覆蓋雲端自訂頭像)
   if (db && typeof window !== 'undefined') {
     try {
       const nodeRef = ref(db, `studyhub/user_registry/${user.id}`);
-      set(nodeRef, userPayload).catch(e => console.warn('Registry sync failed', e));
+      get(nodeRef).then(snap => {
+        const cloudData = snap.val() || {};
+        const updates = { ...userPayload };
+        // 🛡️ 鋼鐵防自訂頭像覆寫鎖：若雲端已有自訂頭像，而傳入的值為空或預設，嚴禁覆蓋雲端頭像！
+        if (cloudData.avatar && (!updates.avatar || updates.avatar.includes('dicebear.com'))) {
+          updates.avatar = cloudData.avatar;
+          updates.photoURL = cloudData.avatar;
+          // 反向同步回本地
+          registry[user.id].avatar = cloudData.avatar;
+          registry[user.id].photoURL = cloudData.avatar;
+          safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(registry));
+          if (user.email) {
+            safeSetLocalStorage(`studyhub_custom_avatar_${user.email.toLowerCase()}`, cloudData.avatar);
+          }
+        }
+        update(nodeRef, updates).catch(e => console.warn('Registry update failed', e));
+      }).catch(() => {
+        set(nodeRef, userPayload).catch(e => console.warn('Registry sync failed', e));
+      });
     } catch(err) {}
   }
 }
 
-// 取得使用者的雲端個資 (用於跨裝置登入時還原其自訂名稱)
+// 取得使用者的雲端個資 (用於跨裝置登入時還原其自訂名稱與自訂頭像)
 export async function fetchCloudUserProfile(userId) {
   if (!db || !userId || userId === 'guest_student') return null;
   try {
     const snap = await get(ref(db, `studyhub/user_registry/${userId}`));
     if (snap.exists()) {
-      return snap.val();
+      const profile = snap.val();
+      if (profile && profile.avatar && profile.email) {
+        safeSetLocalStorage(`studyhub_custom_avatar_${profile.email.toLowerCase()}`, profile.avatar);
+      }
+      return profile;
+    }
+    // 備援：向排行榜節點查詢該玩家個資
+    const lbSnap = await get(ref(db, `studyhub/leaderboard_players/${userId}`));
+    if (lbSnap.exists()) {
+      const lbData = lbSnap.val();
+      return {
+        id: userId,
+        name: lbData.displayName || lbData.name,
+        avatar: lbData.avatar,
+        school: lbData.school || '會考戰友'
+      };
     }
   } catch (e) {
     console.warn('[Fetch Cloud User Profile Error]', e);
   }
   return null;
+}
+
+// 實時訂閱使用者雲端個人資料變更 (跨裝置修改頭像秒級即時同步)
+export function subscribeToUserProfile(userId, callback) {
+  if (!db || !userId || userId === 'guest_student' || typeof window === 'undefined') return () => {};
+  try {
+    const nodeRef = ref(db, `studyhub/user_registry/${userId}`);
+    return onValue(nodeRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        if (val && typeof callback === 'function') {
+          callback(val);
+        }
+      }
+    });
+  } catch (e) {
+    return () => {};
+  }
 }
 
 // ─── 儲存並雲端同步用戶自訂頭像 (即時同步至 user_registry 與排行榜) ───
@@ -1797,11 +1952,11 @@ export async function saveUserAvatarToCloud(userId, avatarUrl, currentUser = nul
   }
 
   // 3. 雲端同步至 Firebase Realtime Database
-  if (db && typeof window !== 'undefined') {
+  if (db) {
     try {
       // 更新 user_registry
       const userRef = ref(db, `studyhub/user_registry/${userId}`);
-      update(userRef, {
+      await update(userRef, {
         avatar: avatarUrl,
         photoURL: avatarUrl,
         lastActive: new Date().toISOString()
@@ -2000,7 +2155,7 @@ export async function fetchCloudQuestionReports() {
   try {
     const snap = await Promise.race([
       get(ref(db, 'studyhub/question_reports')),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
     ]);
     const val = snap.val();
     if (val) {
@@ -2281,7 +2436,7 @@ export async function fetchCloudRedemptionCodes() {
         get(ref(db, 'studyhub/redemption_codes')),
         get(ref(db, 'studyhub/deleted_redemption_codes'))
       ]),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3500))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
     ]);
     const delVal = delSnap.val();
     if (delVal) {
@@ -2391,7 +2546,7 @@ export async function fetchCloudUserRedeemedCodes(userId) {
   try {
     const snap = await Promise.race([
       get(ref(db, `studyhub/redeemed_history_${userId}`)),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
     ]);
     const val = snap.val();
     if (Array.isArray(val)) {
@@ -2564,7 +2719,7 @@ export async function fetchCloudAdminNotifications() {
   try {
     const snap = await Promise.race([
       get(ref(db, 'studyhub/admin_notifications')),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3500))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
     ]);
     const val = snap.val();
     if (val) {
@@ -2640,7 +2795,7 @@ export async function fetchCloudCommunityPosts() {
   try {
     const snap = await Promise.race([
       get(ref(db, 'studyhub/community_posts')),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
     ]);
     const val = snap.val();
     if (val) {
@@ -3629,7 +3784,7 @@ export async function fetchCloudNoteReports() {
   try {
     const snap = await Promise.race([
       get(ref(db, 'studyhub/notes_reports')),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
     ]);
     const val = snap.val();
     if (val) {
@@ -3688,7 +3843,7 @@ export async function fetchCloudCustomNotes() {
   try {
     const snap = await Promise.race([
       get(ref(db, 'studyhub/custom_notes')),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
     ]);
     const val = snap.val();
     if (val) {

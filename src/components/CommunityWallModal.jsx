@@ -12,6 +12,7 @@ import {
   checkIsAdmin 
 } from '../services/cloudStorage';
 import { MessageSquareHeart, Heart, Send, Sparkles, X, User, Trash2, Flag, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { AvatarImage } from '../utils/avatarHelper.jsx';
 
 const REPORT_REASONS = [
   '惡意洗版、重複發文或無意義灌水',

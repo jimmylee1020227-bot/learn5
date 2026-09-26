@@ -39,6 +39,7 @@ import {
   getNoteReports
 } from '../services/cloudStorage';
 import AdminNotesManager from './AdminNotesManager';
+import { AvatarImage } from '../utils/avatarHelper.jsx';
 import { 
   adminGrantPoints, 
   adminGrantTickets, 
@@ -342,7 +343,7 @@ function AdminDashboard() {
         );
         const results = await Promise.race([
           Promise.all(fetchPromises),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
         ]);
         
         const mergedLogs = [];
@@ -2400,10 +2401,11 @@ function AdminDashboard() {
                     {/* 卡片抬頭資訊 */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', borderBottom: '1px solid #f1eae0', paddingBottom: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <img 
-                          src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(log.userName || 'student')}`}
-                          alt="avatar" 
-                          style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid #ded3c5' }} 
+                        <AvatarImage 
+                          name={log.userName || '同學'}
+                          seed={log.userId || log.userName || 'student'}
+                          size={32}
+                          style={{ border: '1px solid #ded3c5' }} 
                         />
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

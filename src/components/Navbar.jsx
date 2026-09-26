@@ -8,6 +8,7 @@ import { SUPER_ADMIN_EMAIL, checkIsAdmin, checkIsSuperAdmin, getRedemptionCodes,
 import NotificationBellModal from './NotificationBellModal';
 import AvatarEditModal from './AvatarEditModal';
 import siteLogo from '../assets/logo.jpg';
+import { AvatarImage } from '../utils/avatarHelper.jsx';
 import { 
   GraduationCap, 
   Sparkles, 
@@ -473,15 +474,14 @@ export default function Navbar({
                 onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 title="點擊更換個人頭像 (自動跨裝置雲端同步)"
               >
-                <img 
-                  src={currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email)}`} 
+                <AvatarImage 
+                  src={currentUser.avatar}
+                  name={currentUser.displayName || currentUser.name || '同學'}
+                  seed={currentUser.email || currentUser.id}
                   alt={currentUser.displayName}
+                  size={34}
                   style={{ 
-                    width: '34px', 
-                    height: '34px', 
-                    borderRadius: '50%', 
                     border: '2px solid var(--theme-border, #17324d)',
-                    objectFit: 'cover',
                     background: '#ffffff'
                   }} 
                 />
@@ -640,10 +640,13 @@ export default function Navbar({
               gap: '10px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <img
-                  src={currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email)}`}
+                <AvatarImage
+                  src={currentUser.avatar}
+                  name={currentUser.displayName || currentUser.name || '同學'}
+                  seed={currentUser.email || currentUser.id}
                   alt={currentUser.displayName}
-                  style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid var(--theme-border, #17324d)', objectFit: 'cover' }}
+                  size={38}
+                  style={{ border: '2px solid var(--theme-border, #17324d)' }}
                 />
                 <div>
                   <div style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--theme-border, #17324d)' }}>

@@ -13,8 +13,9 @@ import {
   Smile
 } from 'lucide-react';
 import siteLogo from '../assets/logo.jpg';
+import { PRESET_AVATARS as BUILTIN_AVATARS, generateInitialsAvatar, AvatarImage } from '../utils/avatarHelper.jsx';
 
-// 精選預設頭像庫
+// 精選預設頭像庫 (全部採用內建零依賴 SVG 與官方標誌，秒開絕不破圖)
 const PRESET_AVATARS = [
   {
     category: '學習網專屬',
@@ -24,36 +25,15 @@ const PRESET_AVATARS = [
   },
   {
     category: '可愛萌寵與學霸獸',
-    items: [
-      { id: 'pet_shiba', name: '柴犬同學', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=shiba_smart' },
-      { id: 'pet_cat', name: '橘貓學長', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=clever_kitty' },
-      { id: 'pet_panda', name: '功夫熊貓', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=panda_ace' },
-      { id: 'pet_owl', name: '智慧貓頭鷹', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=wise_owl' },
-      { id: 'pet_penguin', name: '博士企鵝', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=penguin_dr' },
-      { id: 'pet_fox', name: '靈巧赤狐', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=swift_fox' }
-    ]
+    items: BUILTIN_AVATARS.filter(a => a.category === '萌寵學伴')
   },
   {
-    category: '科技機器人',
-    items: [
-      { id: 'bot_blue', name: '運算藍俠', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=cyber_blue' },
-      { id: 'bot_gold', name: '金色冠軍', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=gold_champion' },
-      { id: 'bot_green', name: '自然綠影', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=nature_spark' },
-      { id: 'bot_purple', name: '量子紫光', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=quantum_violet' },
-      { id: 'bot_fire', name: '烈焰戰魂', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=flame_heart' },
-      { id: 'bot_silver', name: '未來銀翼', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=silver_wing' }
-    ]
+    category: '科技 AI 機器人',
+    items: BUILTIN_AVATARS.filter(a => a.category === 'AI 機器人')
   },
   {
-    category: '學霸卡通人物',
-    items: [
-      { id: 'stu_boy1', name: '數學資優生', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=math_genius' },
-      { id: 'stu_girl1', name: '英文榜首', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=english_star' },
-      { id: 'stu_boy2', name: '理化實驗家', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=science_lab' },
-      { id: 'stu_girl2', name: '國文才女', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=literature_gem' },
-      { id: 'stu_glasses', name: '眼鏡學霸', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=spectacle_pro' },
-      { id: 'stu_winner', name: '滿分狀元', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=top_scorer' }
-    ]
+    category: '狀元學霸專屬',
+    items: BUILTIN_AVATARS.filter(a => a.category === '狀元學霸')
   }
 ];
 

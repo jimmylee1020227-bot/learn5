@@ -148,7 +148,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz, onStartQuizTab }) 
     if (forceCloud || localHistory.length === 0 || localPapers.length === 0) {
       setIsLoading(true);
       try {
-        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500));
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000));
         const [cloudPapers, cloudHistory, cloudMistakes] = await Promise.race([
           Promise.all([
             fetchCloudUserQuizPapers(userId),
