@@ -25,7 +25,7 @@ async function testAllFeatures() {
   }
 
   // 2. 12 大維度全系統智能自檢
-  console.log('\n[2/6] 執行全服 12 大維度深度自檢 (runSystemHealthCheck)...');
+  console.log('\n[2/6] 執行全服 20 大維度深度自檢 (runSystemHealthCheck)...');
   const healthReport = await runSystemHealthCheck();
   console.log(`🛡️ 自檢狀態: ${healthReport.overallStatus}, 總體分數: ${healthReport.healthScore}/100`);
   console.log(`📋 檢測項目清單 (共 ${healthReport.checks.length} 項):`);
