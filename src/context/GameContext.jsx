@@ -56,6 +56,8 @@ export function GameProvider({ children }) {
   const isHydratedRef = React.useRef(false);
   const isRemoteSyncingRef = React.useRef(false);
 
+  const getDailyClaimKey = (uid, dateStr) => `studyhub_daily_claim_lock_${uid}_${dateStr}`;
+
   // 跨裝置同步全服設定與學生個人遊戲狀態 (監聽遠端 Firebase 與其他分頁)
   useEffect(() => {
     const unsub = subscribeToCloudSync((data) => {
@@ -64,6 +66,13 @@ export function GameProvider({ children }) {
         isRemoteSyncingRef.current = true;
         const remoteData = getJson(`${STORAGE_GAME_KEY}_${userId}`, null);
         if (remoteData) {
+          const todayStr = getTaiwanDateStr();
+          if (remoteData.lastDailyClaimDate === todayStr) {
+            hasClaimedTodayRef.current = true;
+            if (typeof window !== 'undefined') {
+              window.localStorage.setItem(getDailyClaimKey(userId, todayStr), 'claimed');
+            }
+          }
           setLocalGameState(prev => {
             const remoteTime = remoteData.updatedAt || 0;
             const localTime = prev.updatedAt || 0;
@@ -72,7 +81,8 @@ export function GameProvider({ children }) {
               return {
                 ...remoteData,
                 tickets: remoteData.tickets ?? 0,
-                pityCount: remoteData.pityCount ?? prev.pityCount ?? 0
+                pityCount: remoteData.pityCount ?? prev.pityCount ?? 0,
+                lastDailyClaimDate: remoteData.lastDailyClaimDate || prev.lastDailyClaimDate || ''
               };
             }
             return prev;
@@ -88,27 +98,41 @@ export function GameProvider({ children }) {
   // 當 userId 改變 (例如登入後或跨裝置切換)，主動自 Firebase 雲端讀取最新狀態
   useEffect(() => {
     isHydratedRef.current = false;
-    hasClaimedTodayRef.current = false;
+    const todayStr = getTaiwanDateStr();
+    const claimKey = getDailyClaimKey(userId, todayStr);
+    const alreadyClaimed = typeof window !== 'undefined' && window.localStorage.getItem(claimKey) === 'claimed';
+    hasClaimedTodayRef.current = alreadyClaimed;
+
     const localCached = getJson(`${STORAGE_GAME_KEY}_${userId}`, null);
     if (localCached) {
+      if (localCached.lastDailyClaimDate === todayStr) {
+        hasClaimedTodayRef.current = true;
+      }
       setLocalGameState(localCached);
     } else {
       setLocalGameState(DEFAULT_GAME_STATE);
     }
     
     if (userId && userId !== 'guest_student') {
-      // 主動自 Firebase 雲端拉取確認，新設備或時間戳較新者為準（雲端有抽獎券時優先採納）
+      // 主動自 Firebase 雲端拉取確認，新設備或時間戳較新者為準（嚴格基於時間戳合併，防刷票券）
       fetchCloudUserGameState(userId).then(cloudState => {
         if (cloudState) {
+          if (cloudState.lastDailyClaimDate === todayStr) {
+            hasClaimedTodayRef.current = true;
+            if (typeof window !== 'undefined') {
+              window.localStorage.setItem(claimKey, 'claimed');
+            }
+          }
           setLocalGameState(prev => {
             const cloudTime = cloudState.updatedAt || 0;
             const localTime = prev.updatedAt || 0;
-            const isLocalEmpty = !localCached || (prev.tickets === 0 && (cloudState.tickets || 0) > 0);
-            if (isLocalEmpty || cloudTime >= localTime) {
+            // 嚴格依照時間戳更新，絕不能因 prev.tickets === 0 覆蓋已花費的票券
+            if (!localCached || cloudTime >= localTime) {
               const merged = {
                 ...cloudState,
                 tickets: cloudState.tickets ?? 0,
-                pityCount: cloudState.pityCount ?? prev.pityCount ?? 0
+                pityCount: cloudState.pityCount ?? prev.pityCount ?? 0,
+                lastDailyClaimDate: cloudState.lastDailyClaimDate || prev.lastDailyClaimDate || ''
               };
               setJson(`${STORAGE_GAME_KEY}_${userId}`, merged);
               return merged;
@@ -125,14 +149,32 @@ export function GameProvider({ children }) {
     }
   }, [userId]);
 
-  // 每日贈送一張抽獎券邏輯 (已水合後才觸發，嚴格採用台北 UTC+8 時區防誤判)
+  // 每日贈送一張抽獎券邏輯 (已水合後才觸發，嚴格採用台北 UTC+8 時區防誤判，杜絕跨端重覆領取)
   useEffect(() => {
     if (!isHydratedRef.current) return;
+    if (!userId || userId === 'guest_student') {
+      // 訪客不給予每日累積抽獎券，需正式登入才能享有每日簽到領券
+      return;
+    }
     const todayStr = getTaiwanDateStr();
-    
-    // 如果今天還沒領過，且同步鎖定還沒開啟，才給予抽獎券
-    if (gameState.lastDailyClaimDate !== todayStr && !hasClaimedTodayRef.current) {
-      hasClaimedTodayRef.current = true; // 立即鎖定，防止 React 18 兩次執行
+    const claimKey = getDailyClaimKey(userId, todayStr);
+    const alreadyClaimedInStorage = typeof window !== 'undefined' && window.localStorage.getItem(claimKey) === 'claimed';
+
+    // 若今日已經領取過，立即鎖定並防刷退出
+    if (gameState.lastDailyClaimDate === todayStr || alreadyClaimedInStorage) {
+      hasClaimedTodayRef.current = true;
+      if (!alreadyClaimedInStorage && typeof window !== 'undefined') {
+        window.localStorage.setItem(claimKey, 'claimed');
+      }
+      return;
+    }
+
+    // 只有在當日完全未領取，且尚未觸發過時，才原子化發放 1 張
+    if (!hasClaimedTodayRef.current) {
+      hasClaimedTodayRef.current = true;
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(claimKey, 'claimed');
+      }
       setLocalGameState(prev => {
         if (prev.lastDailyClaimDate === todayStr) return prev;
         const nextState = {
@@ -145,8 +187,6 @@ export function GameProvider({ children }) {
         updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, nextState);
         return nextState;
       });
-    } else if (gameState.lastDailyClaimDate === todayStr) {
-      hasClaimedTodayRef.current = true; // 已經是今天，鎖定
     }
   }, [gameState.lastDailyClaimDate, userId]);
 

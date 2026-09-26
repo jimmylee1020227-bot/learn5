@@ -25,7 +25,15 @@ import {
   SUPER_ADMIN_EMAIL,
   getAdminsList,
   checkIsAdmin,
-  getJson
+  getJson,
+  deleteStudentAccount,
+  purgeAllTestData,
+  runSystemHealthCheck,
+  getHealthCheckReports,
+  exportFullSystemBackup,
+  measureCloudPing,
+  getAuditLogs,
+  fetchCloudAuditLogs
 } from '../services/cloudStorage';
 import { 
   adminGrantPoints, 
@@ -57,10 +65,18 @@ import {
   RefreshCw,
   Zap,
   Clock,
-  FileText
+  FileText,
+  Activity,
+  HardDrive,
+  Download,
+  CheckSquare,
+  ShieldCheck,
+  Server,
+  UserX,
+  Trash
 } from 'lucide-react';
 
-export default function AdminDashboard() {
+function AdminDashboard() {
   const { currentUser } = useAuth();
   const { globalSettings } = useGame();
 
@@ -99,6 +115,34 @@ export default function AdminDashboard() {
   const [newCodeExpires, setNewCodeExpires] = useState('2028-12-31');
   const [codeActionMsg, setCodeActionMsg] = useState('');
 
+  // 智能巡檢與健康度狀態
+  const [healthReports, setHealthReports] = useState(() => getHealthCheckReports());
+  const [latestHealthReport, setLatestHealthReport] = useState(() => getHealthCheckReports()[0] || null);
+  const [isHealthChecking, setIsHealthChecking] = useState(false);
+  const [healthCheckMsg, setHealthCheckMsg] = useState('');
+
+  // 雲端 Ping 延遲狀態
+  const [cloudPing, setCloudPing] = useState({ pingMs: null, status: 'checking', message: '測速中...' });
+
+  // 審計日誌狀態
+  const [auditLogs, setAuditLogs] = useState(() => getAuditLogs(currentUser));
+  const [auditSearchKeyword, setAuditSearchKeyword] = useState('');
+  const [auditActionFilter, setAuditActionFilter] = useState('ALL');
+
+  // 帳號註銷確認對話框狀態
+  const [deletingStudent, setDeletingStudent] = useState(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [accountActionNotice, setAccountActionNotice] = useState('');
+
+  // 測資清理狀態
+  const [isPurgingTestData, setIsPurgingTestData] = useState(false);
+  const [purgeNotice, setPurgeNotice] = useState('');
+
+  // 備份匯出狀態
+  const [isExportingBackup, setIsExportingBackup] = useState(false);
+  const [backupNotice, setBackupNotice] = useState('');
+
   // 獎勵發放狀態
   const [targetPlayerId, setTargetPlayerId] = useState('ALL');
   const [pointsToGrant, setPointsToGrant] = useState(50);
@@ -116,17 +160,71 @@ export default function AdminDashboard() {
   const [editExpText, setEditExpText] = useState('');
   const [qActionMsg, setQActionMsg] = useState('');
 
+  const refreshAll = () => {
+    setReports(getQuestionReports());
+    setPlayers(getLeaderboard());
+    setAllHistory(getUserPracticeHistory());
+    setQuizPapers(getJson('all_quiz_papers', []));
+    setRegisteredStudents(getRegisteredStudents());
+    setRecentStream(getRecentPracticeStream());
+    setRedemptionCodes(getRedemptionCodes());
+    setAdminNotifications(getAdminNotifications());
+    setAuditLogs(getAuditLogs(currentUser));
+    setHealthReports(getHealthCheckReports());
+  };
+
+  // 即時 Ping 監測
+  const checkPing = async () => {
+    try {
+      const res = await measureCloudPing();
+      setCloudPing(res);
+    } catch (e) {
+      setCloudPing({ pingMs: -1, status: 'error', message: '連線異常' });
+    }
+  };
+
   useEffect(() => {
-    const refreshAll = () => {
-      setReports(getQuestionReports());
-      setPlayers(getLeaderboard());
-      setAllHistory(getUserPracticeHistory());
-      setQuizPapers(getJson('all_quiz_papers', []));
-      setRegisteredStudents(getRegisteredStudents());
-      setRecentStream(getRecentPracticeStream());
-      setRedemptionCodes(getRedemptionCodes());
-      setAdminNotifications(getAdminNotifications());
+    checkPing();
+    const pingTimer = setInterval(checkPing, 30000);
+    return () => clearInterval(pingTimer);
+  }, []);
+
+  // 每晚 12 點 (00:00:00 台北時間 UTC+8) 自動在背景執行全系統智能深度巡檢
+  useEffect(() => {
+    let midnightTimer = null;
+    const scheduleMidnightDiagnostic = () => {
+      const now = new Date();
+      // 計算距離台北時間明日 00:00:00 的時差
+      const taipeiOffsetMin = 8 * 60;
+      const localOffsetMin = -now.getTimezoneOffset();
+      const diffMin = taipeiOffsetMin - localOffsetMin;
+      const taipeiNow = new Date(now.getTime() + diffMin * 60 * 1000);
+
+      const nextMidnight = new Date(taipeiNow);
+      nextMidnight.setHours(24, 0, 0, 0);
+      const msUntilMidnight = Math.max(1000, nextMidnight.getTime() - taipeiNow.getTime());
+
+      midnightTimer = setTimeout(async () => {
+        console.log('[Midnight Auto Diagnostic Running...]');
+        try {
+          const rep = await runSystemHealthCheck(currentUser, true);
+          setLatestHealthReport(rep);
+          setHealthReports(getHealthCheckReports());
+          setAuditLogs(getAuditLogs(currentUser));
+        } catch (e) {
+          console.error('[Scheduled Midnight Health Check Error]', e);
+        }
+        scheduleMidnightDiagnostic();
+      }, msUntilMidnight);
     };
+
+    scheduleMidnightDiagnostic();
+    return () => {
+      if (midnightTimer) clearTimeout(midnightTimer);
+    };
+  }, [currentUser]);
+
+  useEffect(() => {
     refreshAll();
 
     // 初次載入主動調閱 Firebase 雲端最新排行榜、全體學生做題錯題歷史與所有完整試卷
@@ -138,6 +236,9 @@ export default function AdminDashboard() {
     });
     fetchAllCloudQuizPapers().then(papers => {
       if (papers && papers.length > 0) setQuizPapers(papers);
+    });
+    fetchCloudAuditLogs(currentUser).then(logs => {
+      if (logs && logs.length > 0) setAuditLogs(logs);
     });
 
     const unsub = subscribeToCloudSync((ev) => {
@@ -651,13 +752,13 @@ export default function AdminDashboard() {
 
   // 6. 搜尋題庫並修改
   const handleInspectQuestion = () => {
-    const qId = searchQId.trim().toUpperCase();
+    const qId = (searchQId || '').trim().toUpperCase();
     const parts = qId.split('-');
     if (parts.length >= 5 && parts[0] === 'Q') {
-      const gradeId = parts[1].toLowerCase();
+      const gradeId = (parts[1] || '').toLowerCase();
       const subjMap = { 'MA': 'math', 'EN': 'english', 'SC': 'science', 'SO': 'social', 'CH': 'chinese' };
       const subjectId = subjMap[parts[2]] || 'math';
-      const unitCode = parts[3].toLowerCase();
+      const unitCode = (parts[3] || '').toLowerCase();
       const gradeNum = gradeId.replace('g', '');
       const prefixMap = { 'math': 'ma', 'english': 'en', 'science': 'sc', 'social': 'so', 'chinese': 'zh' };
       const unitId = `${prefixMap[subjectId]}-${gradeNum}-${unitCode}`;
@@ -677,6 +778,99 @@ export default function AdminDashboard() {
       setQActionMsg('');
     } else {
       setQActionMsg('❌ 無效的題目 ID 格式！請輸入正確的格式 (例如: Q-G7-MA-U1-0015)');
+    }
+  };
+
+  // 7. 執行全系統智能深度自檢
+  const handleRunHealthCheck = async () => {
+    setIsHealthChecking(true);
+    setHealthCheckMsg('正在執行深度自檢：Firebase 雲端連線、抽獎券防刷原子鎖、五科題目生成、排行榜積分、試卷完整度...');
+    try {
+      const rep = await runSystemHealthCheck(currentUser, false);
+      setLatestHealthReport(rep);
+      setHealthReports(getHealthCheckReports());
+      setAuditLogs(getAuditLogs(currentUser));
+      setHealthCheckMsg(`✅ 巡檢完成！系統總健康評分：${rep.healthScore} 分 (${rep.overallStatus === 'PASS' ? '完全正常' : rep.overallStatus})`);
+    } catch (err) {
+      setHealthCheckMsg(`❌ 巡檢異常：${err.message}`);
+    } finally {
+      setIsHealthChecking(false);
+      setTimeout(() => setHealthCheckMsg(''), 4500);
+    }
+  };
+
+  // 8. 徹底清除全服測試資料
+  const handlePurgeAllTestData = async () => {
+    if (!window.confirm('⚠️ 警告：確定要徹底清除全服所有「測試生」、「test」帳號、假做題考卷與測試日誌嗎？此操作不可逆！')) return;
+    setIsPurgingTestData(true);
+    try {
+      const res = await purgeAllTestData(currentUser);
+      refreshAll();
+      setPurgeNotice(`🧹 已成功清除 ${res.testUids.length} 個測試帳號及關聯試卷/排行程筆共 ${res.purgedCount} 筆項目！`);
+      setAuditLogs(getAuditLogs(currentUser));
+    } catch (e) {
+      setPurgeNotice(`❌ 清除失敗：${e.message}`);
+    } finally {
+      setIsPurgingTestData(false);
+      setTimeout(() => setPurgeNotice(''), 4000);
+    }
+  };
+
+  // 9. 註銷學生帳號
+  const handleOpenDeleteModal = (student) => {
+    setDeletingStudent(student);
+    setDeleteConfirmText('');
+  };
+
+  const handleConfirmDeleteAccount = async () => {
+    if (!deletingStudent) return;
+    if (deleteConfirmText.trim() !== '確認註銷') {
+      alert('請在輸入框中完整輸入「確認註銷」以確保安全！');
+      return;
+    }
+    setIsDeletingAccount(true);
+    try {
+      const targetUid = deletingStudent.userId || deletingStudent.id;
+      await deleteStudentAccount(targetUid, currentUser);
+      refreshAll();
+      if (selectedStudentId === targetUid || selectedStudent === deletingStudent.name) {
+        setSelectedStudent('ALL');
+        setSelectedStudentId('ALL');
+      }
+      setAccountActionNotice(`🚫 已徹底註銷學生【${deletingStudent.name}】(${deletingStudent.email || '無Email'}) 的帳號與所有雲端資料！`);
+      setDeletingStudent(null);
+      setDeleteConfirmText('');
+      setAuditLogs(getAuditLogs(currentUser));
+    } catch (e) {
+      setAccountActionNotice(`❌ 註銷失敗：${e.message}`);
+    } finally {
+      setIsDeletingAccount(false);
+      setTimeout(() => setAccountActionNotice(''), 4000);
+    }
+  };
+
+  // 10. 匯出全服資料庫備份 JSON
+  const handleExportBackup = () => {
+    setIsExportingBackup(true);
+    try {
+      const data = exportFullSystemBackup(currentUser);
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `StudyHub_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setBackupNotice('💾 全服資料庫 JSON 備份檔已開始下載！');
+      setAuditLogs(getAuditLogs(currentUser));
+    } catch (e) {
+      setBackupNotice(`❌ 備份匯出失敗：${e.message}`);
+    } finally {
+      setIsExportingBackup(false);
+      setTimeout(() => setBackupNotice(''), 4000);
     }
   };
 
@@ -728,33 +922,150 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          {/* 全服 2 倍活動快速開關 */}
-          <div className="glass-panel" style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '14px', borderRadius: 'var(--radius-md)', border: globalSettings.global2xActive ? '1px solid #ef4444' : '1px solid var(--border-subtle)' }}>
-            <div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)' }}>全服雙倍活動開關</div>
-              <div style={{ fontSize: '0.95rem', fontWeight: 700, color: globalSettings.global2xActive ? '#f87171' : '#cbd5e1' }}>
-                {globalSettings.global2xActive ? '🔥 雙倍活動進行中' : '活動未開啟'}
-              </div>
-            </div>
-            <button
-              onClick={handleToggleGlobal2x}
-              className={`btn ${globalSettings.global2xActive ? 'btn-fire' : 'btn-secondary'}`}
-              style={{ padding: '8px 14px', fontSize: '0.85rem' }}
+          {/* 頂部快捷控制列：雙倍、即時延遲、一鍵巡檢、清除測資、全服備份 */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+            {/* 雲端 Ping 延遲指示燈 */}
+            <div 
+              onClick={checkPing} 
+              className="glass-panel" 
+              style={{ 
+                padding: '8px 14px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                borderRadius: 'var(--radius-md)', 
+                cursor: 'pointer',
+                border: '1px solid var(--border-subtle)',
+                fontSize: '0.82rem',
+                fontWeight: 700
+              }}
+              title="點擊即時重新測量 Firebase 雲端伺服器延遲"
             >
-              <Flame size={16} />
-              {globalSettings.global2xActive ? '關閉雙倍' : '開啟全服雙倍'}
+              <div style={{ 
+                width: '10px', 
+                height: '10px', 
+                borderRadius: '50%', 
+                background: cloudPing.status === 'excellent' ? '#10b981' : (cloudPing.status === 'good' ? '#f59e0b' : '#ef4444'),
+                boxShadow: cloudPing.status === 'excellent' ? '0 0 8px #10b981' : 'none'
+              }} />
+              <span>Firebase 雲端: {cloudPing.pingMs !== null && cloudPing.pingMs >= 0 ? `${cloudPing.pingMs}ms` : '測速中'}</span>
+              <RefreshCw size={13} className={cloudPing.status === 'checking' ? 'animate-spin' : ''} />
+            </div>
+
+            {/* 一鍵全功能智能巡檢 */}
+            <button
+              onClick={handleRunHealthCheck}
+              disabled={isHealthChecking}
+              className="btn btn-primary"
+              style={{ padding: '8px 14px', fontSize: '0.84rem', fontWeight: 800, background: '#10b981', borderColor: '#059669', color: '#fff' }}
+              title="檢查雲端同步、抽獎券防重複領取、題庫動態出題、排行榜積分與試卷完整度"
+            >
+              <Activity size={15} className={isHealthChecking ? 'animate-spin' : ''} />
+              {isHealthChecking ? '正在深度自檢中...' : '⚡ 執行全系統智能巡檢'}
             </button>
+
+            {/* 一鍵清除測試資料 */}
+            <button
+              onClick={handlePurgeAllTestData}
+              disabled={isPurgingTestData}
+              className="btn btn-secondary"
+              style={{ padding: '8px 14px', fontSize: '0.84rem', fontWeight: 800, background: '#fee2e2', color: '#b91c1c', borderColor: '#fca5a5' }}
+              title="一鍵抹除全服所有包含 test、測試生、小明之測試帳號與假作答資料"
+            >
+              <Trash2 size={15} />
+              {isPurgingTestData ? '正在清除測資...' : '🧹 徹底清除測試資料'}
+            </button>
+
+            {/* 匯出全服備份 */}
+            <button
+              onClick={handleExportBackup}
+              disabled={isExportingBackup}
+              className="btn btn-secondary"
+              style={{ padding: '8px 14px', fontSize: '0.84rem', fontWeight: 800 }}
+              title="將名冊、題庫覆寫、序號與審計日誌導出為 JSON 備份檔"
+            >
+              <Download size={15} /> 匯出備份
+            </button>
+
+            {/* 全服 2 倍活動快速開關 */}
+            <div className="glass-panel" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '10px', borderRadius: 'var(--radius-md)', border: globalSettings.global2xActive ? '1px solid #ef4444' : '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: globalSettings.global2xActive ? '#f87171' : 'var(--text-muted)' }}>
+                {globalSettings.global2xActive ? '🔥 全服雙倍' : '雙倍活動關閉'}
+              </div>
+              <button
+                onClick={handleToggleGlobal2x}
+                className={`btn ${globalSettings.global2xActive ? 'btn-fire' : 'btn-secondary'}`}
+                style={{ padding: '5px 10px', fontSize: '0.78rem' }}
+              >
+                <Flame size={14} />
+                {globalSettings.global2xActive ? '關閉' : '開啟'}
+              </button>
+            </div>
           </div>
         </div>
 
+        {/* 系統即時提示與巡檢通知條 */}
+        {(healthCheckMsg || purgeNotice || accountActionNotice || backupNotice) && (
+          <div style={{ 
+            marginTop: '16px', 
+            padding: '12px 18px', 
+            background: healthCheckMsg ? '#ecfdf5' : (purgeNotice ? '#fef2f2' : '#eff6ff'), 
+            border: `1.5px solid ${healthCheckMsg ? '#10b981' : (purgeNotice ? '#ef4444' : '#3b82f6')}`, 
+            borderRadius: '12px',
+            fontSize: '0.88rem',
+            fontWeight: 800,
+            color: healthCheckMsg ? '#065f46' : (purgeNotice ? '#991b1b' : '#1e40af'),
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <Bell size={16} />
+            <span>{healthCheckMsg || purgeNotice || accountActionNotice || backupNotice}</span>
+          </div>
+        )}
+
         {/* 模組分頁選單 */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '24px' }}>
+          <button
+            onClick={() => setActiveSubTab('health')}
+            className={`btn ${activeSubTab === 'health' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '8px 14px' }}
+          >
+            <Activity size={15} /> ⚡ 全功能智能巡檢
+            {latestHealthReport && (
+              <span style={{ 
+                marginLeft: '6px', 
+                fontSize: '0.72rem', 
+                background: latestHealthReport.overallStatus === 'PASS' ? '#10b981' : '#f59e0b', 
+                color: '#fff', 
+                padding: '1px 6px', 
+                borderRadius: '6px',
+                fontWeight: 900
+              }}>
+                {latestHealthReport.healthScore}分
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveSubTab('students')}
+            className={`btn ${activeSubTab === 'students' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '8px 14px' }}
+          >
+            <Users size={15} /> 👥 學生名冊與學況調閱 ({registeredStudents.length})
+          </button>
+          <button
+            onClick={() => setActiveSubTab('audit')}
+            className={`btn ${activeSubTab === 'audit' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '8px 14px' }}
+          >
+            <FileText size={15} /> 📜 管理員審計日誌 ({auditLogs.length})
+          </button>
           <button
             onClick={() => setActiveSubTab('reports')}
             className={`btn ${activeSubTab === 'reports' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '8px 14px' }}
           >
-            <AlertTriangle size={15} /> 學生題目回報 ({reports.filter(r => r.status === 'pending').length})
+            <AlertTriangle size={15} /> 題目回報 ({reports.filter(r => r.status === 'pending').length})
           </button>
           <button
             onClick={() => setActiveSubTab('rewards')}
@@ -768,7 +1079,7 @@ export default function AdminDashboard() {
             className={`btn ${activeSubTab === 'codes' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '8px 14px' }}
           >
-            <Ticket size={15} /> 兌換碼自訂與刪除 ({redemptionCodes.length})
+            <Ticket size={15} /> 兌換碼管理 ({redemptionCodes.length})
           </button>
           <button
             onClick={() => setActiveSubTab('broadcast')}
@@ -778,18 +1089,18 @@ export default function AdminDashboard() {
             <Megaphone size={15} /> 全體即時廣播
           </button>
           <button
-            onClick={() => setActiveSubTab('students')}
-            className={`btn ${activeSubTab === 'students' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: '8px 14px' }}
-          >
-            <Users size={15} /> 學生做題狀況調閱
-          </button>
-          <button
             onClick={() => setActiveSubTab('questions')}
             className={`btn ${activeSubTab === 'questions' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '8px 14px' }}
           >
             <BookOpen size={15} /> 題庫改題與刪除
+          </button>
+          <button
+            onClick={() => setActiveSubTab('tools')}
+            className={`btn ${activeSubTab === 'tools' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '8px 14px' }}
+          >
+            <HardDrive size={15} /> 🛠️ 實用工具與備份
           </button>
         </div>
 
@@ -1488,15 +1799,25 @@ export default function AdminDashboard() {
                 全部學生 ({studentAnalytics.totalCount} 題)
               </button>
 
+              <button
+                onClick={handlePurgeAllTestData}
+                disabled={isPurgingTestData}
+                className="btn btn-secondary"
+                style={{ padding: '7px 12px', fontSize: '0.8rem', fontWeight: 800, background: '#fff1f2', color: '#e11d48', borderColor: '#fecdd3' }}
+                title="一鍵清除所有包含 test、測試生、小明之假作答與測試帳號"
+              >
+                <Trash2 size={13} /> 🧹 清除測試生資料
+              </button>
+
               {studentAnalytics.studentsList
                 .filter(s => {
+                  if (!s) return false;
                   if (!studentSearchKeyword.trim()) return true;
-                  const kw = studentSearchKeyword.toLowerCase();
-                  return (
-                    s.name.toLowerCase().includes(kw) ||
-                    (s.school || '').toLowerCase().includes(kw) ||
-                    (s.email || '').toLowerCase().includes(kw)
-                  );
+                  const kw = (studentSearchKeyword || '').trim().toLowerCase();
+                  const sName = (s.name || s.displayName || '').toLowerCase();
+                  const sSchool = (s.school || '').toLowerCase();
+                  const sEmail = (s.email || '').toLowerCase();
+                  return sName.includes(kw) || sSchool.includes(kw) || sEmail.includes(kw);
                 })
                 .map((student, idx) => {
                   const isSelected = selectedStudent === student.name || (selectedStudentId !== 'ALL' && selectedStudentId === student.userId);
@@ -1518,10 +1839,10 @@ export default function AdminDashboard() {
                         alignItems: 'center',
                         gap: '6px'
                       }}
-                      title={`點擊調閱【${student.name}】(${student.email || '未登入'}) 的雲端做題與錯題紀錄`}
+                      title={`點擊調閱【${student.name || '同學'}】(${student.email || '未登入'}) 的雲端做題與錯題紀錄`}
                     >
                       <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
-                        <span>👤 {student.displayName || student.name}</span>
+                        <span>👤 {student.displayName || student.name || '同學'}</span>
                         <span style={{ fontSize: '0.68rem', color: '#78818a', fontWeight: 600, fontFamily: 'monospace' }}>
                           ✉ {student.email || '早期紀錄 (無 Email)'}
                         </span>
@@ -1536,7 +1857,7 @@ export default function AdminDashboard() {
                           fontWeight: 800 
                         }}
                       >
-                        錯 {student.wrong} / 共 {student.total} 題
+                        錯 {student.wrong || 0} / 共 {student.total || 0} 題
                       </span>
                     </button>
                   );
@@ -1549,13 +1870,24 @@ export default function AdminDashboard() {
                 <span style={{ fontSize: '0.86rem', fontWeight: 800, color: '#c8643d' }}>
                   🎯 目前正在調閱【{selectedStudent}】的作答紀錄：{onlyMistakes ? '⚠️ 僅顯示錯題清單' : '顯示全部作答紀錄'}
                 </span>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <button
                     onClick={() => setOnlyMistakes(!onlyMistakes)}
                     className="btn btn-secondary"
                     style={{ padding: '4px 10px', fontSize: '0.76rem', fontWeight: 800 }}
                   >
                     {onlyMistakes ? '切換為顯示該生全部題目' : '切換為僅看錯題'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const target = studentAnalytics.studentsList.find(s => s.name === selectedStudent || s.userId === selectedStudentId);
+                      if (target) handleOpenDeleteModal(target);
+                    }}
+                    className="btn btn-secondary"
+                    style={{ padding: '4px 10px', fontSize: '0.76rem', fontWeight: 800, background: '#fee2e2', color: '#b91c1c', borderColor: '#fca5a5' }}
+                    title="徹底註銷此學生帳號，清除所有名冊、試卷、錯題與雲端節點"
+                  >
+                    <UserX size={13} /> 🚫 註銷此帳號
                   </button>
                   <button
                     onClick={() => {
@@ -2289,6 +2621,517 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* 7. 全功能智能深度巡檢面板 */}
+      {activeSubTab === 'health' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* 總覽得分頂部大卡片 */}
+          <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '5px 5px 0 var(--theme-border, #17324d)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '20px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <span className="badge badge-emerald">
+                    <Activity size={13} /> 系統核心自檢引擎
+                  </span>
+                  <span style={{ fontSize: '0.82rem', color: '#78818a', fontWeight: 600 }}>
+                    每晚 12:00 (00:00 UTC+8) 自動巡檢 • 亦可隨時手動檢測
+                  </span>
+                </div>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--theme-border, #17324d)', margin: '0 0 6px 0' }}>
+                  全系統智能健康診斷總覽
+                </h2>
+                <p style={{ color: '#5b6772', fontSize: '0.88rem', margin: 0 }}>
+                  全面自動深度巡檢 Firebase 雲端同步、抽獎券每日防刷雙重鎖、五大科目出題與解析、積分排行榜防溢位、試卷庫完整性。
+                </p>
+              </div>
+
+              {/* 右側得分與按鈕 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                {latestHealthReport && (
+                  <div style={{ textAlign: 'center', padding: '12px 24px', background: 'var(--theme-bg, #f8f3eb)', border: '2px solid var(--theme-border, #17324d)', borderRadius: '18px', boxShadow: '3px 3px 0 var(--theme-border, #17324d)' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#78818a' }}>系統總健康評分</div>
+                    <div style={{ fontSize: '2.2rem', fontWeight: 900, color: latestHealthReport.overallStatus === 'PASS' ? '#15803d' : '#d97706', lineHeight: 1.1 }}>
+                      {latestHealthReport.healthScore} <span style={{ fontSize: '1rem', color: '#78818a' }}>/ 100</span>
+                    </div>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 800, color: latestHealthReport.overallStatus === 'PASS' ? '#15803d' : '#d97706', marginTop: '2px' }}>
+                      狀態：{latestHealthReport.overallStatus === 'PASS' ? '完全正常健全' : '部分項目需留意'}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleRunHealthCheck}
+                  disabled={isHealthChecking}
+                  className="btn btn-primary"
+                  style={{ padding: '14px 24px', fontSize: '0.96rem', fontWeight: 900, background: '#10b981', borderColor: '#059669', color: '#fff', borderRadius: '16px', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}
+                >
+                  <Activity size={18} className={isHealthChecking ? 'animate-spin' : ''} />
+                  {isHealthChecking ? '深度自檢中...' : '⚡ 立即執行全功能智能深度巡檢'}
+                </button>
+              </div>
+            </div>
+
+            {/* 提示訊息 */}
+            {healthCheckMsg && (
+              <div style={{ marginTop: '16px', padding: '10px 16px', background: '#ecfdf5', border: '1.5px solid #10b981', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 800, color: '#065f46' }}>
+                {healthCheckMsg}
+              </div>
+            )}
+          </div>
+
+          {/* 5 大維度診斷細項卡片 */}
+          {latestHealthReport && latestHealthReport.checks && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+              {latestHealthReport.checks.map((chk, idx) => {
+                const isPass = chk.status === 'PASS';
+                const isWarn = chk.status === 'WARNING';
+                return (
+                  <div 
+                    key={chk.id || idx}
+                    style={{
+                      background: 'var(--theme-card, #fffdf9)',
+                      border: isPass ? '2px solid #86efac' : (isWarn ? '2px solid #fde047' : '2px solid #fca5a5'),
+                      borderRadius: '18px',
+                      padding: '18px',
+                      boxShadow: '3px 3px 0 var(--theme-border, #17324d)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: 900, fontSize: '0.92rem', color: 'var(--theme-border, #17324d)' }}>
+                        {idx + 1}. {chk.title}
+                      </span>
+                      <span 
+                        style={{
+                          fontSize: '0.74rem',
+                          fontWeight: 900,
+                          padding: '3px 8px',
+                          borderRadius: '8px',
+                          background: isPass ? '#dcfce7' : (isWarn ? '#fef9c3' : '#fee2e2'),
+                          color: isPass ? '#15803d' : (isWarn ? '#a16207' : '#b91c1c')
+                        }}
+                      >
+                        {isPass ? '✓ 正常 PASS' : (isWarn ? '⚠️ 警示 WARNING' : '✕ 異常 FAIL')}
+                      </span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.84rem', color: '#4b5563', lineHeight: 1.6 }}>
+                      {chk.details}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* 歷史自檢記錄 (最近 10 次巡檢) */}
+          <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2px solid var(--theme-border, #17324d)' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Clock size={16} /> 歷史巡檢診斷日誌紀錄 (最近 10 次)
+            </h3>
+            {healthReports.length === 0 ? (
+              <div style={{ color: '#78818a', textAlign: 'center', padding: '20px' }}>尚未有巡檢紀錄，可點擊上方按鈕執行初次診斷！</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {healthReports.map((rep) => (
+                  <div 
+                    key={rep.id} 
+                    style={{ 
+                      padding: '12px 16px', 
+                      background: 'var(--theme-bg, #f8f3eb)', 
+                      borderRadius: '12px', 
+                      border: '1.5px solid #ded3c5',
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '8px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '0.86rem' }}>
+                        <span>{rep.isScheduled ? '⏰ 每晚 12 點自動巡檢' : '👤 管理員手動自檢'}</span>
+                        <span style={{ fontSize: '0.74rem', color: '#78818a', fontWeight: 600 }}>
+                          {new Date(rep.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: '#5b6772', marginTop: '3px' }}>
+                        {rep.summary} (耗時 {rep.durationMs || 10}ms)
+                      </div>
+                    </div>
+                    <span 
+                      style={{ 
+                        fontSize: '0.82rem', 
+                        fontWeight: 900, 
+                        background: rep.overallStatus === 'PASS' ? '#10b981' : '#f59e0b', 
+                        color: '#fff', 
+                        padding: '4px 10px', 
+                        borderRadius: '8px' 
+                      }}
+                    >
+                      {rep.healthScore} 分 ({rep.overallStatus})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 8. 管理員審計操作日誌面板 (Audit Logs - 全面記錄所有管理員異動) */}
+      {activeSubTab === 'audit' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="glass-panel" style={{ padding: '24px', borderRadius: '22px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '5px 5px 0 var(--theme-border, #17324d)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '14px', marginBottom: '16px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--theme-border, #17324d)', margin: '0 0 4px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FileText size={20} /> 管理員審計操作日誌 (Audit Trail)
+                </h2>
+                <p style={{ color: '#5b6772', fontSize: '0.86rem', margin: 0 }}>
+                  嚴格記錄管理員新增、修改、刪除、發放、廣播、註銷帳號、清除測資等所有操作，不可篡改。
+                </p>
+              </div>
+
+              {/* 篩選與搜尋 */}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  placeholder="搜尋操作者、內容關鍵字..."
+                  value={auditSearchKeyword}
+                  onChange={e => setAuditSearchKeyword(e.target.value)}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    border: '1.5px solid #ded3c5',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    width: '200px'
+                  }}
+                />
+                <select
+                  value={auditActionFilter}
+                  onChange={e => setAuditActionFilter(e.target.value)}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    border: '1.5px solid #ded3c5',
+                    fontSize: '0.84rem',
+                    fontWeight: 700
+                  }}
+                >
+                  <option value="ALL">全部操作類型</option>
+                  <option value="DELETE_STUDENT_ACCOUNT">🚫 註銷學生帳號</option>
+                  <option value="PURGE_TEST_DATA">🧹 清除測試資料</option>
+                  <option value="SYSTEM_HEALTH_CHECK">⚡ 全系統智能自檢</option>
+                  <option value="GRANT_POINTS">🎁 發放點數</option>
+                  <option value="GRANT_TICKETS">🎟️ 發放抽獎券</option>
+                  <option value="UPDATE_GLOBAL_SETTINGS">📢 全服設定/廣播</option>
+                  <option value="CREATE_REDEMPTION_CODE">🎫 建立兌換碼</option>
+                  <option value="DELETE_REDEMPTION_CODE">🗑️ 刪除兌換碼</option>
+                  <option value="MODIFY_QUESTION">✏️ 修改題目</option>
+                  <option value="RESOLVE_REPORT">✅ 處理題目回報</option>
+                  <option value="EXPORT_SYSTEM_BACKUP">💾 匯出全服備份</option>
+                </select>
+                <button
+                  onClick={() => setAuditLogs(getAuditLogs(currentUser))}
+                  className="btn btn-secondary"
+                  style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+                >
+                  <RefreshCw size={13} /> 重新整理
+                </button>
+              </div>
+            </div>
+
+            {/* 日誌清單 */}
+            {(() => {
+              const kw = (auditSearchKeyword || '').trim().toLowerCase();
+              const filtered = auditLogs.filter(log => {
+                if (auditActionFilter !== 'ALL' && log.actionType !== auditActionFilter) return false;
+                if (!kw) return true;
+                const op = (log.operatorName || '').toLowerCase();
+                const det = (log.details || '').toLowerCase();
+                const act = (log.actionType || '').toLowerCase();
+                return op.includes(kw) || det.includes(kw) || act.includes(kw);
+              });
+
+              if (filtered.length === 0) {
+                return (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#78818a', fontSize: '0.9rem' }}>
+                    尚無符合條件的管理員操作日誌！
+                  </div>
+                );
+              }
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {filtered.map(log => {
+                    const isDelete = log.actionType?.includes('DELETE') || log.actionType === 'PURGE_TEST_DATA';
+                    const isHealth = log.actionType === 'SYSTEM_HEALTH_CHECK';
+                    const isGrant = log.actionType?.includes('GRANT');
+                    const badgeBg = isDelete ? '#fee2e2' : (isHealth ? '#dcfce7' : (isGrant ? '#fef3c7' : '#eff6ff'));
+                    const badgeColor = isDelete ? '#b91c1c' : (isHealth ? '#15803d' : (isGrant ? '#b45309' : '#1d4ed8'));
+
+                    return (
+                      <div 
+                        key={log.id}
+                        style={{
+                          padding: '14px 16px',
+                          background: 'var(--theme-bg, #f8f3eb)',
+                          borderRadius: '14px',
+                          border: '1.5px solid #ded3c5',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          justifyContent: 'space-between',
+                          gap: '12px'
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 900, background: badgeBg, color: badgeColor, padding: '2px 8px', borderRadius: '6px' }}>
+                              {log.actionType}
+                            </span>
+                            <span style={{ fontWeight: 900, fontSize: '0.86rem', color: 'var(--theme-border, #17324d)' }}>
+                              👤 {log.operatorName} ({log.operatorRole === 'super_admin' ? '總管理員' : '管理員'})
+                            </span>
+                            <span style={{ fontSize: '0.74rem', color: '#78818a', fontWeight: 600 }}>
+                              🕒 {new Date(log.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.86rem', color: '#374151', lineHeight: 1.6, fontWeight: 600 }}>
+                            {log.details}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* 9. 實用工具與資料庫備份面板 */}
+      {activeSubTab === 'tools' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            {/* 工具卡片 1：全服備份與匯出 */}
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <HardDrive size={22} color="var(--theme-accent, #ef8354)" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900 }}>全服資料庫 JSON 匯出備份</h3>
+              </div>
+              <p style={{ color: '#5b6772', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '16px' }}>
+                將目前全服學生名冊、排行榜、題庫覆寫、序號清單與審計日誌打包匯出為 JSON 檔案，以防極端情況下進行冷存檔備份。
+              </p>
+              <button
+                onClick={handleExportBackup}
+                disabled={isExportingBackup}
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '12px', fontWeight: 800 }}
+              >
+                <Download size={16} /> 立即下載全服資料庫備份 (.json)
+              </button>
+            </div>
+
+            {/* 工具卡片 2：Firebase 雲端延遲診斷器 */}
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <Server size={22} color="#10b981" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900 }}>Firebase 雲端連線診斷儀</h3>
+              </div>
+              <p style={{ color: '#5b6772', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '12px' }}>
+                測量目前瀏覽器與 Firebase Realtime Database 亞太伺服器之間的往返 Ping 延遲。
+              </p>
+              <div style={{ padding: '14px', background: 'var(--theme-bg, #f8f3eb)', borderRadius: '12px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 700 }}>當前延遲 (RTT)</div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 900, color: cloudPing.status === 'excellent' ? '#15803d' : '#d97706' }}>
+                    {cloudPing.pingMs !== null && cloudPing.pingMs >= 0 ? `${cloudPing.pingMs} ms` : '測速中'}
+                  </div>
+                </div>
+                <span className={`badge ${cloudPing.status === 'excellent' ? 'badge-emerald' : 'badge-gold'}`}>
+                  {cloudPing.message}
+                </span>
+              </div>
+              <button
+                onClick={checkPing}
+                className="btn btn-secondary"
+                style={{ width: '100%', padding: '10px', fontWeight: 800 }}
+              >
+                <RefreshCw size={14} /> 重新測試伺服器延遲
+              </button>
+            </div>
+
+            {/* 工具卡片 3：全站測資與假作答清理 */}
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <Trash2 size={22} color="#ef4444" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900 }}>徹底清除全站測試資料</h3>
+              </div>
+              <p style={{ color: '#5b6772', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '16px' }}>
+                一鍵自全服名冊、排行榜、即時串流、試卷庫徹底移除所有包含「test」、「測試生」、「小明」的測試帳號與假作答紀錄。
+              </p>
+              <button
+                onClick={handlePurgeAllTestData}
+                disabled={isPurgingTestData}
+                className="btn btn-fire"
+                style={{ width: '100%', padding: '12px', fontWeight: 800 }}
+              >
+                <Trash size={16} /> 執行全服測試資料徹底抹除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 註銷學生帳號確認對話框 Modal */}
+      {deletingStudent && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.65)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <div style={{
+            background: 'var(--theme-card, #fffdf9)',
+            border: '3px solid #17324d',
+            borderRadius: '24px',
+            boxShadow: '8px 8px 0 #17324d',
+            width: '100%',
+            maxWidth: '480px',
+            padding: '24px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: '#b91c1c' }}>
+              <AlertTriangle size={28} />
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900 }}>
+                確認註銷並刪除此學生帳號？
+              </h3>
+            </div>
+
+            <div style={{ background: '#fef2f2', border: '1.5px solid #fca5a5', borderRadius: '12px', padding: '14px', marginBottom: '16px', fontSize: '0.88rem', color: '#991b1b', lineHeight: 1.6 }}>
+              <div style={{ fontWeight: 900, marginBottom: '6px' }}>⚠️ 警告：此操作不可逆！將徹底抹除以下資料：</div>
+              <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                <li>學生姓名：<strong>{deletingStudent.name || '同學'}</strong></li>
+                <li>Email：<strong>{deletingStudent.email || '無 Email'}</strong></li>
+                <li>ID：<code>{deletingStudent.userId || deletingStudent.id}</code></li>
+                <li>清除全服名冊、排行榜排名、所有作答考卷、錯題本、個人抽獎券及 Firebase 雲端節點！</li>
+              </ul>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: 800, marginBottom: '6px', color: '#374151' }}>
+                為確保安全，請在下方輸入「<strong>確認註銷</strong>」：
+              </label>
+              <input
+                type="text"
+                placeholder="輸入 確認註銷"
+                value={deleteConfirmText}
+                onChange={e => setDeleteConfirmText(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: '2px solid #ef4444',
+                  fontSize: '0.92rem',
+                  fontWeight: 800
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setDeletingStudent(null); setDeleteConfirmText(''); }}
+                className="btn btn-secondary"
+                style={{ padding: '10px 18px', fontWeight: 800 }}
+              >
+                取消返回
+              </button>
+              <button
+                onClick={handleConfirmDeleteAccount}
+                disabled={isDeletingAccount || deleteConfirmText.trim() !== '確認註銷'}
+                className="btn btn-fire"
+                style={{ padding: '10px 18px', fontWeight: 900, opacity: deleteConfirmText.trim() === '確認註銷' ? 1 : 0.5 }}
+              >
+                {isDeletingAccount ? '註銷抹除中...' : '確認永久註銷帳號'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
+
+// 封裝局部 ErrorBoundary，防止任何渲染錯誤波及全局頂層 AppErrorBoundary
+class AdminErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('[AdminDashboard Local ErrorBoundary Caught]', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '60vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px'
+        }}>
+          <div style={{
+            maxWidth: '500px',
+            background: '#fffdf9',
+            border: '3px solid #17324d',
+            borderRadius: '24px',
+            boxShadow: '6px 6px 0 #17324d',
+            padding: '28px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🛡️</div>
+            <h3 style={{ color: '#17324d', fontWeight: 900, marginBottom: '8px' }}>
+              管理員後台防護模式已啟動
+            </h3>
+            <p style={{ color: '#5b6772', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '20px' }}>
+              偵測到部分名冊或日誌資料格式異常，局部錯誤邊界已成功阻斷錯誤波及全局，學生端前台運作完全正常不受影響。
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button
+                onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
+                className="btn btn-primary"
+                style={{ padding: '10px 20px', fontWeight: 800 }}
+              >
+                🔄 重新整理後台
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export function AdminDashboardWithErrorBoundary(props) {
+  return (
+    <AdminErrorBoundary>
+      <AdminDashboard {...props} />
+    </AdminErrorBoundary>
+  );
+}
+
+export default AdminDashboardWithErrorBoundary;
+export { AdminDashboard, AdminErrorBoundary };
+

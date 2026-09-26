@@ -830,12 +830,12 @@
   },
   "studyhub_game_state_admin_super_jimmy": {
     "tickets": 0,
-    "pityCount": 6,
+    "pityCount": 30,
     "lastDailyClaimDate": "2026-09-26",
     "personalMultiplier": 1,
     "multiplierExpiresAt": 0,
     "unlockedBadges": [],
-    "updatedAt": 1790377253164
+    "updatedAt": 1790394276554
   },
   "privacy_consent_admin_super_jimmy": {
     "userId": "admin_super_jimmy",
@@ -8024,6 +8024,7 @@
   "redeemed_history_admin_super_jimmy": [
     "117SUNDAY",
     "HAPPY_FESTIVAL",
-    "HAPPY_FESTIVAL1"
+    "HAPPY_FESTIVAL1",
+    "SYNC_TEST_2026"
   ]
 }
