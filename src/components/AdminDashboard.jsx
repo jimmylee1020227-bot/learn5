@@ -384,7 +384,8 @@ function AdminDashboard() {
     const userRegistry = getJson('user_registry', {});
 
     // 1. 先用 registeredStudents 初始化名冊框架 (記錄名冊初始數據作為 fallback)
-    registeredStudents.forEach(st => {
+    (Array.isArray(registeredStudents) ? registeredStudents : []).forEach(st => {
+      if (!st) return;
       let targetEmail = st.email || (st.id && userRegistry[st.id]?.email) || '';
       targetEmail = targetEmail.trim().toLowerCase();
       const key = targetEmail || st.id || st.name || '匿名同學';
@@ -408,7 +409,8 @@ function AdminDashboard() {
     });
 
     // 2. 用已載入的 allHistory 統計精準做題題數與正錯細節
-    allHistory.forEach(log => {
+    (Array.isArray(allHistory) ? allHistory : []).forEach(log => {
+      if (!log) return;
       const regEntry = (log.userId && userRegistry[log.userId]) || {};
       let targetEmail = regEntry.email || log.userEmail || '';
       targetEmail = targetEmail.trim().toLowerCase();
@@ -483,44 +485,46 @@ function AdminDashboard() {
     studentsList.sort((a, b) => new Date(a.lastActive || 0) - new Date(b.lastActive || 0));
     const nameMap = {};
     studentsList.forEach(s => {
+      if (!s) return;
       const raw = (s.name || '會考戰友').trim();
       if (!nameMap[raw]) nameMap[raw] = [];
       nameMap[raw].push(s);
     });
 
     Object.entries(nameMap).forEach(([rawName, list]) => {
+      if (!Array.isArray(list)) return;
       if (list.length > 1) {
         list.forEach((s, idx) => {
-          s.displayName = `${rawName} (${s.school || '校區'} · #${idx + 1})`;
+          if (s) s.displayName = `${rawName} (${s.school || '校區'} · #${idx + 1})`;
         });
-      } else if (list.length === 1) {
-        s.displayName = s.name;
+      } else if (list.length === 1 && list[0]) {
+        list[0].displayName = list[0].name;
       }
     });
 
     // 高頻錯題類型 TOP 5 (錯誤次數與錯誤率最高)
     const topMistakeTypes = Object.values(conceptMap)
-      .filter(c => c.wrong > 0)
+      .filter(c => c && c.wrong > 0)
       .map(c => ({
         ...c,
-        errorRate: Math.round((c.wrong / c.total) * 100)
+        errorRate: Math.round((c.wrong / (c.total || 1)) * 100)
       }))
       .sort((a, b) => b.wrong - a.wrong || b.errorRate - a.errorRate)
       .slice(0, 5);
 
     // 精熟高正答題型 TOP 5 (答對次數與正答率最高)
     const topMasteryTypes = Object.values(conceptMap)
-      .filter(c => c.correct > 0)
+      .filter(c => c && c.correct > 0)
       .map(c => ({
         ...c,
-        accuracy: Math.round((c.correct / c.total) * 100)
+        accuracy: Math.round((c.correct / (c.total || 1)) * 100)
       }))
       .sort((a, b) => b.correct - a.correct || b.accuracy - a.accuracy)
       .slice(0, 5);
 
-    const totalCount = studentsList.reduce((acc, cur) => acc + (cur.total || 0), 0) || allHistory.length;
-    const totalCorrect = studentsList.reduce((acc, cur) => acc + (cur.correct || 0), 0) || allHistory.filter(h => h.isCorrect).length;
-    const totalWrong = studentsList.reduce((acc, cur) => acc + (cur.wrong || 0), 0) || allHistory.filter(h => !h.isCorrect).length;
+    const totalCount = studentsList.reduce((acc, cur) => acc + (cur?.total || 0), 0) || allHistory.length;
+    const totalCorrect = studentsList.reduce((acc, cur) => acc + (cur?.correct || 0), 0) || allHistory.filter(h => h?.isCorrect).length;
+    const totalWrong = studentsList.reduce((acc, cur) => acc + (cur?.wrong || 0), 0) || allHistory.filter(h => h && !h.isCorrect).length;
 
     return {
       studentsList,
@@ -535,7 +539,8 @@ function AdminDashboard() {
   // 篩選做題紀錄列表
   const filteredPracticeLogs = React.useMemo(() => {
     const userRegistry = getJson('user_registry', {});
-    return allHistory.filter(log => {
+    return (Array.isArray(allHistory) ? allHistory : []).filter(log => {
+      if (!log) return false;
       // 學生姓名與 ID 快篩按鈕 (支援姓名、基本姓名去除序號與 userId / Email 多向精準匹配)
       if (selectedStudent !== 'ALL') {
         const sName = (log.userName || '匿名同學').trim();
@@ -585,7 +590,8 @@ function AdminDashboard() {
   // 篩選完整試卷列表 (支援學生姓名、學校、題目關鍵字與科目快篩)
   const filteredQuizPapers = React.useMemo(() => {
     const userRegistry = getJson('user_registry', {});
-    return quizPapers.filter(paper => {
+    return (Array.isArray(quizPapers) ? quizPapers : []).filter(paper => {
+      if (!paper) return false;
       if (selectedStudent !== 'ALL') {
         const sName = (paper.userName || '匿名同學').trim();
         const baseSName = sName.replace(/\s*\d+$/, '').trim().toLowerCase();
@@ -726,7 +732,7 @@ function AdminDashboard() {
     updateGlobalSettings({
       activeBroadcast: {
         message: broadcastInput.trim(),
-        sender: currentUser.displayName,
+        sender: currentUser?.displayName || currentUser?.name || '管理員',
         timestamp: new Date().toISOString()
       }
     }, currentUser);
@@ -744,7 +750,7 @@ function AdminDashboard() {
         message: nextState 
           ? '🔥 管理員已開啟全服限時雙倍積分狂歡！抽中雙倍直接狂暴飆升至 4 倍！' 
           : '全服雙倍活動已結束，恢復正常積點速度。',
-        sender: currentUser.displayName,
+        sender: currentUser?.displayName || currentUser?.name || '管理員',
         timestamp: new Date().toISOString()
       }
     }, currentUser);
@@ -911,7 +917,7 @@ function AdminDashboard() {
                 <Shield size={13} /> 管理員工作後台
               </span>
               <span className="badge badge-gold">
-                當前操作者：{currentUser.displayName}
+                當前操作者：{currentUser?.displayName || currentUser?.name || currentUser?.email || '總管理員'}
               </span>
             </div>
             <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '6px' }}>
@@ -1178,9 +1184,9 @@ function AdminDashboard() {
                 style={{ width: '100%', padding: '10px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}
               >
                 <option value="ALL">📢 全體玩家 (所有人領取)</option>
-                {players.map(p => (
-                  <option key={p.userId} value={p.userId}>
-                    👤 {p.displayName} (目前本週: {p.weeklyPoints} 點)
+                {(Array.isArray(players) ? players : []).map(p => (
+                  <option key={p?.userId || p?.id} value={p?.userId || p?.id}>
+                    👤 {p?.displayName || p?.name || '同學'} (目前本週: {p?.weeklyPoints ?? 0} 點)
                   </option>
                 ))}
               </select>
@@ -3107,7 +3113,7 @@ class AdminErrorBoundary extends React.Component {
             <p style={{ color: '#5b6772', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '20px' }}>
               偵測到部分名冊或日誌資料格式異常，局部錯誤邊界已成功阻斷錯誤波及全局，學生端前台運作完全正常不受影響。
             </p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
                 className="btn btn-primary"
@@ -3115,7 +3121,30 @@ class AdminErrorBoundary extends React.Component {
               >
                 🔄 重新整理後台
               </button>
+              <button
+                onClick={() => {
+                  try {
+                    localStorage.removeItem('studyhub_v2_practice_history');
+                    localStorage.removeItem('studyhub_v2_audit_logs');
+                    localStorage.removeItem('studyhub_v2_health_check_reports');
+                  } catch (e) {}
+                  this.setState({ hasError: false, error: null });
+                  window.location.reload();
+                }}
+                className="btn btn-secondary"
+                style={{ padding: '10px 18px', fontWeight: 800 }}
+              >
+                🧹 修復重置後台快取
+              </button>
             </div>
+            {this.state.error && (
+              <details style={{ marginTop: '16px', textAlign: 'left', background: '#fef2f2', border: '1px solid #fca5a5', padding: '10px', borderRadius: '10px', fontSize: '0.75rem', color: '#991b1b', cursor: 'pointer' }}>
+                <summary style={{ fontWeight: 800, cursor: 'pointer' }}>查看技術診斷堆疊 (Error Details)</summary>
+                <pre style={{ marginTop: '8px', overflowX: 'auto', whiteSpace: 'pre-wrap', maxHeight: '180px' }}>
+                  {this.state.error.stack || this.state.error.message || String(this.state.error)}
+                </pre>
+              </details>
+            )}
           </div>
         </div>
       );
