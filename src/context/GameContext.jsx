@@ -97,13 +97,14 @@ export function GameProvider({ children }) {
     }
     
     if (userId && userId !== 'guest_student') {
-      // 主動自 Firebase 雲端拉取確認，新設備或時間戳較新者為準
+      // 主動自 Firebase 雲端拉取確認，新設備或時間戳較新者為準（雲端有抽獎券時優先採納）
       fetchCloudUserGameState(userId).then(cloudState => {
         if (cloudState) {
           setLocalGameState(prev => {
             const cloudTime = cloudState.updatedAt || 0;
             const localTime = prev.updatedAt || 0;
-            if (!localCached || cloudTime >= localTime) {
+            const isLocalEmpty = !localCached || (prev.tickets === 0 && (cloudState.tickets || 0) > 0);
+            if (isLocalEmpty || cloudTime >= localTime) {
               const merged = {
                 ...cloudState,
                 tickets: cloudState.tickets ?? 0,
@@ -148,16 +149,6 @@ export function GameProvider({ children }) {
       hasClaimedTodayRef.current = true; // 已經是今天，鎖定
     }
   }, [gameState.lastDailyClaimDate, userId]);
-
-  // 儲存狀態至雲端 Firebase (即時推播 - 嚴格保護遠端資料不被預設值覆蓋)
-  useEffect(() => {
-    if (userId && userId !== 'guest_student') {
-      if (isRemoteSyncingRef.current) return;
-      if (!isHydratedRef.current) return;
-      setJson(`${STORAGE_GAME_KEY}_${userId}`, gameState);
-      updateServerSync(`${STORAGE_GAME_KEY}_${userId}`, gameState);
-    }
-  }, [gameState, userId]);
 
   // 倍率倒數計時器
   useEffect(() => {

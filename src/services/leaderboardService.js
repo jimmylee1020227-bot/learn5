@@ -8,8 +8,8 @@ import {
   fetchCloudLeaderboardRaw,
   assertAdminPermission,
   adminPushGameStateTickets
-} from './cloudStorage';
-import { getRealDate, getRealTime } from './timeService';
+} from './cloudStorage.js';
+import { getRealDate, getRealTime } from './timeService.js';
 
 const LEADERBOARD_KEY = 'studyhub_weekly_leaderboard';
 const HALL_OF_FAME_KEY = 'studyhub_hall_of_fame';
