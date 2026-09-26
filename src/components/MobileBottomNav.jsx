@@ -118,29 +118,29 @@ export default function MobileBottomNav({
       </button>
 
 
-      {/* 4. 紙本考卷列印下載 */}
+      {/* 4. 歷次測驗卷與歷程 */}
       <button
-        onClick={onOpenPrintExamModal}
+        onClick={() => setActiveTab('history')}
         style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'transparent',
+          background: activeTab === 'history' ? '#f5ebd9' : 'transparent',
           border: 'none',
           borderRadius: '10px',
           padding: '5px 8px',
           cursor: 'pointer',
-          color: '#2563eb',
+          color: activeTab === 'history' ? 'var(--theme-accent, var(--theme-accent, #ef8354))' : '#5b6772',
           flex: 1,
           maxWidth: '68px',
           transition: 'all 0.15s ease'
         }}
-        title="紙本考卷列印下載"
+        title="歷次測驗卷與作答歷程"
       >
-        <FileText size={20} />
-        <span style={{ fontSize: '0.68rem', fontWeight: 800, marginTop: '2px' }}>
-          印考卷
+        <History size={20} strokeWidth={activeTab === 'history' ? 2.6 : 2} />
+        <span style={{ fontSize: '0.68rem', fontWeight: activeTab === 'history' ? 800 : 600, marginTop: '2px' }}>
+          歷程試卷
         </span>
       </button>
 

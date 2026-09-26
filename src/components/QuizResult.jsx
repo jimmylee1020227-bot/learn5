@@ -26,7 +26,7 @@ import confetti from 'canvas-confetti';
 import MathText from './MathText';
 import MathSymbolLegend from './MathSymbolLegend';
 
-export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinforce, onBackHome, onOpenPrintExamModal }) {
+export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinforce, onBackHome, onOpenPrintExamModal, onGoHistory }) {
   const { effectiveMultiplier } = useGame();
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'wrong' | 'correct'
   const [activeHighlightIdx, setActiveHighlightIdx] = useState(null);
@@ -275,6 +275,18 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
             <RotateCcw size={15} />
             換一批全新題目
           </button>
+
+          {typeof onGoHistory === 'function' && (
+            <button 
+              type="button"
+              onClick={onGoHistory} 
+              className="btn btn-secondary"
+              style={{ borderRadius: '14px', padding: '10px 18px', fontSize: '0.86rem', fontWeight: 800, gap: '6px' }}
+            >
+              <BookOpen size={15} />
+              查看歷次試卷
+            </button>
+          )}
           
           {wrongCount > 0 && (
             <button 

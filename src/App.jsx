@@ -132,22 +132,26 @@ function MainAppContent() {
 
     const correctCount = results.filter(r => r.isCorrect).length;
 
+    const activeUserId = currentUser?.id || 'guest_student';
+    const activeUserName = currentUser?.displayName || '國中同學';
+    const activeUserSchool = currentUser?.role === 'super_admin' ? '系統總管理員' : '會考戰友';
+
     // 1. 計算並發放點數（每對 1 題 1 點，支援 2x / 4x 暴擊）
     if (currentUser) {
       awardQuizCorrectPoints(correctCount);
 
       // 每日練習目標統計累積
       incrementDailyPracticeStats(currentUser.id, results.length, correctCount);
-
-      // 2. 記錄所有做過的題目與錯題至雲端 (原子化批次同步，杜絕多併發丟失)
-      recordPracticeBatch({
-        userId: currentUser.id,
-        userName: currentUser.displayName,
-        userSchool: currentUser.role === 'super_admin' ? '系統總管理員' : '會考戰友',
-        results,
-        timeSpentSec
-      });
     }
+
+    // 2. 記錄所有做過的題目與錯題至雲端 (原子化批次同步，杜絕多併發丟失，試卷 100% 封存)
+    recordPracticeBatch({
+      userId: activeUserId,
+      userName: activeUserName,
+      userSchool: activeUserSchool,
+      results,
+      timeSpentSec
+    });
   };
 
   const handleRetryQuiz = () => {
@@ -250,6 +254,10 @@ function MainAppContent() {
                 }}
                 onBackHome={() => setQuizState('idle')}
                 onOpenPrintExamModal={() => setIsPrintExamOpen(true)}
+                onGoHistory={() => {
+                  setQuizState('idle');
+                  setActiveTab('history');
+                }}
               />
             )}
           </>
@@ -264,7 +272,10 @@ function MainAppContent() {
         )}
 
         {activeTab === 'history' && (
-          <UserHistoryModal onLaunchRetryQuiz={handleStartReinforceQuiz} />
+          <UserHistoryModal 
+            onLaunchRetryQuiz={handleStartReinforceQuiz} 
+            onStartQuizTab={() => setActiveTab('quiz')} 
+          />
         )}
 
         {activeTab === 'admin' && (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
+import { useDevice } from '../context/DeviceContext';
 import { getDailyPracticeStats, subscribeToCloudSync } from '../services/cloudStorage';
 import { getRealTime } from '../services/timeService';
 import { 
@@ -33,6 +34,7 @@ export default function HeroBanner({
   onOpenPrintExamModal
 }) {
   const { currentUser } = useAuth();
+  const { isMobile } = useDevice();
   const { gameState, effectiveMultiplier, setIsLuckyDrawOpen } = useGame();
 
   const [selectedExamYear, setSelectedExamYear] = useState('117');
@@ -85,16 +87,16 @@ export default function HeroBanner({
       <div 
         className="glass-panel" 
         style={{ 
-          padding: '38px 34px', 
+          padding: isMobile ? '20px 16px' : '38px 34px', 
           position: 'relative', 
           overflow: 'hidden',
           background: 'var(--theme-card, var(--theme-card, #fffdf9))',
           border: '2.5px solid var(--theme-border, #17324d)',
-          borderRadius: '28px',
-          boxShadow: '8px 8px 0px var(--theme-border, #17324d)'
+          borderRadius: isMobile ? '20px' : '28px',
+          boxShadow: isMobile ? '4px 4px 0px var(--theme-border, #17324d)' : '8px 8px 0px var(--theme-border, #17324d)'
         }}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: isMobile ? '20px' : '32px', alignItems: 'center', position: 'relative', zIndex: 1 }}>
           
           {/* 左側文案 */}
           <div>

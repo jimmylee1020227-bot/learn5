@@ -6,9 +6,11 @@ import {
   fetchCloudUserPracticeHistory, 
   fetchCloudUserQuizPapers, 
   fetchCloudUserMistakeNotebook,
+  recordQuizPaperSession,
   subscribeToCloudSync,
   hydrateQuestionDetails,
-  getJson
+  getJson,
+  setJson
 } from '../services/cloudStorage';
 import { 
   BookOpen, 
@@ -17,19 +19,78 @@ import {
   CheckCircle2, 
   XCircle, 
   Cloud, 
-  Filter,
-  FileText,
-  ChevronDown,
-  ChevronUp,
-  RefreshCw,
-  Award,
-  Clock,
-  Sparkles,
-  AlertCircle
+  Filter, 
+  FileText, 
+  ChevronDown, 
+  ChevronUp, 
+  RefreshCw, 
+  Award, 
+  Clock, 
+  Sparkles, 
+  AlertCircle,
+  Play
 } from 'lucide-react';
 import MathText from './MathText';
 
-export default function UserHistoryModal({ onLaunchRetryQuiz }) {
+// 智慧試卷自動聚合還原器：當試卷快取為空時，從學生的歷史做題記錄無損還原整份完整試卷
+function reconstructPapersFromHistory(historyLogs, targetUserId) {
+  if (!Array.isArray(historyLogs) || historyLogs.length === 0) return [];
+  const sorted = [...historyLogs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  const sessions = [];
+  let currentGroup = [];
+
+  sorted.forEach((item) => {
+    if (currentGroup.length === 0) {
+      currentGroup.push(item);
+    } else {
+      const prev = currentGroup[currentGroup.length - 1];
+      const timeDiff = Math.abs(new Date(prev.timestamp).getTime() - new Date(item.timestamp).getTime());
+      if (timeDiff <= 12 * 60 * 1000 && prev.subjectId === item.subjectId) {
+        currentGroup.push(item);
+      } else {
+        sessions.push(currentGroup);
+        currentGroup = [item];
+      }
+    }
+  });
+  if (currentGroup.length > 0) sessions.push(currentGroup);
+
+  const subjectNames = { math: '數學', science: '自然', english: '英語', chinese: '國文', social: '社會' };
+  const gradeNames = { g7: '國一', g8: '國二', g9: '國三' };
+
+  return sessions.map((grp, gIdx) => {
+    const first = grp[0];
+    const subjName = subjectNames[first.subjectId] || '全科';
+    const gradeName = gradeNames[first.gradeId] || '國中';
+    const unitTitle = first.unitName || '全科綜合測驗';
+    const correctCount = grp.filter(q => q.isCorrect).length;
+    const score = Math.round((correctCount / grp.length) * 100);
+    const ts = first.timestamp || new Date().toISOString();
+
+    const paper = {
+      id: 'paper_recon_' + new Date(ts).getTime() + '_' + gIdx,
+      userId: targetUserId,
+      userName: first.userName || '同學',
+      userSchool: first.userSchool || '會考戰友',
+      subjectId: first.subjectId || 'math',
+      gradeId: first.gradeId || 'g8',
+      unitId: first.unitId || 'u1',
+      unitName: unitTitle,
+      paperTitle: `${gradeName} ${subjName}【${unitTitle}】實戰評量卷`,
+      totalQuestions: grp.length,
+      correctCount: correctCount,
+      wrongCount: grp.length - correctCount,
+      score: score,
+      timeSpentSec: grp.reduce((acc, q) => acc + (q.timeSpentSec || 15), 0),
+      timestamp: ts,
+      completedAt: ts,
+      questions: grp.map(q => hydrateQuestionDetails(q))
+    };
+    return paper;
+  });
+}
+
+export default function UserHistoryModal({ onLaunchRetryQuiz, onStartQuizTab }) {
   const { currentUser } = useAuth();
   const [subTab, setSubTab] = useState('papers'); // 'papers' | 'mistakes' | 'history'
   const [quizPapers, setQuizPapers] = useState(() => getJson(`user_quiz_papers_${currentUser?.id || 'guest_student'}`, []));
@@ -46,13 +107,45 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
     // 1. 先即時讀取本地快取（同步，秒出）
     const localHistory = getUserPracticeHistory(userId);
     const localMistakes = getMistakeNotebook(userId);
-    const localPapers = getJson(`user_quiz_papers_${userId}`, []);
+    let localPapers = getJson(`user_quiz_papers_${userId}`, []);
+
+    // 1.1 若當前登入者無試卷，嘗試從 guest_student 轉移合併
+    if (localPapers.length === 0 && userId !== 'guest_student') {
+      const guestPapers = getJson('user_quiz_papers_guest_student', []);
+      if (guestPapers.length > 0) {
+        localPapers = guestPapers.map(p => ({ ...p, userId, ownerId: userId }));
+        setJson(`user_quiz_papers_${userId}`, localPapers);
+        localPapers.forEach(p => recordQuizPaperSession(p));
+      }
+    }
+
+    // 1.2 若依然無試卷，自全服 all_quiz_papers 快取過濾
+    if (localPapers.length === 0) {
+      const allCached = getJson('all_quiz_papers', []);
+      if (Array.isArray(allCached)) {
+        const myPapers = allCached.filter(p => p && (p.userId === userId || p.ownerId === userId));
+        if (myPapers.length > 0) {
+          localPapers = myPapers;
+          setJson(`user_quiz_papers_${userId}`, localPapers);
+        }
+      }
+    }
+
+    // 1.3 智慧還原：若試卷仍為空但有做題記錄，自動無損聚合還原！
+    if (localPapers.length === 0 && localHistory.length > 0) {
+      localPapers = reconstructPapersFromHistory(localHistory, userId);
+      if (localPapers.length > 0) {
+        setJson(`user_quiz_papers_${userId}`, localPapers);
+        localPapers.forEach(p => recordQuizPaperSession(p));
+      }
+    }
+
     setHistoryList(localHistory);
     setMistakeList(localMistakes);
     setQuizPapers(localPapers);
 
     // 2. 非同步向 Firebase 更新（加 2.5 秒 timeout，超時靜默降級，不卡畫面）
-    if (forceCloud || localHistory.length === 0) {
+    if (forceCloud || localHistory.length === 0 || localPapers.length === 0) {
       setIsLoading(true);
       try {
         const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500));
@@ -65,7 +158,16 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
           timeout.then(() => { throw new Error('TIMEOUT'); })
         ]);
 
-        if (Array.isArray(cloudPapers)) setQuizPapers(cloudPapers);
+        let finalPapers = Array.isArray(cloudPapers) ? cloudPapers : [];
+        if (finalPapers.length === 0 && Array.isArray(cloudHistory) && cloudHistory.length > 0) {
+          finalPapers = reconstructPapersFromHistory(cloudHistory, userId);
+          if (finalPapers.length > 0) {
+            setJson(`user_quiz_papers_${userId}`, finalPapers);
+            finalPapers.forEach(p => recordQuizPaperSession(p));
+          }
+        }
+
+        if (finalPapers.length > 0) setQuizPapers(finalPapers);
         if (Array.isArray(cloudHistory) && cloudHistory.length > 0) setHistoryList(cloudHistory);
         if (Array.isArray(cloudMistakes) && cloudMistakes.length > 0) setMistakeList(cloudMistakes);
       } catch (err) {
@@ -291,9 +393,19 @@ export default function UserHistoryModal({ onLaunchRetryQuiz }) {
             <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', color: '#78818a' }}>
               <FileText size={48} style={{ margin: '0 auto 14px', opacity: 0.5, color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
               <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>目前尚無測驗試卷紀錄</div>
-              <div style={{ fontSize: '0.88rem', marginTop: '6px' }}>
+              <div style={{ fontSize: '0.88rem', marginTop: '6px', color: '#5b6772' }}>
                 前往「會考模擬題庫」完成任意科目或單元測驗交卷後，整張試卷與詳解將永久封存於此。
               </div>
+              {typeof onStartQuizTab === 'function' && (
+                <button
+                  onClick={onStartQuizTab}
+                  className="btn btn-primary"
+                  style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '12px', fontWeight: 800 }}
+                >
+                  <Play size={16} />
+                  <span>立即開啟 108 課綱測驗</span>
+                </button>
+              )}
             </div>
           ) : (
             filteredPapers.map((paper, pIdx) => {

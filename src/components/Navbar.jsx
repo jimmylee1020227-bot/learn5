@@ -26,7 +26,9 @@ import {
   Bell,
   Users,
   FileText,
-  Scale
+  Scale,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -53,6 +55,7 @@ export default function Navbar({
   const [newNameInput, setNewNameInput] = useState(currentUser?.displayName || '');
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [syncTick, setSyncTick] = useState(0);
 
   // 監聽跨端與本地即時雲端事件，動態重新計算序號未領取數量
@@ -547,9 +550,210 @@ export default function Navbar({
             </div>
           )}
 
+          {/* 手機直立版：功能全開選單按鈕 (漢堡選單) */}
+          {isMobile && (
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="btn"
+              style={{
+                padding: '7px 11px',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                border: '2px solid var(--theme-border, #17324d)',
+                background: isMobileMenuOpen ? 'var(--theme-accent, #ef8354)' : 'var(--theme-card, #fffdf9)',
+                color: isMobileMenuOpen ? '#ffffff' : 'var(--theme-border, #17324d)',
+                boxShadow: isMobileMenuOpen ? 'none' : '2px 2px 0 var(--theme-border, #17324d)',
+                cursor: 'pointer'
+              }}
+              aria-label="開啟所有功能選單"
+              title="展開全站所有功能選單"
+            >
+              {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+              <span style={{ fontSize: '0.8rem', fontWeight: 800 }}>功能</span>
+            </button>
+          )}
+
         </div>
 
       </div>
+
+      {/* 手機直立版：全功能覆蓋選單抽屜 (讓手機拿直時所有功能 100% 可用) */}
+      {isMobile && isMobileMenuOpen && (
+        <div
+          style={{
+            borderTop: '2px solid var(--theme-border, #17324d)',
+            background: 'var(--theme-card, #fffdf9)',
+            padding: '16px 20px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            maxHeight: 'calc(85vh - 70px)',
+            overflowY: 'auto',
+            boxShadow: '0 8px 24px rgba(23, 50, 77, 0.15)'
+          }}
+        >
+          {/* 1. 週榜結算倒數 */}
+          <div style={{ padding: '8px 14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1.5px solid #ded3c5', background: 'var(--theme-bg, #f8f3eb)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Clock size={16} color="var(--theme-accent, #ef8354)" />
+              <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>週榜結算倒數</span>
+            </div>
+            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--theme-accent, #ef8354)', fontWeight: 900, fontSize: '0.85rem' }}>
+              {countdown.days > 0 ? `${countdown.days}天 ` : ''}
+              {countdown.hours}時 {String(countdown.minutes).padStart(2, '0')}分 {String(countdown.seconds).padStart(2, '0')}秒
+            </span>
+          </div>
+
+          {/* 2. 核心功能網格 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+            {/* 歷次完整測驗卷 */}
+            <button
+              className="btn btn-secondary"
+              onClick={() => { setActiveTab('history'); setIsMobileMenuOpen(false); }}
+              style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px' }}
+            >
+              <BookOpen size={20} color="var(--theme-accent, #ef8354)" />
+              <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>歷次測驗卷</span>
+            </button>
+
+            {/* 輸入兌換碼 */}
+            <button
+              className="btn btn-secondary"
+              onClick={() => { onOpenRedemptionModal?.(); setIsMobileMenuOpen(false); }}
+              style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px', color: '#806523' }}
+            >
+              <Ticket size={20} color="#806523" />
+              <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>輸入兌換碼</span>
+            </button>
+
+            {/* 紙本考卷列印下載 */}
+            <button
+              className="btn btn-secondary"
+              onClick={() => { onOpenPrintExamModal?.(); setIsMobileMenuOpen(false); }}
+              style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px', color: '#1e40af', background: '#eff6ff', borderColor: '#3b82f6' }}
+            >
+              <FileText size={20} color="#2563eb" />
+              <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>紙本考卷列印</span>
+            </button>
+
+            {/* 天天幸運抽獎 */}
+            <button
+              className="btn btn-secondary"
+              onClick={() => { setIsLuckyDrawOpen(true); setIsMobileMenuOpen(false); }}
+              style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px', color: '#b45309', background: '#fef3c7', borderColor: '#f59e0b' }}
+            >
+              <Gift size={20} color="#f59e0b" />
+              <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>天天抽獎 ({gameState.tickets || 0}張)</span>
+            </button>
+          </div>
+
+          {/* 3. 社群與客服連結 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <a
+              href="https://openchat.line.me/tw/cover/qOdlVtQ0IBp7wnGg00kPYDMbjLCp8VkH6WSExq042v3oIIRaPjKtYRPSK0I?utm_source=line-openchat-seo&utm_medium=search_keyword&utm_campaign=default"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn"
+              style={{
+                padding: '10px 14px',
+                background: '#06C755',
+                color: '#ffffff',
+                border: '1.5px solid var(--theme-border, #17324d)',
+                borderRadius: '12px',
+                fontWeight: 800,
+                fontSize: '0.85rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                textDecoration: 'none'
+              }}
+            >
+              <Users size={16} />
+              <span>加入 LINE 討論群組</span>
+            </a>
+
+            <a
+              href="https://line.me/R/ti/p/@418yswmd"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn"
+              style={{
+                padding: '10px 14px',
+                background: 'var(--theme-card, #fffdf9)',
+                color: '#06C755',
+                border: '1.5px solid #06C755',
+                borderRadius: '12px',
+                fontWeight: 800,
+                fontSize: '0.85rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                textDecoration: 'none'
+              }}
+            >
+              <MessageSquareHeart size={16} />
+              <span>聯絡 LINE 管理員客服</span>
+            </a>
+          </div>
+
+          {/* 4. 視覺氛圍主題快速切換 */}
+          <div style={{ background: 'var(--theme-bg, #f8f3eb)', padding: '12px', borderRadius: '14px', border: '1.5px solid #ded3c5' }}>
+            <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#5b6772', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Palette size={14} color="var(--theme-accent, #ef8354)" />
+              <span>切換視覺氛圍 (主題)</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+              {THEMES.map(theme => (
+                <button
+                  key={theme.id}
+                  onClick={() => setCurrentTheme(theme.id)}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '10px',
+                    border: currentTheme === theme.id ? '2px solid var(--theme-border, #17324d)' : '1px solid #ded3c5',
+                    background: currentTheme === theme.id ? '#ffffff' : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    cursor: 'pointer',
+                    fontSize: '0.78rem',
+                    fontWeight: currentTheme === theme.id ? 800 : 600,
+                    color: 'var(--theme-border, #17324d)'
+                  }}
+                >
+                  <span>{theme.icon}</span>
+                  <span>{theme.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 5. 底部法規與管理員專屬通道 */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px dashed #ded3c5' }}>
+            <button
+              onClick={() => { onOpenLegalModal?.('privacy'); setIsMobileMenuOpen(false); }}
+              style={{ background: 'transparent', border: 'none', color: '#78818a', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: 700 }}
+            >
+              <Scale size={14} />
+              <span>隱私權政策與法規條款</span>
+            </button>
+
+            {currentUser && isAdmin && (
+              <button
+                onClick={() => { setActiveTab(isSuperAdmin ? 'super_admin' : 'admin'); setIsMobileMenuOpen(false); }}
+                style={{ background: '#fee2e2', border: '1px solid #f87171', color: '#b91c1c', borderRadius: '8px', padding: '4px 10px', fontSize: '0.75rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+              >
+                <Shield size={13} />
+                <span>管理後台</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 管理員公告與可領取序號彈窗 */}
       <NotificationBellModal

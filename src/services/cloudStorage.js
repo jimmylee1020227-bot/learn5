@@ -1066,10 +1066,26 @@ export async function fetchCloudUserQuizPapers(userId) {
         const list = Array.isArray(val) ? val : Object.values(val);
         list.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
       }
+      // 4. 若依然為空，自雲端公共 quiz_papers 節點過濾尋找
+      if (papersMap.size === 0) {
+        const snapAll = await Promise.race([
+          get(ref(db, 'studyhub/quiz_papers')),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2000))
+        ]);
+        const valAll = snapAll?.val();
+        if (valAll && typeof valAll === 'object') {
+          const list = Array.isArray(valAll) ? valAll : Object.values(valAll);
+          list.forEach(p => {
+            if (p && (p.userId === userId || p.ownerId === userId)) {
+              papersMap.set(p.id, p);
+            }
+          });
+        }
+      }
     } catch (e) {}
   }
 
-  const sorted = Array.from(papersMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const sorted = Array.from(papersMap.values()).sort((a, b) => new Date(b.timestamp || b.completedAt || 0) - new Date(a.timestamp || a.completedAt || 0));
   if (sorted.length > 0) safeSetLocalStorage(STORAGE_PREFIX + userPapersKey, JSON.stringify(sorted));
   return sorted;
 }

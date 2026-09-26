@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDevice } from '../context/DeviceContext';
 import { GRADES, SUBJECTS, DIFFICULTIES, CURRICULUM_UNITS } from '../data/curriculum108';
 import { 
   CheckSquare, 
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function ScopeSelector({ onStartQuiz, onOpenPrintExamModal }) {
+  const { isMobile } = useDevice();
   const [selectedGrade, setSelectedGrade] = useState('g7');
   const [selectedSubject, setSelectedSubject] = useState('math');
   const [selectedDifficulty, setSelectedDifficulty] = useState('medium');
@@ -75,13 +77,13 @@ export default function ScopeSelector({ onStartQuiz, onOpenPrintExamModal }) {
       <div 
         className="glass-panel" 
         style={{ 
-          padding: '28px', 
+          padding: isMobile ? '18px 16px' : '28px', 
           position: 'relative', 
           overflow: 'hidden',
           background: 'var(--theme-card, var(--theme-card, #fffdf9))',
           border: '2.5px solid var(--theme-border, #17324d)',
-          borderRadius: '24px',
-          boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
+          borderRadius: isMobile ? '20px' : '24px',
+          boxShadow: isMobile ? '4px 4px 0px var(--theme-border, #17324d)' : '6px 6px 0px var(--theme-border, #17324d)'
         }}
       >
         <div style={{ maxWidth: '850px' }}>
@@ -90,29 +92,29 @@ export default function ScopeSelector({ onStartQuiz, onOpenPrintExamModal }) {
             <span className="badge badge-gold">每單元 5000+ 題充足不重複</span>
             <span className="badge badge-emerald">答對 1 題 = 1 點排行榜積分</span>
           </div>
-          <h1 style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '8px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+          <h1 style={{ fontSize: isMobile ? '1.45rem' : '1.85rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '8px', color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
             國中全科自由選題測驗工作台
           </h1>
-          <p style={{ color: '#5b6772', fontSize: '0.95rem', lineHeight: 1.7, fontWeight: 600 }}>
+          <p style={{ color: '#5b6772', fontSize: isMobile ? '0.86rem' : '0.95rem', lineHeight: 1.6, fontWeight: 600 }}>
             挑選你想複習的年級、科目與特定課綱單元，每題皆有完整解析與解題思維提示。排行榜每週一 00:00 歸零結算！
           </p>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
         
         {/* 左欄：選擇年級、科目、難度、題數 */}
         <div 
           className="glass-panel" 
           style={{ 
-            padding: '26px', 
+            padding: isMobile ? '20px 16px' : '26px', 
             display: 'flex', 
             flexDirection: 'column', 
             gap: '22px',
             background: 'var(--theme-card, var(--theme-card, #fffdf9))',
             border: '2.5px solid var(--theme-border, #17324d)',
-            borderRadius: '24px',
-            boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
+            borderRadius: isMobile ? '20px' : '24px',
+            boxShadow: isMobile ? '4px 4px 0px var(--theme-border, #17324d)' : '6px 6px 0px var(--theme-border, #17324d)'
           }}
         >
           {/* 步驟 1：選擇學習年級 */}
@@ -154,7 +156,7 @@ export default function ScopeSelector({ onStartQuiz, onOpenPrintExamModal }) {
               <BookOpen size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>步驟 2：選擇複習科目</h3>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' }}>
               {SUBJECTS.map(s => {
                 const isSelected = selectedSubject === s.id;
                 return (
@@ -262,13 +264,13 @@ export default function ScopeSelector({ onStartQuiz, onOpenPrintExamModal }) {
         <div 
           className="glass-panel" 
           style={{ 
-            padding: '26px', 
+            padding: isMobile ? '20px 16px' : '26px', 
             display: 'flex', 
             flexDirection: 'column',
             background: 'var(--theme-card, var(--theme-card, #fffdf9))',
             border: '2.5px solid var(--theme-border, #17324d)',
-            borderRadius: '24px',
-            boxShadow: '6px 6px 0px var(--theme-border, #17324d)'
+            borderRadius: isMobile ? '20px' : '24px',
+            boxShadow: isMobile ? '4px 4px 0px var(--theme-border, #17324d)' : '6px 6px 0px var(--theme-border, #17324d)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1.5px solid #e8ded0' }}>
