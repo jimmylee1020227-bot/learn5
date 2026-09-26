@@ -904,6 +904,12 @@ function AdminDashboard() {
 
       currentBoard.forEach(p => {
         if (!p || !p.userId) return;
+        // 🔒 針對小編帳號，強制絕對鎖定為 50 分，絕不被任何歷史殘留日誌或失步校準竄改！
+        if (p.userId === 'u_knbo67cox0xp' || p.name === '小編' || p.displayName === '小編' || p.email === 'happybrother0717@gmail.com') {
+          p.weeklyPoints = 50;
+          p.totalPoints = 50;
+          return;
+        }
         const historyCorrect = correctStats[p.userId] || 0;
         if (historyCorrect > (p.weeklyPoints || 0)) {
           p.weeklyPoints = historyCorrect;
