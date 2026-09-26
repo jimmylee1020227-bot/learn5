@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
 import { 
   getQuestionReports, 
+  fetchCloudQuestionReports, 
   resolveQuestionReport, 
   modifyQuestion, 
   getQuestionOverrides,
@@ -232,6 +233,9 @@ function AdminDashboard() {
     });
     fetchCloudAuditLogs(currentUser).then(logs => {
       if (logs && logs.length > 0) setAuditLogs(logs);
+    });
+    fetchCloudQuestionReports().then(reps => {
+      if (reps && reps.length > 0) setReports(reps);
     });
 
     const unsub = subscribeToCloudSync((ev) => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   getCommunityPosts, 
+  fetchCloudCommunityPosts,
   addCommunityPost, 
   likeCommunityPost, 
   deleteCommunityPost,
@@ -50,6 +51,9 @@ export default function CommunityWallModal({ isOpen, onClose }) {
     if (isOpen) {
       setPosts(getCommunityPosts());
       refreshReportedStatus();
+      fetchCloudCommunityPosts().then(latest => {
+        if (latest) setPosts(latest);
+      }).catch(() => {});
       const unsubscribe = subscribeToCloudSync((event) => {
         if (event.key === 'community_posts' || event.key === 'deleted_community_post_ids') {
           setPosts(getCommunityPosts());

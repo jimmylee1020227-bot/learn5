@@ -1780,6 +1780,24 @@ export function getQuestionReports() {
   return getJson('question_reports', []);
 }
 
+// 主動向 Firebase 雲端即時拉取最新題目錯誤回報 (管理員後台跨裝置同步)
+export async function fetchCloudQuestionReports() {
+  if (!db) return getQuestionReports();
+  try {
+    const snap = await Promise.race([
+      get(ref(db, 'studyhub/question_reports')),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+    ]);
+    const val = snap.val();
+    if (val) {
+      const arr = Array.isArray(val) ? val : Object.values(val);
+      setJson('question_reports', arr);
+      return arr;
+    }
+  } catch (e) {}
+  return getQuestionReports();
+}
+
 export function resolveQuestionReport(reportId, operatorUser, resolutionNote) {
   assertAdminPermission(operatorUser, '處理題目回報');
   const reports = getQuestionReports();
@@ -2400,6 +2418,24 @@ export function getCommunityPosts() {
   const posts = getJson('community_posts', INITIAL_COMMUNITY_POSTS);
   const deletedSet = new Set(getJson('deleted_community_post_ids', []));
   return posts.filter(p => !deletedSet.has(p.id));
+}
+
+// 主動向 Firebase 雲端即時拉取最新社群打氣留言 (跨裝置秒級拉取)
+export async function fetchCloudCommunityPosts() {
+  if (!db) return getCommunityPosts();
+  try {
+    const snap = await Promise.race([
+      get(ref(db, 'studyhub/community_posts')),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+    ]);
+    const val = snap.val();
+    if (val) {
+      const arr = Array.isArray(val) ? val : Object.values(val);
+      setJson('community_posts', arr);
+      return getCommunityPosts();
+    }
+  } catch (e) {}
+  return getCommunityPosts();
 }
 
 // 社群留言速率限制器：每位使用者 30 秒內最多發 5 則
