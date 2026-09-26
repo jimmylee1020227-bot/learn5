@@ -59,6 +59,15 @@ let activeUserListenerUnsub = null;
 // 動態題庫還原器 (由 questionGenerator 註冊，實現 0 空間負擔的完整解析還原)
 let registeredQuestionHydrator = null;
 
+// 深度清洗資料：安全過濾所有 undefined 屬性，防止 Firebase SDK 拋出 set failed 異常拒寫 (置於最頂端以防混淆器 Hoisting 失效)
+export function sanitizeForFirebase(data) {
+  if (data === null || data === undefined) return null;
+  return JSON.parse(JSON.stringify(data, (key, value) => {
+    if (value === undefined) return null;
+    return value;
+  }));
+}
+
 // Firebase 同步推播函數 (移至最前方避免混淆器 Hoisting 失效，支援陣列與物件安全推播)
 export function updateServerSync(key, updates) {
   if (!db) return;
@@ -446,14 +455,6 @@ if (typeof window !== 'undefined') {
 }
 
 // 3. FIFO 滾動窗口推播：限制各項資料上限，雲端總體積永不超標
-// 深度清洗資料：安全過濾所有 undefined 屬性，防止 Firebase SDK 拋出 set failed 異常拒寫
-function sanitizeForFirebase(data) {
-  if (data === null || data === undefined) return null;
-  return JSON.parse(JSON.stringify(data, (key, value) => {
-    if (value === undefined) return null;
-    return value;
-  }));
-}
 
 // 雲端資料永久即時同步推播 (保證 100% 成功寫入 Firebase，無截斷、無 undefined 丟失)
 function pushServerSync(key, value) {

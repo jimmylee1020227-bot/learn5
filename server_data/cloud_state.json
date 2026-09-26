@@ -348,20 +348,28 @@
   },
   "admin_notifications": [
     {
-      "id": "notif_1790397519165",
-      "message": "新兌換碼發布：跨裝置即時同步測試禮包，點擊即可一鍵領取！",
-      "relatedCode": "SYNC_VERIFY_999",
+      "id": "notif_happy_festival1",
+      "message": "新兌換碼發布：中秋快樂 (3張抽獎券)，點擊即可一鍵領取！",
+      "relatedCode": "HAPPY_FESTIVAL1",
       "sender": "總管理員",
-      "timestamp": "2026-09-26T04:38:39.165Z",
-      "title": "🎁 管理員發放新序號【SYNC_VERIFY_999】！",
+      "timestamp": "2026-09-26T04:36:20.547Z",
+      "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL1】！",
+      "type": "redemption"
+    },
+    {
+      "id": "notif_happy_festival",
+      "message": "新兌換碼發布：中秋快樂 (20點積分)，點擊即可一鍵領取！",
+      "relatedCode": "HAPPY_FESTIVAL",
+      "sender": "總管理員",
+      "timestamp": "2026-09-26T04:29:31.516Z",
+      "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL】！",
       "type": "redemption"
     },
     {
       "id": "notif_launch",
-      "isRead": false,
       "message": "108 課綱全科複習網正式上線！每週一 00:00 歸零結算榜單，答對一題即得 1 點排行榜積分，祝各位戰友穩穩上岸！",
       "sender": "總管理員 Jimmy",
-      "timestamp": "2026-09-26T04:38:39.155Z",
+      "timestamp": "2026-09-26T04:00:00.000Z",
       "title": "🎉 歡迎來到會考讀書網！",
       "type": "announcement"
     }
