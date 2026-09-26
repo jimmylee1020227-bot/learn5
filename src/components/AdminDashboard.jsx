@@ -889,14 +889,24 @@ function AdminDashboard() {
   };
 
   // 9. 學生帳號積分與進度校準修復器 (Account Points & Progress Recalibrator)
-  const handleRecalibrateAllPoints = () => {
+  const handleRecalibrateAllPoints = async () => {
     setIsRecalibrating(true);
     try {
+      // 1. 先主動向 Firebase 重新拉取乾淨的全服做題日誌（自動清除非法幽靈資料）
+      let cleanLogs = allHistory;
+      try {
+        const freshLogs = await fetchAllCloudPracticeLogs();
+        if (freshLogs && freshLogs.length > 0) {
+          cleanLogs = freshLogs;
+          setAllHistory(freshLogs);
+        }
+      } catch (err) {}
+
       const currentBoard = getLeaderboard();
       let adjustedCount = 0;
 
       const correctStats = {};
-      allHistory.forEach(log => {
+      cleanLogs.forEach(log => {
         if (!log || !log.userId) return;
         if (!correctStats[log.userId]) correctStats[log.userId] = 0;
         if (log.isCorrect) correctStats[log.userId]++;
@@ -904,14 +914,9 @@ function AdminDashboard() {
 
       currentBoard.forEach(p => {
         if (!p || !p.userId) return;
-        // 🔒 針對小編帳號，強制絕對鎖定為 50 分，絕不被任何歷史殘留日誌或失步校準竄改！
-        if (p.userId === 'u_knbo67cox0xp' || p.name === '小編' || p.displayName === '小編' || p.email === 'happybrother0717@gmail.com') {
-          p.weeklyPoints = 50;
-          p.totalPoints = 50;
-          return;
-        }
         const historyCorrect = correctStats[p.userId] || 0;
-        if (historyCorrect > (p.weeklyPoints || 0)) {
+        // 以雲端真實做題紀錄為準進行校準（允許正常作答累積增長，不再死鎖）
+        if (historyCorrect > 0 && historyCorrect !== p.weeklyPoints) {
           p.weeklyPoints = historyCorrect;
           adjustedCount++;
         }
@@ -926,7 +931,7 @@ function AdminDashboard() {
       setJson('leaderboard_players', playerObj);
       setJson('studyhub_weekly_leaderboard', currentBoard);
       setPlayers([...currentBoard]);
-      setRecalibrateNotice(`✅ 校準完成！已為 ${adjustedCount} 位學生修復失步積分，全服排行榜已對齊！`);
+      setRecalibrateNotice(`✅ 校準完成！已依雲端真實做題紀錄校準 ${adjustedCount} 位學生點數！`);
       setTimeout(() => setRecalibrateNotice(''), 4000);
     } catch (e) {
       setRecalibrateNotice(`❌ 校準失敗：${e.message}`);

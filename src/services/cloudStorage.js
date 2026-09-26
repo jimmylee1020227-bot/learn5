@@ -1540,12 +1540,7 @@ export async function fetchAllCloudPracticeLogs() {
 
     const logMap = new Map();
 
-    // 先把本地既有的快取注入
-    getUserPracticeHistory().forEach(item => {
-      if (item && item.id) logMap.set(item.id, item);
-    });
-
-    // 並行向 Firebase 請求所有註冊學生的做題歷程與錯題本
+    // 並行向 Firebase 請求所有註冊學生的做題歷程與錯題本（以雲端真實數據為準，徹底杜絕本地殘留幽靈日誌）
     await Promise.all(userIds.map(async (userId) => {
       const userInfo = registry[userId] || {};
       const uName = userInfo.name || '同學';
@@ -1606,6 +1601,15 @@ export async function fetchAllCloudPracticeLogs() {
         console.warn(`[Failed to fetch logs for user: ${userId}]`, err);
       }
     }));
+
+    // 僅保留未在雲端註冊之訪客學生本地暫存做題紀錄，絕不復活已自雲端清理的註冊學生歷史
+    getUserPracticeHistory().forEach(item => {
+      if (item && item.id && !logMap.has(item.id)) {
+        if (!item.userId || !registry[item.userId]) {
+          logMap.set(item.id, item);
+        }
+      }
+    });
 
     const aggregated = Array.from(logMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     if (aggregated.length > 0) {
