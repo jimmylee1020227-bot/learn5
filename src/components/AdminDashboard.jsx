@@ -915,9 +915,13 @@ function AdminDashboard() {
       currentBoard.forEach(p => {
         if (!p || !p.userId) return;
         const historyCorrect = correctStats[p.userId] || 0;
-        // 以雲端真實做題紀錄為準進行校準（允許正常作答累積增長，不再死鎖）
-        if (historyCorrect > 0 && historyCorrect !== p.weeklyPoints) {
+        // 🔒 安全保護：只補償因網路中斷或失步而「少算」的做題保底點數
+        // 學生若透過管理員發放點數、幸運抽獎、兌換碼或暴擊倍率獲得點數（weeklyPoints >= historyCorrect），100% 完整保留，絕不向下抹除！
+        if (historyCorrect > (p.weeklyPoints || 0)) {
           p.weeklyPoints = historyCorrect;
+          if (historyCorrect > (p.totalPoints || 0)) {
+            p.totalPoints = historyCorrect;
+          }
           adjustedCount++;
         }
       });
@@ -931,7 +935,7 @@ function AdminDashboard() {
       setJson('leaderboard_players', playerObj);
       setJson('studyhub_weekly_leaderboard', currentBoard);
       setPlayers([...currentBoard]);
-      setRecalibrateNotice(`✅ 校準完成！已依雲端真實做題紀錄校準 ${adjustedCount} 位學生點數！`);
+      setRecalibrateNotice(`✅ 校準完成！已為 ${adjustedCount} 位做題失步學生補足保底點數，並完整保留所有管理員發放、抽獎與兌換碼獎勵！`);
       setTimeout(() => setRecalibrateNotice(''), 4000);
     } catch (e) {
       setRecalibrateNotice(`❌ 校準失敗：${e.message}`);
