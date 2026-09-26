@@ -3852,8 +3852,9 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
     let invalidMistakes = 0;
     const validSubjects = ['國文', '英文', '數學', '自然', '社會'];
     
-    mistakes.forEach(m => {
-      if (!m.subject || !validSubjects.includes(m.subject)) {
+    const mistakesArr = Array.isArray(mistakes) ? mistakes : Object.values(mistakes || {});
+    mistakesArr.forEach(m => {
+      if (!m || !m.subject || !validSubjects.includes(m.subject)) {
         invalidMistakes++;
       }
     });
