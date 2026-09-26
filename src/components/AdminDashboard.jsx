@@ -17,6 +17,7 @@ import {
   fetchAllCloudQuizPapers,
   getRecentPracticeStream,
   getRegisteredStudents,
+  fetchCloudUserRegistry,
   getRedemptionCodes,
   addRedemptionCode,
   deleteRedemptionCode,
@@ -237,6 +238,9 @@ function AdminDashboard() {
     fetchCloudQuestionReports().then(reps => {
       if (reps && reps.length > 0) setReports(reps);
     });
+    fetchCloudUserRegistry().then(() => {
+      setRegisteredStudents(getRegisteredStudents());
+    });
 
     const unsub = subscribeToCloudSync((ev) => {
       refreshAll();
@@ -263,8 +267,10 @@ function AdminDashboard() {
       const [latestBoard, cloudLogs, papers] = await Promise.all([
         fetchCloudLeaderboard(),
         fetchAllCloudPracticeLogs(),
-        fetchAllCloudQuizPapers()
+        fetchAllCloudQuizPapers(),
+        fetchCloudUserRegistry()
       ]);
+      setRegisteredStudents(getRegisteredStudents());
       if (latestBoard) setPlayers(latestBoard);
       if (cloudLogs && cloudLogs.length > 0) setAllHistory(cloudLogs);
       if (papers && papers.length > 0) setQuizPapers(papers);
@@ -583,7 +589,8 @@ function AdminDashboard() {
         const kw = studentSearchKeyword.trim().toLowerCase();
         const sName = (log.userName || '').toLowerCase();
         const sSchool = (log.userSchool || '').toLowerCase();
-        if (!sName.includes(kw) && !sSchool.includes(kw)) {
+        const matchKw = (text) => text.includes(kw) || text.includes(kw.replace(/彤/g, '肜')) || text.includes(kw.replace(/肜/g, '彤'));
+        if (!matchKw(sName) && !matchKw(sSchool)) {
           return false;
         }
       }
@@ -632,7 +639,8 @@ function AdminDashboard() {
         const kw = studentSearchKeyword.trim().toLowerCase();
         const sName = (paper.userName || '').toLowerCase();
         const sSchool = (paper.userSchool || '').toLowerCase();
-        if (!sName.includes(kw) && !sSchool.includes(kw)) {
+        const matchKw = (text) => text.includes(kw) || text.includes(kw.replace(/彤/g, '肜')) || text.includes(kw.replace(/肜/g, '彤'));
+        if (!matchKw(sName) && !matchKw(sSchool)) {
           return false;
         }
       }
@@ -1862,7 +1870,8 @@ function AdminDashboard() {
                   const sName = (s.name || s.displayName || '').toLowerCase();
                   const sSchool = (s.school || '').toLowerCase();
                   const sEmail = (s.email || '').toLowerCase();
-                  return sName.includes(kw) || sSchool.includes(kw) || sEmail.includes(kw);
+                  const matchKw = (text) => text.includes(kw) || text.includes(kw.replace(/彤/g, '肜')) || text.includes(kw.replace(/肜/g, '彤'));
+                  return matchKw(sName) || matchKw(sSchool) || matchKw(sEmail);
                 })
                 .map((student, idx) => {
                   const isSelected = selectedStudent === student.name || (selectedStudentId !== 'ALL' && selectedStudentId === student.userId);

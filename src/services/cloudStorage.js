@@ -1521,6 +1521,39 @@ export function getRegisteredStudents() {
     }
   });
 
+  // 同步融合排行榜中的所有學生，保證全服上榜學生 100% 呈現在後台學生名冊
+  const leaderboard = getJson('leaderboard_players', {});
+  const lbList = Array.isArray(leaderboard) ? leaderboard : Object.values(leaderboard);
+  lbList.forEach(p => {
+    if (!p || !p.userId || p.userId === 'admin_super_jimmy') return;
+    if (!map.has(p.userId)) {
+      map.set(p.userId, {
+        id: p.userId,
+        name: p.displayName || p.name || '會考戰友',
+        displayName: p.displayName || p.name || '會考戰友',
+        email: p.email || '',
+        avatar: p.avatar || '',
+        school: p.school || '會考戰友',
+        role: 'student',
+        totalQuizzes: 1,
+        totalQuestions: p.totalPoints || p.weeklyPoints || 0,
+        totalCorrect: p.weeklyPoints || 0,
+        createdAt: new Date(p.updatedAt || Date.now()).toISOString(),
+        lastActive: p.updatedAt ? new Date(p.updatedAt).toISOString() : new Date().toISOString()
+      });
+    } else {
+      const existing = map.get(p.userId);
+      if (!existing.email && p.email) existing.email = p.email;
+      if (!existing.avatar && p.avatar) existing.avatar = p.avatar;
+      if (p.displayName && (!existing.name || existing.name === '會考同學' || existing.name === '會考戰友')) {
+        existing.name = p.displayName;
+      }
+      if ((p.weeklyPoints || 0) > (existing.totalCorrect || 0)) {
+        existing.totalCorrect = p.weeklyPoints;
+      }
+    }
+  });
+
   // 3. 合併同 Email 的帳號
   const emailMap = new Map();
   const obsoleteUserIds = new Set();
@@ -1612,6 +1645,24 @@ export function getRegisteredStudents() {
       accuracy
     };
   }).sort((a, b) => new Date(b.lastActive || 0) - new Date(a.lastActive || 0));
+}
+
+// 主動調閱 Firebase 雲端最新全體學生註冊名冊
+export async function fetchCloudUserRegistry() {
+  if (!db) return getJson('user_registry', {});
+  try {
+    const snap = await get(ref(db, 'studyhub/user_registry'));
+    const val = snap.val();
+    if (val && typeof val === 'object') {
+      const reg = Array.isArray(val) ? val.reduce((acc, u) => { if (u?.id) acc[u.id] = u; return acc; }, {}) : val;
+      safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(reg));
+      setJson('user_registry', reg);
+      return reg;
+    }
+  } catch (e) {
+    console.warn('[Fetch Cloud User Registry Error]', e);
+  }
+  return getJson('user_registry', {});
 }
 
 // 註冊或更新學生雲端資料至註冊名冊 (確保跨裝置實名制且管理員可見)
