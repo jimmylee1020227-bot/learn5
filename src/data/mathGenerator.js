@@ -672,9 +672,62 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
             hint: `💡 提示：$(2x)(−${b}) + ${a}(3x) = -${2*b}x + ${3*a}x$。`,
             explanation: `📖 詳解：展開得 $6x^2 + (${3*a} - ${2*b})x - ${a*b}$，$x$ 的係數為 ${3*a - 2*b}$。`
           };
+        },
+        () => {
+          // 差的完全平方公式速算
+          const d = Math.floor(rand() * 4) + 1; // 1..4
+          const num = 200 - d;
+          const ans = num * num;
+          return {
+            question: `【差的平方公式計算】${preamble}\n利用乘法公式 $(a-b)^2 = a^2 - 2ab + b^2$，計算 $${num}^2$ 的值為何？`,
+            options: [
+              `${ans}`,
+              `${40000 - d * d}`,
+              `${40000 + d * d}`,
+              `${40000 - 200 * d}`
+            ],
+            answer: 0,
+            hint: `💡 提示：$${num}^2 = (200 - ${d})^2 = 200^2 - 2 \\times 200 \\times ${d} + ${d}^2$。`,
+            explanation: `📖 詳解：$${num}^2 = (200 - ${d})^2 = 40000 - ${400 * d} + ${d * d} = ${ans}$。`
+          };
+        },
+        () => {
+          // 108課綱會考經典：完全平方式求常數項
+          const m = [3, 4, 5, 6, 7][Math.floor(rand() * 5)];
+          const middle = 2 * m;
+          return {
+            question: `【完全平方式求常數項】${preamble}\n若多項式 $x^2 + kx + ${m * m}$ 是一個完全平方式，請問常數 $k$ 的值為何？`,
+            options: [
+              `$\\pm ${middle}$`,
+              `${middle}`,
+              `$-${middle}$`,
+              `$\\pm ${m}$`
+            ],
+            answer: 0,
+            hint: `💡 提示：$(x \\pm ${m})^2 = x^2 \\pm 2(${m})x + ${m}^2$，故一次項係數有正負兩解！`,
+            explanation: `📖 詳解：因為 $(x \\pm ${m})^2 = x^2 \\pm ${2 * m}x + ${m * m}$，所以一次項係數 $k = \\pm ${middle}$。`
+          };
+        },
+        () => {
+          // 108課綱幾何面積模型素養題
+          const sideA = Math.floor(rand() * 5) + 15;
+          const sideB = Math.floor(rand() * 4) + 3;
+          const diffSq = sideA * sideA - sideB * sideB;
+          return {
+            question: `【乘法公式幾何面積模型】${preamble}\n如圖所示，一塊邊長為 $${sideA}$ 的大正方形紙片，從角落剪去一個邊長為 $${sideB}$ 的小正方形。請問剩下圖形（L型）的面積為何？`,
+            options: [
+              `${diffSq}`,
+              `${Math.pow(sideA - sideB, 2)}`,
+              `${sideA * sideA - sideB}`,
+              `${(sideA - sideB) * 2}`
+            ],
+            answer: 0,
+            hint: `💡 提示：利用平方差公式幾何意義：$a^2 - b^2 = (a+b)(a-b)$。`,
+            explanation: `📖 詳解：大正方形面積減小正方形面積：$${sideA}^2 - ${sideB}^2 = (${sideA} + ${sideB})(${sideA} - ${sideB}) = ${sideA + sideB} \\times ${sideA - sideB} = ${diffSq}$。`
+          };
         }
       ];
-      return archetypes[Math.abs(index + Math.floor(rand() * 7)) % archetypes.length]();
+      return archetypes[Math.abs(index + Math.floor(rand() * 10)) % archetypes.length]();
     }
 
     // u2: 平方根、近似值與畢氏定理
