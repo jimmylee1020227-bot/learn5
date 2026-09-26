@@ -11,7 +11,8 @@ import {
   subscribeUserRealtimeSync,
   registerCloudUser,
   purgeAllTestData,
-  checkNicknameAvailable
+  checkNicknameAvailable,
+  saveUserAvatarToCloud
 } from '../services/cloudStorage';
 import { 
   redirectToGoogleLogin, 
@@ -124,16 +125,24 @@ export function AuthProvider({ children }) {
           } catch (e) {
             // 雲端確認失敗的 fallback 防護
           }
-          const resolvedDisplayName = baseDisplayName;
+          let savedAvatar = null;
+          try {
+            const avatarKey = `studyhub_custom_avatar_${cleanEmail}`;
+            savedAvatar = localStorage.getItem(avatarKey) || cloudProfile?.avatar || cloudProfile?.photoURL;
+          } catch (_) {}
+
+          const resolvedAvatar = savedAvatar || (isJimmy 
+            ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227' 
+            : (googleUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(googleUser.email)}`));
 
           const newUser = {
             id: deterministicId,
             email: googleUser.email,
             displayName: resolvedDisplayName,
             customDisplayName: savedDisplayName || null,
-            avatar: isJimmy 
-              ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227' 
-              : (googleUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(googleUser.email)}`),
+            avatar: resolvedAvatar,
+            photoURL: resolvedAvatar,
+            customAvatar: savedAvatar || null,
             role: assignedRole,
             isGoogleBound: true,
             sub: googleUser.sub,
@@ -236,24 +245,48 @@ export function AuthProvider({ children }) {
       updateRoleFromList(adminList);
     });
 
-    // B. 即時監聽 Firebase admins_list 廣播，只要總管任命或撤銷，當前使用者秒級生效！
+    // B. 即時監聽 Firebase admins_list 與 user_registry 廣播，只要總管任命或頭像更新，當前使用者秒級生效！
     const unsub = subscribeToCloudSync((event) => {
       if (!event || event.key === 'admins_list') {
         const currentAdmins = getAdminsList();
         updateRoleFromList(currentAdmins);
       }
       if (event && event.key === 'user_registry' && currentUser?.id) {
-        const registry = JSON.parse(localStorage.getItem('studyhub_user_registry') || '{}');
+        const registryStr = localStorage.getItem('studyhub_cloud_user_registry') || localStorage.getItem('studyhub_user_registry') || '{}';
+        let registry = {};
+        try { registry = JSON.parse(registryStr); } catch (_) {}
         const latestData = registry[currentUser.id];
-        if (latestData && latestData.name && latestData.name !== currentUser.displayName) {
-          setCurrentUser(prev => ({ ...prev, displayName: latestData.name }));
-          localStorage.setItem('studyhub_auth_user', JSON.stringify({ ...currentUser, displayName: latestData.name }));
+        if (latestData) {
+          let hasChange = false;
+          let updatedName = currentUser.displayName;
+          let updatedAvatar = currentUser.avatar;
+
+          if (latestData.name && latestData.name !== currentUser.displayName) {
+            updatedName = latestData.name;
+            hasChange = true;
+          }
+          if (latestData.avatar && latestData.avatar !== currentUser.avatar) {
+            updatedAvatar = latestData.avatar;
+            hasChange = true;
+          }
+
+          if (hasChange) {
+            setCurrentUser(prev => {
+              if (!prev) return prev;
+              const next = { ...prev, displayName: updatedName, avatar: updatedAvatar, photoURL: updatedAvatar };
+              const safe = { ...next };
+              delete safe.accessToken; delete safe.authProof; delete safe.adminSessionProof;
+              localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safe));
+              localStorage.setItem('studyhub_auth_user', JSON.stringify(safe));
+              return next;
+            });
+          }
         }
       }
     });
 
     return () => unsub();
-  }, [currentUser?.email, currentUser?.role, currentUser?.id, currentUser?.displayName]);
+  }, [currentUser?.email, currentUser?.role, currentUser?.id, currentUser?.displayName, currentUser?.avatar]);
 
   // 2. 當使用者資料變更時同步持久化並訂閱專屬個人雲端節點
   useEffect(() => {
@@ -341,6 +374,39 @@ export function AuthProvider({ children }) {
     return trimmed;
   };
 
+  // 5.1 自訂頭像更新並跨裝置雲端同步
+  const updateUserAvatar = async (newAvatarUrl) => {
+    if (!newAvatarUrl || !currentUser?.id) return false;
+    const cleanEmail = (currentUser?.email || '').trim().toLowerCase();
+
+    // 1. 本地立即反應
+    setCurrentUser(prev => {
+      if (!prev) return prev;
+      const updated = {
+        ...prev,
+        avatar: newAvatarUrl,
+        photoURL: newAvatarUrl,
+        customAvatar: newAvatarUrl
+      };
+      const safeUser = { ...updated };
+      delete safeUser.accessToken;
+      delete safeUser.authProof;
+      delete safeUser.adminSessionProof;
+      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
+      localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
+      return updated;
+    });
+
+    // 2. 存入獨立自訂頭像 Key (跨次登入永久持久化)
+    if (cleanEmail) {
+      localStorage.setItem(`studyhub_custom_avatar_${cleanEmail}`, newAvatarUrl);
+    }
+
+    // 3. 呼叫雲端儲存與推播模組 (同步 Firebase user_registry 與 leaderboard_players)
+    await saveUserAvatarToCloud(currentUser.id, newAvatarUrl, currentUser);
+    return true;
+  };
+
   // 6. 登入特定 Email（跨裝置 100% 相同 ID，資料即時漫遊）
   const directLoginWithEmail = (email, displayName = '', securityKey = '') => {
     const cleanEmail = email.trim();
@@ -371,13 +437,23 @@ export function AuthProvider({ children }) {
     const isAdminRole = assignedRole === 'super_admin' || assignedRole === 'admin';
     const sessionProof = isAdminRole ? generateAuthProof(cleanEmail, 'admin_session', envAdminKey) : null;
 
+    let savedAvatar = null;
+    try {
+      const avatarKey = `studyhub_custom_avatar_${cleanEmail.toLowerCase()}`;
+      savedAvatar = localStorage.getItem(avatarKey);
+    } catch (_) {}
+
+    const resolvedAvatar = savedAvatar || (isJimmy
+      ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227'
+      : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`);
+
     const user = {
       id: deterministicId,
       email: cleanEmail,
       displayName: displayName.trim() || (isJimmy ? '總管理員 (Jimmy)' : cleanEmail.split('@')[0]),
-      avatar: isJimmy
-        ? 'https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227'
-        : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
+      avatar: resolvedAvatar,
+      photoURL: resolvedAvatar,
+      customAvatar: savedAvatar || null,
       role: assignedRole,
       isGoogleBound: true,
       adminSessionProof: sessionProof,
@@ -466,6 +542,7 @@ export function AuthProvider({ children }) {
         bindGoogleAccount,
         logout,
         setCustomDisplayName,
+        updateUserAvatar,
         isRoleModalOpen,
         setIsRoleModalOpen,
         isGoogleConfigModalOpen,

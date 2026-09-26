@@ -1764,6 +1764,80 @@ export async function fetchCloudUserProfile(userId) {
   return null;
 }
 
+// ─── 儲存並雲端同步用戶自訂頭像 (即時同步至 user_registry 與排行榜) ───
+export async function saveUserAvatarToCloud(userId, avatarUrl, currentUser = null) {
+  if (!userId || !avatarUrl) return false;
+
+  // 1. 本地更新 user_registry
+  const registry = getJson('user_registry', {});
+  const existingUser = registry[userId] || {};
+  registry[userId] = {
+    ...existingUser,
+    id: userId,
+    email: currentUser?.email || existingUser.email || '',
+    name: currentUser?.displayName || existingUser.name || '同學',
+    avatar: avatarUrl,
+    photoURL: avatarUrl,
+    role: currentUser?.role || existingUser.role || 'student',
+    school: currentUser?.school || existingUser.school || '會考戰友',
+    lastActive: new Date().toISOString()
+  };
+  safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(registry));
+  setJson('user_registry', registry);
+
+  // 2. 本地更新 leaderboard_players (排行榜頭像)
+  const players = getJson('leaderboard_players', {});
+  if (players[userId]) {
+    players[userId] = {
+      ...players[userId],
+      avatar: avatarUrl
+    };
+    safeSetLocalStorage(STORAGE_PREFIX + 'leaderboard_players', JSON.stringify(players));
+    setJson('leaderboard_players', players);
+  }
+
+  // 3. 雲端同步至 Firebase Realtime Database
+  if (db && typeof window !== 'undefined') {
+    try {
+      // 更新 user_registry
+      const userRef = ref(db, `studyhub/user_registry/${userId}`);
+      update(userRef, {
+        avatar: avatarUrl,
+        photoURL: avatarUrl,
+        lastActive: new Date().toISOString()
+      }).catch(e => console.warn('[Cloud Avatar Sync Warning]', e));
+
+      // 若排行榜上有該玩家，同步更新排行榜頭像
+      const playerRef = ref(db, `studyhub/leaderboard_players/${userId}`);
+      get(playerRef).then(snap => {
+        if (snap.exists()) {
+          update(playerRef, { avatar: avatarUrl }).catch(() => {});
+        }
+      }).catch(() => {});
+    } catch (err) {
+      console.warn('[Cloud Avatar Error]', err);
+    }
+  }
+
+  // 4. 廣播本地與跨標籤頁事件
+  const payload = {
+    type: 'SYNC_UPDATE',
+    key: 'user_registry',
+    subType: 'AVATAR_UPDATED',
+    userId,
+    avatar: avatarUrl,
+    timestamp: Date.now()
+  };
+  if (cloudBus) {
+    try { cloudBus.postMessage(payload); } catch (_) {}
+  }
+  localSyncListeners.forEach(cb => {
+    try { cb(payload); } catch (_) {}
+  });
+
+  return true;
+}
+
 // ─── 暱稱唯一性查詢（先查本地快取，再向 Firebase 雲端確認） ───
 export async function checkNicknameAvailable(nickname, currentUserId = '') {
   if (!nickname) return { available: false, suggestion: '' };

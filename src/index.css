@@ -844,3 +844,20 @@ textarea:focus-visible {
   min-height: 120px;
 }
 
+/* ==========================================================================
+   📖 筆記專屬防偽防盜浮水印與列印支援 (Note Anti-counterfeit Watermark & Print)
+   ========================================================================== */
+.note-watermark-overlay {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+@media print {
+  .note-watermark-overlay {
+    opacity: 0.12 !important;
+    display: block !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+

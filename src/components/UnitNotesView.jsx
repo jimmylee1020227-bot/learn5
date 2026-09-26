@@ -26,7 +26,8 @@ import {
   Send,
   Check,
   Calculator,
-  Sigma
+  Sigma,
+  Shield
 } from 'lucide-react';
 import MathText from './MathText';
 
@@ -397,6 +398,26 @@ export default function UnitNotesView({ onStartQuizForUnit }) {
           >
             全部收合
           </button>
+
+          {/* 官方防偽浮水印標籤 */}
+          <div 
+            style={{
+              padding: '6px 12px',
+              borderRadius: '8px',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              border: '1px solid #a7f3d0',
+              background: '#ecfdf5',
+              color: '#065f46',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+            title="本專區所有重點筆記與公式推導均已嵌入『學習網』專屬官方防偽防盜浮水印，列印與在線閱讀均受版權保護"
+          >
+            <Shield size={14} color="#059669" />
+            <span>官方防偽浮水印保護中</span>
+          </div>
         </div>
       </div>
 
@@ -497,7 +518,26 @@ export default function UnitNotesView({ onStartQuizForUnit }) {
 
                 {/* 卡片展開詳情內容 */}
                 {isExpanded && (
-                  <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+                    
+                    {/* 學習網專屬防偽防盜浮水印層 (支援在線閱覽與紙本列印防盜) */}
+                    <div 
+                      className="note-watermark-overlay"
+                      aria-hidden="true"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        pointerEvents: 'none',
+                        zIndex: 0,
+                        opacity: 0.055,
+                        userSelect: 'none',
+                        backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='280' height='160' viewBox='0 0 280 160'><text x='20' y='90' fill='%2317324d' font-size='15' font-weight='900' font-family='sans-serif' transform='rotate(-22 140 80)'>學習網 ‧ 官方考點筆記</text><text x='35' y='115' fill='%2317324d' font-size='10' font-weight='700' font-family='sans-serif' opacity='0.7' transform='rotate(-22 140 80)'>版權所有 ‧ 嚴禁翻印盜用</text></svg>")`,
+                        backgroundRepeat: 'repeat'
+                      }}
+                    />
                     
                     {/* 1. 核心公式與定理要點 */}
                     {note.keyFormulas && note.keyFormulas.length > 0 && (
@@ -747,6 +787,27 @@ export default function UnitNotesView({ onStartQuizForUnit }) {
                           </button>
                         )}
                       </div>
+                    </div>
+
+                    {/* 筆記官方版權防偽標註 */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '0.72rem',
+                      color: '#94a3b8',
+                      paddingTop: '8px',
+                      position: 'relative',
+                      zIndex: 1,
+                      borderTop: '1px dotted #e2e8f0',
+                      flexWrap: 'wrap',
+                      gap: '6px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <Shield size={12} color="#10b981" />
+                        <span>學習網官方原創版權所有 ‧ 具備數位防偽浮水印保護</span>
+                      </div>
+                      <span>單元代碼：{note.id}</span>
                     </div>
 
                   </div>

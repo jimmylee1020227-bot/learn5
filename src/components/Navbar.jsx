@@ -6,6 +6,8 @@ import { useDevice } from '../context/DeviceContext';
 import { getNextMondayCountdown } from '../services/leaderboardService';
 import { SUPER_ADMIN_EMAIL, checkIsAdmin, checkIsSuperAdmin, getRedemptionCodes, getUserRedeemedCodes, subscribeToCloudSync } from '../services/cloudStorage';
 import NotificationBellModal from './NotificationBellModal';
+import AvatarEditModal from './AvatarEditModal';
+import siteLogo from '../assets/logo.jpg';
 import { 
   GraduationCap, 
   Sparkles, 
@@ -28,7 +30,8 @@ import {
   FileText,
   Scale,
   Menu,
-  X
+  X,
+  Camera
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -55,6 +58,7 @@ export default function Navbar({
   const [newNameInput, setNewNameInput] = useState(currentUser?.displayName || '');
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [syncTick, setSyncTick] = useState(0);
 
@@ -98,11 +102,21 @@ export default function Navbar({
             onClick={() => setActiveTab('quiz')} 
             style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
           >
-            {/* 經典深海軍藍小方塊標章 + 珊瑚橙點 */}
-            <div style={{ position: 'relative', width: '42px', height: '42px', borderRadius: '14px', background: 'var(--theme-border, var(--theme-border, #17324d))', border: '2px solid var(--theme-border, #17324d)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f7cf68', boxShadow: '3px 3px 0px var(--theme-accent, #ef8354)' }}>
-              <GraduationCap size={24} />
-              <span style={{ position: 'absolute', top: '-3px', right: '-3px', width: '9px', height: '9px', borderRadius: '50%', background: 'var(--theme-accent, var(--theme-accent, #ef8354))' }} />
-            </div>
+            {/* 學習網專屬可愛插畫官方圓形標誌 */}
+            <img 
+              src={siteLogo} 
+              alt="學習網官方標誌" 
+              style={{ 
+                width: '44px', 
+                height: '44px', 
+                borderRadius: '50%', 
+                objectFit: 'cover', 
+                border: '2.5px solid var(--theme-border, #17324d)', 
+                boxShadow: '3px 3px 0px var(--theme-accent, #ef8354)',
+                background: '#ffffff',
+                flexShrink: 0
+              }} 
+            />
 
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -474,11 +488,48 @@ export default function Navbar({
           {/* Google 登入狀態區塊 */}
           {currentUser && currentUser.isGoogleBound ? (
             <div style={{ padding: '4px 12px 4px 6px', display: 'flex', alignItems: 'center', gap: '10px', borderRadius: '30px', background: 'var(--theme-card, var(--theme-card, #fffdf9))', border: '2px solid var(--theme-border, #17324d)', boxShadow: '2px 2px 0 var(--theme-border, #17324d)' }}>
-              <img 
-                src={currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email)}`} 
-                alt={currentUser.displayName}
-                style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1.5px solid var(--theme-border, #17324d)' }}
-              />
+              {/* 可點擊更換頭像 (自動跨裝置雲端同步) */}
+              <div 
+                onClick={() => setIsAvatarModalOpen(true)}
+                style={{ 
+                  position: 'relative', 
+                  cursor: 'pointer',
+                  transition: 'transform 0.15s ease'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                title="點擊更換個人頭像 (自動跨裝置雲端同步)"
+              >
+                <img 
+                  src={currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email)}`} 
+                  alt={currentUser.displayName}
+                  style={{ 
+                    width: '34px', 
+                    height: '34px', 
+                    borderRadius: '50%', 
+                    border: '2px solid var(--theme-border, #17324d)',
+                    objectFit: 'cover',
+                    background: '#ffffff'
+                  }} 
+                />
+                <div style={{
+                  position: 'absolute',
+                  bottom: '-2px',
+                  right: '-2px',
+                  background: 'var(--theme-accent, #ef8354)',
+                  color: '#ffffff',
+                  borderRadius: '50%',
+                  width: '14px',
+                  height: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1.5px solid #ffffff',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                }}>
+                  <Camera size={8} strokeWidth={2.5} />
+                </div>
+              </div>
               
               {isEditingName ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -603,6 +654,46 @@ export default function Navbar({
             boxShadow: '0 8px 24px rgba(23, 50, 77, 0.15)'
           }}
         >
+          {/* 0. 手機版個人資訊與自訂頭像 */}
+          {currentUser && currentUser.isGoogleBound && (
+            <div style={{ 
+              padding: '10px 14px', 
+              borderRadius: '14px', 
+              background: 'var(--theme-bg, #f8f3eb)', 
+              border: '1.5px solid #ded3c5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img
+                  src={currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email)}`}
+                  alt={currentUser.displayName}
+                  style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid var(--theme-border, #17324d)', objectFit: 'cover' }}
+                />
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--theme-border, #17324d)' }}>
+                    {currentUser.displayName}
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: isSuperAdmin ? '#c8643d' : isAdmin ? '#48717e' : '#78818a', fontWeight: 700 }}>
+                    {isSuperAdmin ? '👑 唯一總管理員' : isAdmin ? '🛡️ 駐站管理員' : '🎓 Google學生'}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => { setIsAvatarModalOpen(true); setIsMobileMenuOpen(false); }}
+                className="btn btn-secondary"
+                style={{ padding: '6px 12px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '4px', borderRadius: '10px' }}
+              >
+                <Camera size={13} color="var(--theme-accent, #ef8354)" />
+                <span>換頭像</span>
+              </button>
+            </div>
+          )}
+
           {/* 1. 週榜結算倒數 */}
           <div style={{ padding: '8px 14px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1.5px solid #ded3c5', background: 'var(--theme-bg, #f8f3eb)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -819,6 +910,12 @@ export default function Navbar({
       <NotificationBellModal
         isOpen={isNotifModalOpen}
         onClose={() => setIsNotifModalOpen(false)}
+      />
+
+      {/* 自訂個人頭像與雲端同步彈窗 */}
+      <AvatarEditModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
       />
     </header>
   );

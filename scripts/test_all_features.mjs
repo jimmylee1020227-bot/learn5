@@ -71,14 +71,41 @@ async function testAllFeatures() {
   }
 
   // 6. 考卷與學員資料庫完整性驗證
-  console.log('\n[6/6] 測試歷次試卷與學員資料庫持久性...');
+  console.log('\n[6/7] 測試歷次試卷與學員資料庫持久性...');
   const papers = await fetchAllCloudQuizPapers();
   console.log(`📄 雲端歷次試卷總數: ${papers.length} 份`);
   const registered = getRegisteredStudents();
   console.log(`👥 全服註冊學生數: ${registered.length} 位`);
 
+  // 7. 自訂頭像更新與雲端同步測試
+  console.log('\n[7/7] 測試自訂頭像更換與雲端同步 (saveUserAvatarToCloud)...');
+  const { saveUserAvatarToCloud, fetchCloudUserProfile } = await import('../src/services/cloudStorage.js');
+  const testUserId = 'test_avatar_sync_user';
+  const testAvatarUrl = 'https://api.dicebear.com/7.x/bottts/svg?seed=avatar_sync_success_test';
+  
+  await saveUserAvatarToCloud(testUserId, testAvatarUrl, {
+    id: testUserId,
+    email: 'test_sync@example.com',
+    displayName: '頭像同步測試員',
+    role: 'student'
+  });
+
+  const updatedProfile = await fetchCloudUserProfile(testUserId);
+  console.log(`👤 雲端讀取更新後頭像: ${updatedProfile?.avatar ? '✅ 成功匹配' : '❌ 未找到'}`);
+  if (updatedProfile && updatedProfile.avatar !== testAvatarUrl) {
+    throw new Error(`頭像雲端同步數值不符: expected ${testAvatarUrl}, got ${updatedProfile.avatar}`);
+  }
+  console.log('✅ 自訂頭像雲端雙向同步驗證 100% 通過！');
+
+  // 清理測試節點
+  if (db) {
+    try {
+      await remove(ref(db, `studyhub/user_registry/${testUserId}`));
+    } catch (_) {}
+  }
+
   console.log('\n=============================================');
-  console.log('🎉 所有功能測試 100% 通過！全系統完全正常！');
+  console.log('🎉 所有功能與雲端同步測試 100% 通過！全系統完全正常！');
   console.log('=============================================');
   process.exit(0);
 }

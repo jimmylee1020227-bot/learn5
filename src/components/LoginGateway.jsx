@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useDevice } from '../context/DeviceContext';
 import { GraduationCap, Shield, Users } from 'lucide-react';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
+import siteLogo from '../assets/logo.jpg';
 
 export default function LoginGateway() {
   const { triggerGoogleLogin } = useAuth();
@@ -43,22 +44,21 @@ export default function LoginGateway() {
       >
         {/* 頂部品牌區塊 */}
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-          <div 
+          {/* 學習網專屬可愛插畫官方圓形標誌 */}
+          <img 
+            src={siteLogo} 
+            alt="學習網官方標誌" 
             style={{ 
-              width: '68px', 
-              height: '68px', 
-              borderRadius: '22px', 
-              background: 'var(--theme-border, var(--theme-border, #17324d))', 
+              width: '80px', 
+              height: '80px', 
+              borderRadius: '50%', 
+              objectFit: 'cover',
               border: '3px solid var(--theme-border, #17324d)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              color: '#f7cf68', 
-              boxShadow: '4px 4px 0px var(--theme-accent, #ef8354)' 
-            }}
-          >
-            <GraduationCap size={38} />
-          </div>
+              boxShadow: '4px 4px 0px var(--theme-accent, #ef8354)',
+              background: '#ffffff',
+              flexShrink: 0
+            }} 
+          />
 
           <div>
             <h1 style={{ margin: 0, fontSize: '1.85rem', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))', letterSpacing: '-0.02em' }}>
