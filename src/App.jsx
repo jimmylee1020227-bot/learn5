@@ -12,6 +12,7 @@ import MistakeReinforceView from './components/MistakeReinforceView';
 import LeaderboardView from './components/LeaderboardView';
 import UserHistoryModal from './components/UserHistoryModal';
 import AdminDashboard from './components/AdminDashboard';
+import UnitNotesView from './components/UnitNotesView';
 import SuperAdminConsole from './components/SuperAdminConsole';
 import LuckyDrawModal from './components/LuckyDrawModal';
 import GoogleLoginModal from './components/GoogleLoginModal';
@@ -276,6 +277,21 @@ function MainAppContent() {
           <UserHistoryModal 
             onLaunchRetryQuiz={handleStartReinforceQuiz} 
             onStartQuizTab={() => setActiveTab('quiz')} 
+          />
+        )}
+
+        {activeTab === 'notes' && (
+          <UnitNotesView 
+            onStartQuizForUnit={(subj, grade, uId) => {
+              setActiveTab('quiz');
+              handleStartQuiz({ 
+                subjectId: subj, 
+                gradeId: grade, 
+                unitIds: [uId], 
+                count: 10, 
+                difficulty: 'medium' 
+              });
+            }}
           />
         )}
 

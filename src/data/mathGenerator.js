@@ -1584,7 +1584,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
       ];
       return archetypes[Math.abs(index + Math.floor(rand() * 11)) % archetypes.length]();
     } else {
-      // ma-past-u2: 生活情境與圖表素養
+            // ma-past-u2: 生活情境與圖表素養
       const archetypes = [
         () => {
           const baseRate = 30 + Math.floor(rand() * 3) * 10;
@@ -1596,9 +1596,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
           const uncapped = baseRate + totalHalfHours * halfRate;
           const finalCost = Math.min(uncapped, cap);
           return {
-            isReading: true,
-            readingText: `【歷屆會考-生活情境圖表題】\n某觀光區停車場收費標準如下：\n- 第一小時收費 ${baseRate} 元\n- 超過一小時後，每半小時收費 ${halfRate} 元 (未滿半小時以半小時計算)\n- 當日最高上限收費 ${cap} 元。`,
-            question: `若遊客停放了 ${hours} 小時 ${mins} 分鐘，他總共需繳交多少停車費？`,
+            question: `【歷屆會考-停車場費率級距試算】${preamble}\n某風景區收費：第1小時 ${baseRate} 元，逾1小時後每半小時 ${halfRate} 元，當日上限 ${cap} 元。遊客車輛停放了 ${hours} 小時 ${mins} 分鐘，應繳停車費為多少元？`,
             options: [
               `${finalCost} 元`,
               `${uncapped > cap ? uncapped : cap + 30} 元`,
@@ -1606,8 +1604,8 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
               `${baseRate + hours * halfRate * 2} 元`
             ],
             answer: 0,
-            hint: `💡 提示：第一小時 ${baseRate} 元，剩餘 ${hours - 1} 小時 ${mins} 分鐘算 ${totalHalfHours} 個半小時。累計費用與上限 ${cap} 元比較取較小值。`,
-            explanation: `📖 詳解：基本費 ${baseRate} 元，後續共有 ${totalHalfHours} 個半小時，計算費用為 $${baseRate} + ${totalHalfHours} \\times ${halfRate} = ${uncapped}$ 元。由於當日最高上限為 ${cap} 元，故實付 ${finalCost} 元。`
+            hint: `💡 提示：第1小時 ${baseRate} 元，逾時有 ${totalHalfHours} 個半小時。累計金額為 ${uncapped} 元，但不可超過上限 ${cap} 元。`,
+            explanation: `📖 詳解：基本費 ${baseRate} 元，後續共有 ${totalHalfHours} 個半小時，計算費用為 $${baseRate} + ${totalHalfHours} \\times ${halfRate} = ${uncapped}$ 元。因當日上限為 ${cap} 元，故實付 ${finalCost} 元。`
           };
         },
         () => {
@@ -1616,7 +1614,7 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
           const flatRate = 499;
           const gbBreakeven = Math.ceil((flatRate - monthlyRent) / perGb);
           return {
-            question: `【歷屆會考-資費方案決策】${preamble}\n小明比較兩家電信資費：\n- 甲方案：月租費 ${monthlyRent} 元，贈送 5GB，超過後每 1GB 收費 ${perGb} 元。\n- 乙方案：吃到飽月租費 ${flatRate} 元。\n若小明每月網路使用量超過 5GB，則每月至少要使用多少 GB 時，選擇乙方案才會比甲方案更划算？`,
+            question: `【歷屆會考-電信資費方案最優決策】${preamble}\n甲方案：月租 ${monthlyRent} 元贈 5GB，超額每 1GB 收 ${perGb} 元；乙方案：月租 ${flatRate} 元吃到飽。若每月上網量超過 5GB，則每月至少要使用多少 GB 時，乙方案比甲方案划算？`,
             options: [
               `超過 ${5 + gbBreakeven} GB`,
               `超過 ${5 + gbBreakeven - 2} GB`,
@@ -1625,13 +1623,13 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
             ],
             answer: 0,
             hint: `💡 提示：列不等式 $${monthlyRent} + ${perGb}(x - 5) > ${flatRate}$。`,
-            explanation: `📖 詳解：設每月用量為 $x$ GB ($x > 5$)。甲方案費用為 $${monthlyRent} + ${perGb}(x - 5)$。令甲方案費用大於乙方案：$${monthlyRent} + ${perGb}(x - 5) > ${flatRate} \\Rightarrow ${perGb}(x - 5) > ${flatRate - monthlyRent} \\Rightarrow x - 5 > ${(flatRate - monthlyRent) / perGb}$，故用量超過 ${5 + gbBreakeven} GB 時乙方案更划算。`
+            explanation: `📖 詳解：設每月用量為 $x$ GB。令甲費用大於乙：$${monthlyRent} + ${perGb}(x - 5) > ${flatRate} \\Rightarrow x - 5 > ${(flatRate - monthlyRent) / perGb}$，故用量超過 ${5 + gbBreakeven} GB 時乙方案更划算。`
           };
         },
         () => {
           const originalPrice = 1000 + Math.floor(rand() * 5) * 200;
           return {
-            question: `【歷屆會考-百貨折扣最優解】${preamble}\n某專櫃推出兩種優惠方案（不可併用）：\n- 方案A：消費滿 1000 元現折 200 元。\n- 方案B：全館消費一律打八折 (80%)。\n若買一件標價 ${originalPrice} 元的外套，哪一種方案比較省錢？省下多少元？`,
+            question: `【歷屆會考-百貨折扣最優解】${preamble}\n某專櫃推出兩種優惠方案：方案A（滿千現折200元）、方案B（全館打八折80%）。若購買一件標價 ${originalPrice} 元的外套，何者更省錢？`,
             options: [
               `方案B更省錢，差額為 ${Math.abs((originalPrice - 200) - (originalPrice * 0.8))} 元`,
               `方案A更省錢，差額為 50 元`,
@@ -1639,8 +1637,128 @@ export function generateMathQuestion(gradeId, unitId, index, difficulty = 'mediu
               `無法確定，需看付款方式`
             ],
             answer: originalPrice * 0.8 < originalPrice - 200 ? 0 : 2,
-            hint: `💡 提示：計算方案A：$${originalPrice} - 200 = ${originalPrice - 200}$ 元；方案B：$${originalPrice} \\times 0.8 = ${originalPrice * 0.8}$ 元。比較兩者差額。`,
-            explanation: `📖 詳解：方案A應付 $${originalPrice} - 200 = ${originalPrice - 200}$ 元；方案B應付 $${originalPrice} \\times 0.8 = ${originalPrice * 0.8}$ 元。${originalPrice * 0.8 < originalPrice - 200 ? `方案B省下 ${(originalPrice - 200) - (originalPrice * 0.8)} 元。` : `兩者金額相等或方案A更優。`}`
+            hint: `💡 提示：比較方案A（${originalPrice - 200}元）與方案B（${originalPrice * 0.8}元）。`,
+            explanation: `📖 詳解：方案A為 ${originalPrice - 200} 元，方案B為 ${originalPrice * 0.8} 元，兩者價差 ${Math.abs((originalPrice - 200) - (originalPrice * 0.8))} 元。`
+          };
+        },
+        () => {
+          const distance = 120 + Math.floor(rand() * 4) * 20;
+          const speed1 = 60, speed2 = 80;
+          const timeSaved = Math.round((distance / speed1 - distance / speed2) * 60);
+          return {
+            question: `【歷屆會考-南北高速公路行車時間差】${preamble}\n甲、乙兩地相距 ${distance} 公里。若司機原本以時速 ${speed1} 公里行駛，後因路況順暢提速至時速 ${speed2} 公里，則全程共可節省多少分鐘？`,
+            options: [
+              `可節省 ${timeSaved} 分鐘`,
+              `可節省 ${timeSaved + 15} 分鐘`,
+              `可節省 ${timeSaved - 10} 分鐘`,
+              `可節省 45 分鐘`
+            ],
+            answer: 0,
+            hint: `💡 提示：分別計算兩次行駛時間並相減換算成分鐘。`,
+            explanation: `📖 詳解：兩者行車時間差為 $\\frac{${distance}}{${speed1}} - \\frac{${distance}}{${speed2}}$ 小時，乘上 60 分鐘等於 ${timeSaved} 分鐘。`
+          };
+        },
+        () => {
+          const cap = 20000;
+          const current = 14500 + Math.floor(rand() * 4) * 1000;
+          const ratePerMin = 450;
+          const minLeft = Math.ceil((cap - current) / ratePerMin);
+          return {
+            question: `【歷屆會考-行動電源快充時間估算】${preamble}\n大容量行動電源總容量 ${cap} mAh，目前已有電量 ${current} mAh。若使用快充以每分鐘 ${ratePerMin} mAh 的固定速率充電，最少還需幾分鐘才能充飽？`,
+            options: [
+              `約 ${minLeft} 分鐘`,
+              `約 ${minLeft + 10} 分鐘`,
+              `約 ${minLeft - 5} 分鐘`,
+              `約 30 分鐘`
+            ],
+            answer: 0,
+            hint: `💡 提示：不足電量除以每分鐘充電速度。`,
+            explanation: `📖 詳解：需補充的電量為 $${cap} - ${current} = ${cap - current}$ mAh，所耗時間為 $\\frac{${cap - current}}{${ratePerMin}} \\approx ${minLeft}$ 分鐘。`
+          };
+        },
+        () => {
+          const aScores = [60, 70, 80, 90][Math.floor(rand() * 4)];
+          return {
+            question: `【歷屆會考-年級段考盒狀圖四分位數判讀】${preamble}\n全班40人數學成績盒狀圖之 $Q_1 = 54$ 分，$Q_2 = 68$ 分，$Q_3 = 82$ 分。若小華考了 ${aScores} 分，下列關於小華在班上排名的推斷何者最正確？`,
+            options: [
+              `${aScores >= 82 ? '小華成績落在全班前 25% 之中' : aScores >= 68 ? '小華成績落在全班前半段(中位數以上)' : '小華成績低於中位數'}`,
+              `小華必定是全班最高分`,
+              `全班恰好有 10 個人分數與小華完全相同`,
+              `小華的成績必定恰好等於全班平均數`
+            ],
+            answer: 0,
+            hint: `💡 提示：四分位數劃分各25%的資料量。`,
+            explanation: `📖 詳解：盒狀圖四分位數精確反映出各百分比之分界點，故可準確判定相對落點區間。`
+          };
+        },
+        () => {
+          const originalBill = 800 + Math.floor(rand() * 5) * 100;
+          const people = [3, 4, 5][Math.floor(rand() * 3)];
+          const totalWithService = Math.round(originalBill * 1.1);
+          const perPerson = Math.ceil(totalWithService / people);
+          return {
+            question: `【歷屆會考-朋友聚餐服務費均分計算】${preamble}\n${people} 位朋友聚餐，餐點原價合計 ${originalBill} 元，店家加收 10% 服務費。若均攤總金額且採無條件進位至元，每人應付多少元？`,
+            options: [
+              `每人支付 ${perPerson} 元`,
+              `每人支付 ${perPerson - 10} 元`,
+              `每人支付 ${perPerson + 15} 元`,
+              `每人支付 ${Math.floor(originalBill / people)} 元`
+            ],
+            answer: 0,
+            hint: `💡 提示：總金額 = ${originalBill} \times 1.1 = ${totalWithService} 元。`,
+            explanation: `📖 詳解：總計應收 $${originalBill} \\times 1.1 = ${totalWithService}$ 元，除以 ${people} 人無條件進位為 ${perPerson} 元。`
+          };
+        },
+        () => {
+          const side = 10 + Math.floor(rand() * 4) * 2;
+          const pathWidth = 2;
+          const outerSide = side + 2 * pathWidth;
+          const pathArea = outerSide * outerSide - side * side;
+          return {
+            question: `【歷屆會考-正方形花圃外圍步道面積】${preamble}\n一正方形花圃邊長為 ${side} 公尺，在其四周外圍鋪設寬度為 ${pathWidth} 公尺的環狀石子步道。請問步道的總面積為多少平方公尺？`,
+            options: [
+              `${pathArea} 平方公尺`,
+              `${pathArea + 16} 平方公尺`,
+              `${pathArea - 16} 平方公尺`,
+              `${side * 4 * pathWidth} 平方公尺`
+            ],
+            answer: 0,
+            hint: `💡 提示：步道面積 = (花圃邊長 + 2倍步道寬)^2 - 花圃面積。`,
+            explanation: `📖 詳解：大正方形邊長為 $${side} + 2 \\times ${pathWidth} = ${outerSide}$ 公尺。步道面積為 $${outerSide}^2 - ${side}^2 = ${outerSide * outerSide} - ${side * side} = ${pathArea}$ 平方公尺。`
+          };
+        },
+        () => {
+          const passRate = 75;
+          const totalPeople = 200 + Math.floor(rand() * 3) * 40;
+          const passedPeople = (totalPeople * passRate) / 100;
+          return {
+            question: `【歷屆會考-資格檢定及格率與人數統計】${preamble}\n某項英文能力檢定共有 ${totalPeople} 人報考，統計及格率為 ${passRate}%。若男生及格率為 80%，女生及格率為 70%，且男生及格人數與女生及格人數比為 3:2，則及格的總人數為多少人？`,
+            options: [
+              `${passedPeople} 人`,
+              `${passedPeople - 20} 人`,
+              `${passedPeople + 15} 人`,
+              `150 人`
+            ],
+            answer: 0,
+            hint: `💡 提示：總及格人數 = 總報考人數 \times 及格率。`,
+            explanation: `📖 詳解：直接由整體及格率計算：$${totalPeople} \\times ${passRate}\\% = ${passedPeople}$ 人。`
+          };
+        },
+        () => {
+          const liters = 50 + Math.floor(rand() * 3) * 10;
+          const kmPerLiter = 14;
+          const totalKm = liters * kmPerLiter;
+          return {
+            question: `【歷屆會考-油耗與最大續航里程推算】${preamble}\n某油電車油箱滿油容量為 ${liters} 公升，儀表板顯示平均油耗為每公升可跑 ${kmPerLiter} 公里。若在油箱尚存 15% 備用油時需進站加油，則該車滿油至需要加油前最多可行駛多少公里？`,
+            options: [
+              `${Math.round(totalKm * 0.85)} 公里`,
+              `${totalKm} 公里`,
+              `${Math.round(totalKm * 0.7)} 公里`,
+              `${totalKm - 100} 公里`
+            ],
+            answer: 0,
+            hint: `💡 提示：可使用 85% 的汽油量，乘以每公升行駛公里數。`,
+            explanation: `📖 詳解：可用汽油量為 $${liters} \\times 0.85 = ${liters * 0.85}$ 公升，續航里程為 $${liters * 0.85} \\times ${kmPerLiter} = ${Math.round(totalKm * 0.85)}$ 公里。`
           };
         }
       ];

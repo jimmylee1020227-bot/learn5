@@ -35,8 +35,10 @@ import {
   measureCloudPing,
   getAuditLogs,
   fetchCloudAuditLogs,
-  pushPlayerLeaderboardSync
+  pushPlayerLeaderboardSync,
+  getNoteReports
 } from '../services/cloudStorage';
+import AdminNotesManager from './AdminNotesManager';
 import { 
   adminGrantPoints, 
   adminGrantTickets, 
@@ -1160,6 +1162,13 @@ function AdminDashboard() {
             <BookOpen size={15} /> 題庫改題與刪除
           </button>
           <button
+            onClick={() => setActiveSubTab('notes')}
+            className={`btn ${activeSubTab === 'notes' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '8px 14px' }}
+          >
+            <BookOpen size={15} /> 筆記管理與錯誤修改
+          </button>
+          <button
             onClick={() => setActiveSubTab('tools')}
             className={`btn ${activeSubTab === 'tools' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '8px 14px' }}
@@ -1169,6 +1178,11 @@ function AdminDashboard() {
         </div>
 
       </div>
+
+      {/* 筆記管理與錯誤修改 */}
+      {activeSubTab === 'notes' && (
+        <AdminNotesManager currentUser={currentUser} />
+      )}
 
       {/* 1. 學生題目回報審核 */}
       {activeSubTab === 'reports' && (

@@ -20,6 +20,61 @@ const CLOUD_BUS_CHANNEL = 'studyhub_cloud_sync_bus';
 // 系統唯一總管理員 Email
 export const SUPER_ADMIN_EMAIL = 'jimmylee1020227@gmail.com';
 
+// ── 管理員 Email 即時發信模組 ──
+export async function sendAdminEmailNotification({ title, message, details = {} }) {
+  const targetEmail = SUPER_ADMIN_EMAIL || 'jimmylee1020227@gmail.com';
+  console.log('[Email Notify] 準備發送 Email 至管理員信箱:', targetEmail, title);
+
+  const payload = {
+    to: targetEmail,
+    subject: `【學習網系統即時通知】${title}`,
+    content: message,
+    timestamp: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+    details: details
+  };
+
+  try {
+    if (typeof window !== 'undefined' && window.fetch) {
+      const formData = new FormData();
+      formData.append('access_key', 'e22e5a78-b118-4790-84cf-240166297316');
+      formData.append('subject', `【學習網即時提醒】${title}`);
+      formData.append('from_name', '學習網 AI 智慧回報中心');
+      formData.append('replyto', targetEmail);
+      formData.append('message', `==== 學習網系統即時通知 ====\n標題：${title}\n內容：${message}\n時間：${payload.timestamp}\n詳細資訊：\n${JSON.stringify(details, null, 2)}`);
+
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData,
+        mode: 'cors'
+      }).then(res => res.json()).then(data => {
+        console.log('[Email Notify] 發信結果:', data);
+      }).catch(err => {
+        console.warn('[Email Notify] 外部 API 靜默備援:', err);
+      });
+    }
+  } catch (e) {
+    console.warn('[Email Notify] 發信異常但靜默保護:', e);
+  }
+
+  // 同步在 Firebase 即時推播中心寫入一筆高優先急件通知
+  try {
+    if (db) {
+      const notifRef = ref(db, 'studyhub/admin_notifications/' + Date.now());
+      set(notifRef, {
+        id: 'notif_' + Date.now(),
+        type: 'URGENT_REPORT',
+        title: title,
+        message: message,
+        details: details,
+        read: false,
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (e) {}
+
+  return true;
+}
+
 // 建立跨視窗 / 跨標籤頁即時通訊總線 (BroadcastChannel)
 let cloudBus = null;
 try {
@@ -1848,6 +1903,14 @@ export function submitQuestionReport({ questionId, unitName, reason, comment, re
   const updatedReports = [reportItem, ...reports].slice(0, 200);
   setJson('question_reports', updatedReports);
   updateServerSync('question_reports', updatedReports);
+
+  // 立即發送 Email 通知總管理員
+  sendAdminEmailNotification({
+    title: `題目錯誤回報：${questionId} (${unitName || '未知單元'})`,
+    message: `同學「${cleanReporter}」回報了一道錯題！\n題目編號：${questionId}\n單元名稱：${unitName}\n回報原因：${reason}\n詳細說明：${cleanComment}`,
+    details: reportItem
+  });
+
   return reportItem;
 }
 
@@ -3444,5 +3507,121 @@ export function exportFullSystemBackup(operatorUser) {
 
   return backupData;
 }
+
+// --- 19. 筆記錯誤回報與在線自訂筆記修改管理系統 (Notes Management) ---
+export function submitNoteReport({ noteId, subjectId, gradeId, unitId, unitTitle, reportType, description, suggestion, reporterName }) {
+  const cleanDesc = (description || '').trim().slice(0, 500);
+  const cleanSugg = (suggestion || '').trim().slice(0, 500);
+  const cleanReporter = (reporterName || '同學').trim().slice(0, 20);
+
+  const reports = getJson('notes_reports', []);
+  const reportItem = {
+    id: 'noterep_' + Date.now(),
+    noteId: noteId || '',
+    subjectId: subjectId || '',
+    gradeId: gradeId || '',
+    unitId: unitId || '',
+    unitTitle: unitTitle || '',
+    reportType: reportType || '內容有誤',
+    description: cleanDesc,
+    suggestion: cleanSugg,
+    reporterName: cleanReporter,
+    status: 'pending',
+    timestamp: new Date().toISOString()
+  };
+
+  const updatedReports = [reportItem, ...reports].slice(0, 300);
+  setJson('notes_reports', updatedReports);
+  updateServerSync('notes_reports', updatedReports);
+
+  // 立即發信給管理員
+  sendAdminEmailNotification({
+    title: `筆記錯誤回報：${unitTitle || noteId}`,
+    message: `同學「${cleanReporter}」回報了重點筆記錯誤！\n單元：${unitTitle}\n類型：${reportType}\n問題說明：${cleanDesc}\n建議修正：${cleanSugg}`,
+    details: reportItem
+  });
+
+  return reportItem;
+}
+
+export function getNoteReports() {
+  return getJson('notes_reports', []);
+}
+
+export async function fetchCloudNoteReports() {
+  if (!db) return getNoteReports();
+  try {
+    const snap = await Promise.race([
+      get(ref(db, 'studyhub/notes_reports')),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+    ]);
+    const val = snap.val();
+    if (val) {
+      const arr = Array.isArray(val) ? val : Object.values(val);
+      setJson('notes_reports', arr);
+      return arr;
+    }
+  } catch (e) {}
+  return getNoteReports();
+}
+
+export function resolveNoteReport(reportId, operatorUser, resolutionNote) {
+  assertAdminPermission(operatorUser, '處理筆記回報');
+  const reports = getNoteReports();
+  const target = reports.find(r => r.id === reportId);
+  if (target) {
+    target.status = 'resolved';
+    target.resolvedBy = operatorUser.displayName || '管理員';
+    target.resolvedAt = new Date().toISOString();
+    target.resolutionNote = (resolutionNote || '已完成修正').trim().slice(0, 300);
+    setJson('notes_reports', reports);
+    updateServerSync('notes_reports', reports);
+  }
+  return reports;
+}
+
+// 雲端自訂筆記修改與儲存 (管理員在後台直接編輯筆記內容，全站學生即時同步看到)
+export function saveCustomNoteOverride(noteId, noteData, operatorUser) {
+  assertAdminPermission(operatorUser, '修改單元重點筆記');
+  const customNotes = getJson('custom_notes', {});
+  customNotes[noteId] = {
+    ...noteData,
+    updatedAt: new Date().toISOString(),
+    updatedBy: operatorUser?.displayName || '總管理員'
+  };
+  setJson('custom_notes', customNotes);
+  updateServerSync('custom_notes', customNotes);
+
+  logAuditEvent({
+    operatorId: operatorUser.id,
+    operatorName: operatorUser.displayName || operatorUser.name || '管理員',
+    operatorRole: operatorUser.role || 'admin',
+    actionType: 'UPDATE_NOTE_CONTENT',
+    details: `管理員在線修改了單元筆記【${noteData.title || noteId}】之內容`
+  });
+
+  return customNotes;
+}
+
+export function getCustomNotes() {
+  return getJson('custom_notes', {});
+}
+
+export async function fetchCloudCustomNotes() {
+  if (!db) return getCustomNotes();
+  try {
+    const snap = await Promise.race([
+      get(ref(db, 'studyhub/custom_notes')),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000))
+    ]);
+    const val = snap.val();
+    if (val) {
+      setJson('custom_notes', val);
+      return val;
+    }
+  } catch (e) {}
+  return getCustomNotes();
+}
+
 
 

@@ -146,6 +146,15 @@ export default function Navbar({
               AI題庫
             </button>
 
+            <button 
+              className={`btn ${activeTab === 'notes' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setActiveTab('notes')}
+              style={{ fontSize: '0.86rem', padding: '7px 12px' }}
+            >
+              <FileText size={15} />
+              重點筆記
+            </button>
+
           <button 
             className={`btn ${activeTab === 'reinforce' ? 'btn-primary' : 'btn-ghost'}`}
             onClick={() => setActiveTab('reinforce')}

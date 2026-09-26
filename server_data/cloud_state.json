@@ -11,6 +11,20 @@
   "community_reports": [],
   "question_reports": [
     {
+      "comment": "題目重複了",
+      "id": "rep_1790402153777",
+      "questionId": "Q-G8-EN-U1-0700",
+      "reason": "其他問題",
+      "reporterId": "u_z6zfph78ipyf",
+      "reporterName": "fternoon A",
+      "resolutionNote": "管理員已核對並確認修正完畢",
+      "resolvedAt": "2026-09-26T07:19:09.240Z",
+      "resolvedBy": "總管理員",
+      "status": "resolved",
+      "timestamp": "2026-09-26T05:55:53.777Z",
+      "unitName": "Unit 1: Past Simple & Irregular Verbs"
+    },
+    {
       "comment": "",
       "id": "rep_1789873557699",
       "questionId": "Q-G7-SC-U1-0665",
@@ -97,8 +111,8 @@
   ],
   "audit_logs": [
     {
-      "id": "log_1790397211606_wk8w",
-      "timestamp": "2026-09-26T04:33:31.606Z",
+      "id": "log_1790412068684_gsb1",
+      "timestamp": "2026-09-26T08:41:08.684Z",
       "operatorId": "admin_super_jimmy",
       "operatorName": "總管理員",
       "operatorRole": "super_admin",
@@ -107,22 +121,179 @@
       "targetId": null
     },
     {
-      "actionType": "CREATE_REDEMPTION_CODE",
-      "details": "建立新兌換碼【HAPPY_FESTIVAL】: 中秋快樂 (數值: 20)",
-      "id": "log_1790396971580_4a1h",
+      "actionType": "SYSTEM_HEALTH_CHECK",
+      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 95 分，狀態【WARNING】。全系統 12 大維度深度自檢完成：11 項通過、1 項警示、0 項異常，系統總健康評分：95 分。",
+      "id": "log_1790412050931_rowy",
       "operatorId": "admin_super_jimmy",
       "operatorName": "總管理員",
       "operatorRole": "super_admin",
-      "timestamp": "2026-09-26T04:29:31.580Z"
+      "timestamp": "2026-09-26T08:40:50.931Z"
     },
     {
       "actionType": "SYSTEM_HEALTH_CHECK",
       "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 95 分，狀態【WARNING】。全系統 12 大維度深度自檢完成：11 項通過、1 項警示、0 項異常，系統總健康評分：95 分。",
-      "id": "log_1790396820689_yxhu",
+      "id": "log_1790412043268_1raf",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-26T08:40:43.268Z"
+    },
+    {
+      "actionType": "GRANT_POINTS",
+      "details": "向玩家【小編】發放 100 點數",
+      "id": "log_1790408688857_1elx",
+      "operatorId": "u_knbo67cox0xp",
+      "operatorName": "小編",
+      "operatorRole": "admin",
+      "targetId": "u_knbo67cox0xp",
+      "timestamp": "2026-09-26T07:44:48.857Z"
+    },
+    {
+      "actionType": "SYSTEM_HEALTH_CHECK",
+      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 100 分，狀態【PASS】。全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "id": "log_1790408162349_em2l",
+      "operatorId": "u_e6p7fslomjxy",
+      "operatorName": "學習網",
+      "operatorRole": "admin",
+      "timestamp": "2026-09-26T07:36:02.349Z"
+    },
+    {
+      "actionType": "ADD_ADMIN",
+      "details": "總管理員任命一般管理員：學習網 (littleinventor102@gmail.com)",
+      "id": "log_1790408145585_eabg",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-26T07:35:45.585Z"
+    },
+    {
+      "actionType": "ADD_ADMIN",
+      "details": "總管理員任命一般管理員：小編 (happybrother0717@gmail.com)",
+      "id": "log_1790408063767_a6n0",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-26T07:34:23.767Z"
+    },
+    {
+      "actionType": "SYSTEM_HEALTH_CHECK",
+      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 100 分，狀態【PASS】。全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "id": "log_1790407985702_1qxc",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-26T07:33:05.702Z"
+    },
+    {
+      "actionType": "SYSTEM_HEALTH_CHECK",
+      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 100 分，狀態【PASS】。全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "id": "log_1790407980759_55xl",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-26T07:33:00.759Z"
+    },
+    {
+      "actionType": "RESOLVE_REPORT",
+      "details": "處理題目回報 #rep_1790402153777 (Q-G8-EN-U1-0700 - 其他問題)：管理員已核對並確認修正完畢",
+      "id": "log_1790407149372_e2x7",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-26T07:19:09.372Z"
+    },
+    {
+      "actionType": "DELETE_STUDENT_ACCOUNT",
+      "details": "管理員註銷並抹除了學生帳號：同學 (無 Email, ID: u_knbo67cox0xp)，已徹底清理名冊、排行、做題卷與雲端節點",
+      "id": "log_1790406497319_6402",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "targetId": "u_knbo67cox0xp",
+      "timestamp": "2026-09-26T07:08:17.319Z"
+    },
+    {
+      "actionType": "DELETE_STUDENT_ACCOUNT",
+      "details": "管理員註銷並抹除了學生帳號：小編 (happybrother0717@gmail.com, ID: u_knbo67cox0xp)，已徹底清理名冊、排行、做題卷與雲端節點",
+      "id": "log_1790406483897_c27w",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "targetId": "u_knbo67cox0xp",
+      "timestamp": "2026-09-26T07:08:03.897Z"
+    },
+    {
+      "action": "DELETE_ACCOUNT",
+      "adminEmail": "jimmylee1020227@gmail.com",
+      "details": "總管理員指令徹底註銷小編 (happybrother0717@gmail.com / u_knbo67cox0xp) 之帳號與所有雲端資料",
+      "id": "audit_1790406336953",
+      "targetUser": "小編 (happybrother0717@gmail.com)",
+      "timestamp": "2026-09-26T07:05:36.953Z"
+    },
+    {
+      "actionType": "SYSTEM_HEALTH_CHECK",
+      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 100 分，狀態【PASS】。全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "id": "log_1790406016608_ay8k",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-26T07:00:16.608Z"
+    },
+    {
+      "actionType": "DELETE_STUDENT_ACCOUNT",
+      "details": "管理員註銷並抹除了學生帳號：小編 (happybrother0717@gmail.com, ID: u_knbo67cox0xp)，已徹底清理名冊、排行、做題卷與雲端節點",
+      "id": "log_1790406005415_fv62",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "targetId": "u_knbo67cox0xp",
+      "timestamp": "2026-09-26T07:00:05.415Z"
+    },
+    {
+      "actionType": "DELETE_NOTIFICATION",
+      "details": "刪除系統通知公告：🎁 管理員發放新序號【SYNC_VERIFY_999】！",
+      "id": "log_1790398308795_i6wu",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "targetId": "notif_1790397519165",
+      "timestamp": "2026-09-26T04:51:48.795Z"
+    },
+    {
+      "actionType": "SYSTEM_HEALTH_CHECK",
+      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 100 分，狀態【PASS】。全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "id": "log_1790398253647_3hb4",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-26T04:50:53.647Z"
+    },
+    {
+      "actionType": "SYSTEM_HEALTH_CHECK",
+      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 100 分，狀態【PASS】。全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "id": "log_1790398249363_41wo",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-26T04:50:49.363Z"
+    },
+    {
+      "actionType": "SYSTEM_HEALTH_CHECK",
+      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 100 分，狀態【PASS】。全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "id": "log_1790398117035_r0yu",
+      "operatorId": "admin_super_jimmy",
+      "operatorName": "總管理員",
+      "operatorRole": "super_admin",
+      "timestamp": "2026-09-26T04:48:37.035Z"
+    },
+    {
+      "actionType": "SYSTEM_HEALTH_CHECK",
+      "details": "【管理員手動開啟】執行全系統智能深度自檢：評分 95 分，狀態【WARNING】。全系統 12 大維度深度自檢完成：11 項通過、1 項警示、0 項異常，系統總健康評分：95 分。",
+      "id": "log_1790397527541_rd7p",
       "operatorId": "system",
       "operatorName": "系統自檢",
       "operatorRole": "system",
-      "timestamp": "2026-09-26T04:27:00.689Z"
+      "timestamp": "2026-09-26T04:38:47.541Z"
     }
   ],
   "redemption_codes": [
@@ -382,17 +553,25 @@
       "role": "super_admin"
     },
     {
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=happybrother0717",
-      "createdAt": "2026-09-19T09:49:17.021Z",
-      "displayName": "駐站管理員 (happybrother)",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=%E5%B0%8F%E7%B7%A8",
+      "createdAt": "2026-09-26T07:34:23.680Z",
+      "displayName": "小編",
       "email": "happybrother0717@gmail.com",
-      "id": "admin_happybrother0717",
+      "id": "admin_1790408063680",
       "role": "admin",
       "specialties": [
-        "課綱答疑",
-        "題庫審核",
-        "錯題處理",
-        "全站巡查"
+        "happybrother0717@gmail.com"
+      ]
+    },
+    {
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=%E5%AD%B8%E7%BF%92%E7%B6%B2",
+      "createdAt": "2026-09-26T07:35:45.530Z",
+      "displayName": "學習網",
+      "email": "littleinventor102@gmail.com",
+      "id": "admin_1790408145530",
+      "role": "admin",
+      "specialties": [
+        "課綱答疑"
       ]
     }
   ],
@@ -597,10 +776,10 @@
   ],
   "user_registry": {
     "admin_super_jimmy": {
-      "avatar": "",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=jimmylee1020227",
       "email": "jimmylee1020227@gmail.com",
       "id": "admin_super_jimmy",
-      "lastActive": "2026-09-26T05:34:40.331Z",
+      "lastActive": "2026-09-26T08:51:13.729Z",
       "name": "總管理員",
       "role": "super_admin",
       "school": "系統總管理員"
@@ -872,7 +1051,7 @@
       "email": "lijingyan1020227@gmail.com",
       "grade": "國三",
       "id": "u_bqwcrtljrwp7",
-      "name": "李京諺",
+      "name": "李京諺1",
       "registeredAt": "2026-09-19T13:44:04.278Z",
       "school": "會考戰友",
       "totalCorrect": 3,
@@ -932,14 +1111,13 @@
       "totalQuestions": 0
     },
     "u_e6p7fslomjxy": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJ9uRXFs9IC2ajDMOOEsgfeKlm9Dp7OPxdcjuU74rGcj3sUnWU=s96-c",
       "email": "littleinventor102@gmail.com",
-      "grade": "國三",
       "id": "u_e6p7fslomjxy",
+      "lastActive": "2026-09-26T07:35:50.806Z",
       "name": "學習網",
-      "registeredAt": "2026-09-25T03:40:12.406Z",
-      "school": "會考戰友",
-      "totalCorrect": 0,
-      "totalQuestions": 0
+      "role": "admin",
+      "school": "會考戰友"
     },
     "u_eea9m4320ebu": {
       "email": "clmmlclove@gmail.com",
@@ -975,7 +1153,7 @@
       "email": "eat1020227@gmail.com",
       "grade": "國三",
       "id": "u_gi16xsfwxrnm",
-      "name": "李京諺",
+      "name": "李京諺2",
       "registeredAt": "2026-09-20T06:04:43.287Z",
       "school": "會考戰友",
       "totalCorrect": 0,
@@ -1062,14 +1240,16 @@
       "totalQuestions": 0
     },
     "u_knbo67cox0xp": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
       "email": "happybrother0717@gmail.com",
-      "grade": "國三",
       "id": "u_knbo67cox0xp",
+      "lastActive": "2026-09-26T07:44:24.751Z",
       "name": "小編",
-      "registeredAt": "2026-09-25T03:40:03.603Z",
+      "role": "admin",
       "school": "會考戰友",
-      "totalCorrect": 152,
-      "totalQuestions": 165
+      "totalCorrect": 1,
+      "totalQuestions": 5,
+      "totalQuizzes": 1
     },
     "u_kshd2h11ttzf": {
       "email": "leejimy6@gmail.com",
@@ -1142,14 +1322,13 @@
       "totalQuestions": 70
     },
     "u_maz0qbwbetnz": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJp_nxzY23ZJHgKNLwY0aP0ottShbA1GRuU2QNuIukiPHISSQ=s96-c",
       "email": "ghoop701@gmail.com",
-      "grade": "國三",
       "id": "u_maz0qbwbetnz",
+      "lastActive": "2026-09-26T08:12:53.192Z",
       "name": "胡明智",
-      "registeredAt": "2026-09-20T04:16:03.395Z",
-      "school": "會考戰友",
-      "totalCorrect": 10,
-      "totalQuestions": 85
+      "role": "student",
+      "school": "會考戰友"
     },
     "u_mo8jfnqvbi2n": {
       "email": "wen19790210@gmail.com",
@@ -1265,14 +1444,16 @@
       "totalQuestions": 0
     },
     "u_r19dl81dvobu": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJE5vknCLO6jHI077B_6wTQ_nzeb8FAy3sE50quV_XjREIGOw=s96-c",
       "email": "candy885235@gmail.com",
-      "grade": "國三",
       "id": "u_r19dl81dvobu",
+      "lastActive": "2026-09-26T07:58:07.093Z",
       "name": "乖巧寶（乖巧寶娘親）",
-      "registeredAt": "2026-09-19T13:05:30.351Z",
+      "role": "student",
       "school": "會考戰友",
-      "totalCorrect": 8,
-      "totalQuestions": 30
+      "totalCorrect": 3,
+      "totalQuestions": 5,
+      "totalQuizzes": 1
     },
     "u_r4sofgc7i436": {
       "email": "sueting.liau@gmail.com",
@@ -1286,16 +1467,12 @@
     },
     "u_r6jy2f1mxeln": {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJtzSTkA1QjCjTHweVDX9BlSgT5OnKxnq8RneFk1bQxr7VRVA=s96-c",
-      "createdAt": "2026-09-25T17:36:25.046Z",
-      "displayName": "蔡賢銘",
       "email": "x0x2x4x6@yahoo.com.tw",
       "id": "u_r6jy2f1mxeln",
-      "lastActive": "2026-09-25T17:36:25.046Z",
+      "lastActive": "2026-09-26T06:40:15.992Z",
       "name": "蔡賢銘",
       "role": "student",
-      "school": "會考戰友",
-      "totalCorrect": 2,
-      "totalQuestions": 2
+      "school": "會考戰友"
     },
     "u_rc3g9udy5hog": {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocL6MkOaQUNfucFyWuk5gROa5ts0MReqOEZWKN2mvgaatbWotrxW=s96-c",
@@ -1454,7 +1631,7 @@
       "email": "jimmylee33good@gmail.com",
       "grade": "國三",
       "id": "u_v7lyno254ul",
-      "name": "李京諺",
+      "name": "李京諺3",
       "registeredAt": "2026-09-25T14:16:30.978Z",
       "school": "會考戰友",
       "totalCorrect": 7,
@@ -1514,7 +1691,7 @@
       "email": "goodgg1020831@gmail.com",
       "grade": "國三",
       "id": "u_xqrukifcz34s",
-      "name": "李京諺3",
+      "name": "李京諺4",
       "registeredAt": "2026-09-25T23:34:09.423Z",
       "school": "會考戰友",
       "totalCorrect": 30,
@@ -1561,14 +1738,16 @@
       "totalQuestions": 28
     },
     "u_z6zfph78ipyf": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIANgF2ETQ2llbHNhbv4E5e_72FcSlJ9fWf5jfBsUS-PcaIyQ=s96-c",
       "email": "fternoona50@gmail.com",
-      "grade": "國三",
       "id": "u_z6zfph78ipyf",
+      "lastActive": "2026-09-26T06:15:47.206Z",
       "name": "fternoon A",
-      "registeredAt": "2026-09-21T10:46:19.943Z",
+      "role": "student",
       "school": "會考戰友",
-      "totalCorrect": 22,
-      "totalQuestions": 22
+      "totalCorrect": 33,
+      "totalQuestions": 36,
+      "totalQuizzes": 2
     },
     "u_z8h0ggo8sl3i": {
       "email": "anita730311@gmail.com",
@@ -1610,15 +1789,26 @@
   },
   "studyhub_weekly_leaderboard": [
     {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIANgF2ETQ2llbHNhbv4E5e_72FcSlJ9fWf5jfBsUS-PcaIyQ=s96-c",
+      "displayName": "fternoon A",
+      "email": "fternoona50@gmail.com",
+      "tickets": 3,
+      "totalPoints": 120,
+      "updatedAt": 1790403347160,
+      "userId": "u_z6zfph78ipyf",
+      "weekId": "2026-W39",
+      "weeklyPoints": 120
+    },
+    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
       "displayName": "小編",
       "email": "happybrother0717@gmail.com",
-      "tickets": 3,
-      "totalPoints": 3,
-      "updatedAt": 1790357784345,
+      "tickets": 1,
+      "totalPoints": 101,
+      "updatedAt": 1790408688320,
       "userId": "u_knbo67cox0xp",
       "weekId": "2026-W39",
-      "weeklyPoints": 152
+      "weeklyPoints": 101
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKE3dOalWYTpif8j_27D4XmF_ff2L0vC1jtnqThj8Xz4tPnEN0N=s96-c",
@@ -1687,6 +1877,17 @@
       "weeklyPoints": 33
     },
     {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJE5vknCLO6jHI077B_6wTQ_nzeb8FAy3sE50quV_XjREIGOw=s96-c",
+      "displayName": "乖巧寶（乖巧寶娘親）",
+      "email": "candy885235@gmail.com",
+      "tickets": 3,
+      "totalPoints": 53,
+      "updatedAt": 1790409486949,
+      "userId": "u_r19dl81dvobu",
+      "weekId": "2026-W39",
+      "weeklyPoints": 31
+    },
+    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJItQUW-aG224SqiSX02PdfGvCdtYuEH-HTyPhqGxb00McxxA=s96-c",
       "displayName": "賴羿筠",
       "email": "yiyun0128@gmail.com",
@@ -1694,6 +1895,17 @@
       "totalPoints": 30,
       "updatedAt": 1790383010278,
       "userId": "u_a2t5gj6pgytd",
+      "weekId": "2026-W39",
+      "weeklyPoints": 30
+    },
+    {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJp_nxzY23ZJHgKNLwY0aP0ottShbA1GRuU2QNuIukiPHISSQ=s96-c",
+      "displayName": "胡明智",
+      "email": "ghoop701@gmail.com",
+      "tickets": 3,
+      "totalPoints": 105,
+      "updatedAt": 1790410381035,
+      "userId": "u_maz0qbwbetnz",
       "weekId": "2026-W39",
       "weeklyPoints": 30
     },
@@ -1713,22 +1925,11 @@
       "displayName": "總管理員",
       "email": "jimmylee1020227@gmail.com",
       "tickets": 1,
-      "totalPoints": 5,
-      "updatedAt": 1790387205178,
+      "totalPoints": 7,
+      "updatedAt": 1790405923467,
       "userId": "admin_super_jimmy",
       "weekId": "2026-W39",
-      "weeklyPoints": 25
-    },
-    {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIANgF2ETQ2llbHNhbv4E5e_72FcSlJ9fWf5jfBsUS-PcaIyQ=s96-c",
-      "displayName": "fternoon A",
-      "email": "fternoona50@gmail.com",
-      "tickets": 3,
-      "totalPoints": 22,
-      "updatedAt": 1790357784090,
-      "userId": "u_z6zfph78ipyf",
-      "weekId": "2026-W39",
-      "weeklyPoints": 22
+      "weeklyPoints": 27
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJiQg4uA9yqKh7hqkrDSAvogyZShe9o2FobNOZS7W9G-VnrHxBm=s96-c",
@@ -1786,17 +1987,6 @@
       "weeklyPoints": 11
     },
     {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJp_nxzY23ZJHgKNLwY0aP0ottShbA1GRuU2QNuIukiPHISSQ=s96-c",
-      "displayName": "胡明智",
-      "email": "ghoop701@gmail.com",
-      "tickets": 3,
-      "totalPoints": 85,
-      "updatedAt": 1790357784707,
-      "userId": "u_maz0qbwbetnz",
-      "weekId": "2026-W39",
-      "weeklyPoints": 10
-    },
-    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIUHnRSAzHCC5DGuKn_55lz0Wr_m4z3KEPeaQ_fiz4yLyep3g=s96-c",
       "displayName": "Gene Tung",
       "email": "genetung0716@gmail.com",
@@ -1839,17 +2029,6 @@
       "userId": "u_z8h0ggo8sl3i",
       "weekId": "2026-W39",
       "weeklyPoints": 9
-    },
-    {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJE5vknCLO6jHI077B_6wTQ_nzeb8FAy3sE50quV_XjREIGOw=s96-c",
-      "displayName": "乖巧寶（乖巧寶娘親）",
-      "email": "candy885235@gmail.com",
-      "tickets": 3,
-      "totalPoints": 30,
-      "updatedAt": 1790357784843,
-      "userId": "u_r19dl81dvobu",
-      "weekId": "2026-W39",
-      "weeklyPoints": 8
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKynGG5bvjPsLb2DHcaIZFscNSCQo1STMYHjdCWFCw6P1EPiQo=s96-c",
@@ -9148,20 +9327,20 @@
   "all_quiz_papers": [],
   "admin_health_check_reports": [
     {
-      "id": "report_1790397211484",
-      "timestamp": "2026-09-26T04:33:31.484Z",
+      "id": "report_1790412068566",
+      "timestamp": "2026-09-26T08:41:08.566Z",
       "isScheduled": false,
       "overallStatus": "PASS",
       "healthScore": 100,
-      "durationMs": 17,
+      "durationMs": 53,
       "summary": "全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
       "checks": [
         {
           "id": "cloud_sync",
           "title": "Firebase 雲端即時連線與同步延遲",
           "status": "PASS",
-          "latencyMs": 16,
-          "details": "連線正常！雲端延遲往返時間：16 ms (極速連線 (雲端秒級同步))"
+          "latencyMs": 47,
+          "details": "連線正常！雲端延遲往返時間：47 ms (極速連線 (雲端秒級同步))"
         },
         {
           "id": "lottery_security",
@@ -9185,19 +9364,19 @@
           "id": "leaderboard_points",
           "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)",
           "status": "PASS",
-          "details": "全服排行榜格式正常（共 47 位在榜學生），當前台北週次：2026-W39，積點無溢出。"
+          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。"
         },
         {
           "id": "papers_integrity",
           "title": "歷次實戰試卷庫與整卷詳解完整度",
           "status": "PASS",
-          "details": "試卷庫數據健全無損（已調閱存檔 18 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。"
+          "details": "試卷庫數據健全無損（已調閱存檔 149 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。"
         },
         {
           "id": "user_registry",
           "title": "全服註冊學生名冊與多帳號映射表 (User Registry)",
           "status": "PASS",
-          "details": "學生名冊檔案完好，累計登記 47 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。"
+          "details": "學生名冊檔案完好，累計登記 98 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。"
         },
         {
           "id": "mistake_notebook",
@@ -9209,13 +9388,13 @@
           "id": "redemption_codes",
           "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖",
           "status": "PASS",
-          "details": "全站共有 1 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。"
+          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。"
         },
         {
           "id": "live_stream",
           "title": "全服即時交卷動態串流 (Live Feed Stream)",
           "status": "PASS",
-          "details": "交卷即時推播佇列運作良好，維持最新 0 筆即時交卷動態，秒級推播管理員中台。"
+          "details": "交卷即時推播佇列運作良好，維持最新 10 筆即時交卷動態，秒級推播管理員中台。"
         },
         {
           "id": "admin_hierarchy",
@@ -9234,9 +9413,177 @@
     {
       "checks": [
         {
-          "details": "連線正常！雲端延遲往返時間：58 ms (極速連線 (雲端秒級同步))",
+          "details": "連線正常！雲端延遲往返時間：1030 ms (連線稍有延遲)",
           "id": "cloud_sync",
-          "latencyMs": 58,
+          "latencyMs": 1030,
+          "status": "WARNING",
+          "title": "Firebase 雲端即時連線與同步延遲"
+        },
+        {
+          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
+          "id": "lottery_security",
+          "status": "PASS",
+          "title": "抽獎券防重複領取與防刷原子鎖"
+        },
+        {
+          "details": "國中 5 大科目（國文、英文、數學、自然、社會）各年級各單元題目生成引擎、四選一選項演算法與 Mulberry32 種子均運作順暢！",
+          "id": "quiz_generator",
+          "status": "PASS",
+          "title": "題庫動態生成引擎與隨機出題演算法"
+        },
+        {
+          "details": "題庫覆寫節點同步良好，目前全站共有 2 題經管理員核准校對並更新詳解與答案。",
+          "id": "question_overrides",
+          "status": "PASS",
+          "title": "管理員題目修正與題庫覆寫節點 (Overrides)"
+        },
+        {
+          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
+          "id": "leaderboard_points",
+          "status": "PASS",
+          "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)"
+        },
+        {
+          "details": "試卷庫數據健全無損（已調閱存檔 149 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
+          "id": "papers_integrity",
+          "status": "PASS",
+          "title": "歷次實戰試卷庫與整卷詳解完整度"
+        },
+        {
+          "details": "學生名冊檔案完好，累計登記 98 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
+          "id": "user_registry",
+          "status": "PASS",
+          "title": "全服註冊學生名冊與多帳號映射表 (User Registry)"
+        },
+        {
+          "details": "錯題本節點運作正常，支援錯題重複練習、自動消題與名師推導步驟原樣還原。",
+          "id": "mistake_notebook",
+          "status": "PASS",
+          "title": "個人錯題筆記本 (Mistake Notebook) 索引與雲端備份"
+        },
+        {
+          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。",
+          "id": "redemption_codes",
+          "status": "PASS",
+          "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖"
+        },
+        {
+          "details": "交卷即時推播佇列運作良好，維持最新 10 筆即時交卷動態，秒級推播管理員中台。",
+          "id": "live_stream",
+          "status": "PASS",
+          "title": "全服即時交卷動態串流 (Live Feed Stream)"
+        },
+        {
+          "details": "系統唯一總管理員 (jimmylee1020227@gmail.com) 權限保護生效中，嚴格隔離人事任命與審計日誌查閱權限。",
+          "id": "admin_hierarchy",
+          "status": "PASS",
+          "title": "總管理員唯一根憑證與權限隔離 (Super Admin Single Root)"
+        },
+        {
+          "details": "雙層持久化防遺失機制全面啟動：採增量聯集合併 (Union Merge)，禁止任何空陣列覆蓋雲端，永久保護學生試卷與名冊。",
+          "id": "storage_quota_protection",
+          "status": "PASS",
+          "title": "LocalStorage 快取配額與資料庫防遺失雙層保險機制"
+        }
+      ],
+      "durationMs": 1036,
+      "healthScore": 95,
+      "id": "report_1790412050822",
+      "isScheduled": false,
+      "overallStatus": "WARNING",
+      "summary": "全系統 12 大維度深度自檢完成：11 項通過、1 項警示、0 項異常，系統總健康評分：95 分。",
+      "timestamp": "2026-09-26T08:40:50.822Z"
+    },
+    {
+      "checks": [
+        {
+          "details": "連線正常！雲端延遲往返時間：1130 ms (連線稍有延遲)",
+          "id": "cloud_sync",
+          "latencyMs": 1130,
+          "status": "WARNING",
+          "title": "Firebase 雲端即時連線與同步延遲"
+        },
+        {
+          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
+          "id": "lottery_security",
+          "status": "PASS",
+          "title": "抽獎券防重複領取與防刷原子鎖"
+        },
+        {
+          "details": "國中 5 大科目（國文、英文、數學、自然、社會）各年級各單元題目生成引擎、四選一選項演算法與 Mulberry32 種子均運作順暢！",
+          "id": "quiz_generator",
+          "status": "PASS",
+          "title": "題庫動態生成引擎與隨機出題演算法"
+        },
+        {
+          "details": "題庫覆寫節點同步良好，目前全站共有 2 題經管理員核准校對並更新詳解與答案。",
+          "id": "question_overrides",
+          "status": "PASS",
+          "title": "管理員題目修正與題庫覆寫節點 (Overrides)"
+        },
+        {
+          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
+          "id": "leaderboard_points",
+          "status": "PASS",
+          "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)"
+        },
+        {
+          "details": "試卷庫數據健全無損（已調閱存檔 149 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
+          "id": "papers_integrity",
+          "status": "PASS",
+          "title": "歷次實戰試卷庫與整卷詳解完整度"
+        },
+        {
+          "details": "學生名冊檔案完好，累計登記 98 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
+          "id": "user_registry",
+          "status": "PASS",
+          "title": "全服註冊學生名冊與多帳號映射表 (User Registry)"
+        },
+        {
+          "details": "錯題本節點運作正常，支援錯題重複練習、自動消題與名師推導步驟原樣還原。",
+          "id": "mistake_notebook",
+          "status": "PASS",
+          "title": "個人錯題筆記本 (Mistake Notebook) 索引與雲端備份"
+        },
+        {
+          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。",
+          "id": "redemption_codes",
+          "status": "PASS",
+          "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖"
+        },
+        {
+          "details": "交卷即時推播佇列運作良好，維持最新 10 筆即時交卷動態，秒級推播管理員中台。",
+          "id": "live_stream",
+          "status": "PASS",
+          "title": "全服即時交卷動態串流 (Live Feed Stream)"
+        },
+        {
+          "details": "系統唯一總管理員 (jimmylee1020227@gmail.com) 權限保護生效中，嚴格隔離人事任命與審計日誌查閱權限。",
+          "id": "admin_hierarchy",
+          "status": "PASS",
+          "title": "總管理員唯一根憑證與權限隔離 (Super Admin Single Root)"
+        },
+        {
+          "details": "雙層持久化防遺失機制全面啟動：採增量聯集合併 (Union Merge)，禁止任何空陣列覆蓋雲端，永久保護學生試卷與名冊。",
+          "id": "storage_quota_protection",
+          "status": "PASS",
+          "title": "LocalStorage 快取配額與資料庫防遺失雙層保險機制"
+        }
+      ],
+      "durationMs": 1135,
+      "healthScore": 95,
+      "id": "report_1790412043153",
+      "isScheduled": false,
+      "overallStatus": "WARNING",
+      "summary": "全系統 12 大維度深度自檢完成：11 項通過、1 項警示、0 項異常，系統總健康評分：95 分。",
+      "timestamp": "2026-09-26T08:40:43.153Z"
+    },
+    {
+      "checks": [
+        {
+          "details": "連線正常！雲端延遲往返時間：504 ms (連線穩定良好)",
+          "id": "cloud_sync",
+          "latencyMs": 504,
           "status": "PASS",
           "title": "Firebase 雲端即時連線與同步延遲"
         },
@@ -9253,27 +9600,27 @@
           "title": "題庫動態生成引擎與隨機出題演算法"
         },
         {
-          "details": "題庫覆寫節點同步良好，目前全站共有 0 題經管理員核准校對並更新詳解與答案。",
+          "details": "題庫覆寫節點同步良好，目前全站共有 2 題經管理員核准校對並更新詳解與答案。",
           "id": "question_overrides",
           "status": "PASS",
           "title": "管理員題目修正與題庫覆寫節點 (Overrides)"
         },
         {
-          "details": "全服排行榜格式正常（共 0 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
+          "details": "全服排行榜格式正常（共 45 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
           "id": "leaderboard_points",
           "status": "PASS",
           "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)"
         },
         {
-          "details": "試卷庫數據健全無損（已調閱存檔 0 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
+          "details": "試卷庫數據健全無損（已調閱存檔 143 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
           "id": "papers_integrity",
           "status": "PASS",
           "title": "歷次實戰試卷庫與整卷詳解完整度"
         },
         {
-          "details": "學生名冊檔案完好，累計登記 0 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
+          "details": "學生名冊檔案完好，累計登記 98 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
           "id": "user_registry",
-          "status": "WARNING",
+          "status": "PASS",
           "title": "全服註冊學生名冊與多帳號映射表 (User Registry)"
         },
         {
@@ -9283,7 +9630,511 @@
           "title": "個人錯題筆記本 (Mistake Notebook) 索引與雲端備份"
         },
         {
-          "details": "全站共有 0 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。",
+          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。",
+          "id": "redemption_codes",
+          "status": "PASS",
+          "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖"
+        },
+        {
+          "details": "交卷即時推播佇列運作良好，維持最新 8 筆即時交卷動態，秒級推播管理員中台。",
+          "id": "live_stream",
+          "status": "PASS",
+          "title": "全服即時交卷動態串流 (Live Feed Stream)"
+        },
+        {
+          "details": "系統唯一總管理員 (jimmylee1020227@gmail.com) 權限保護生效中，嚴格隔離人事任命與審計日誌查閱權限。",
+          "id": "admin_hierarchy",
+          "status": "PASS",
+          "title": "總管理員唯一根憑證與權限隔離 (Super Admin Single Root)"
+        },
+        {
+          "details": "雙層持久化防遺失機制全面啟動：採增量聯集合併 (Union Merge)，禁止任何空陣列覆蓋雲端，永久保護學生試卷與名冊。",
+          "id": "storage_quota_protection",
+          "status": "PASS",
+          "title": "LocalStorage 快取配額與資料庫防遺失雙層保險機制"
+        }
+      ],
+      "durationMs": 518,
+      "healthScore": 100,
+      "id": "report_1790408162219",
+      "isScheduled": false,
+      "overallStatus": "PASS",
+      "summary": "全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "timestamp": "2026-09-26T07:36:02.219Z"
+    },
+    {
+      "checks": [
+        {
+          "details": "連線正常！雲端延遲往返時間：496 ms (連線穩定良好)",
+          "id": "cloud_sync",
+          "latencyMs": 496,
+          "status": "PASS",
+          "title": "Firebase 雲端即時連線與同步延遲"
+        },
+        {
+          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
+          "id": "lottery_security",
+          "status": "PASS",
+          "title": "抽獎券防重複領取與防刷原子鎖"
+        },
+        {
+          "details": "國中 5 大科目（國文、英文、數學、自然、社會）各年級各單元題目生成引擎、四選一選項演算法與 Mulberry32 種子均運作順暢！",
+          "id": "quiz_generator",
+          "status": "PASS",
+          "title": "題庫動態生成引擎與隨機出題演算法"
+        },
+        {
+          "details": "題庫覆寫節點同步良好，目前全站共有 2 題經管理員核准校對並更新詳解與答案。",
+          "id": "question_overrides",
+          "status": "PASS",
+          "title": "管理員題目修正與題庫覆寫節點 (Overrides)"
+        },
+        {
+          "details": "全服排行榜格式正常（共 45 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
+          "id": "leaderboard_points",
+          "status": "PASS",
+          "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)"
+        },
+        {
+          "details": "試卷庫數據健全無損（已調閱存檔 143 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
+          "id": "papers_integrity",
+          "status": "PASS",
+          "title": "歷次實戰試卷庫與整卷詳解完整度"
+        },
+        {
+          "details": "學生名冊檔案完好，累計登記 98 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
+          "id": "user_registry",
+          "status": "PASS",
+          "title": "全服註冊學生名冊與多帳號映射表 (User Registry)"
+        },
+        {
+          "details": "錯題本節點運作正常，支援錯題重複練習、自動消題與名師推導步驟原樣還原。",
+          "id": "mistake_notebook",
+          "status": "PASS",
+          "title": "個人錯題筆記本 (Mistake Notebook) 索引與雲端備份"
+        },
+        {
+          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。",
+          "id": "redemption_codes",
+          "status": "PASS",
+          "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖"
+        },
+        {
+          "details": "交卷即時推播佇列運作良好，維持最新 8 筆即時交卷動態，秒級推播管理員中台。",
+          "id": "live_stream",
+          "status": "PASS",
+          "title": "全服即時交卷動態串流 (Live Feed Stream)"
+        },
+        {
+          "details": "系統唯一總管理員 (jimmylee1020227@gmail.com) 權限保護生效中，嚴格隔離人事任命與審計日誌查閱權限。",
+          "id": "admin_hierarchy",
+          "status": "PASS",
+          "title": "總管理員唯一根憑證與權限隔離 (Super Admin Single Root)"
+        },
+        {
+          "details": "雙層持久化防遺失機制全面啟動：採增量聯集合併 (Union Merge)，禁止任何空陣列覆蓋雲端，永久保護學生試卷與名冊。",
+          "id": "storage_quota_protection",
+          "status": "PASS",
+          "title": "LocalStorage 快取配額與資料庫防遺失雙層保險機制"
+        }
+      ],
+      "durationMs": 502,
+      "healthScore": 100,
+      "id": "report_1790407985557",
+      "isScheduled": false,
+      "overallStatus": "PASS",
+      "summary": "全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "timestamp": "2026-09-26T07:33:05.557Z"
+    },
+    {
+      "checks": [
+        {
+          "details": "連線正常！雲端延遲往返時間：476 ms (連線穩定良好)",
+          "id": "cloud_sync",
+          "latencyMs": 476,
+          "status": "PASS",
+          "title": "Firebase 雲端即時連線與同步延遲"
+        },
+        {
+          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
+          "id": "lottery_security",
+          "status": "PASS",
+          "title": "抽獎券防重複領取與防刷原子鎖"
+        },
+        {
+          "details": "國中 5 大科目（國文、英文、數學、自然、社會）各年級各單元題目生成引擎、四選一選項演算法與 Mulberry32 種子均運作順暢！",
+          "id": "quiz_generator",
+          "status": "PASS",
+          "title": "題庫動態生成引擎與隨機出題演算法"
+        },
+        {
+          "details": "題庫覆寫節點同步良好，目前全站共有 2 題經管理員核准校對並更新詳解與答案。",
+          "id": "question_overrides",
+          "status": "PASS",
+          "title": "管理員題目修正與題庫覆寫節點 (Overrides)"
+        },
+        {
+          "details": "全服排行榜格式正常（共 45 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
+          "id": "leaderboard_points",
+          "status": "PASS",
+          "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)"
+        },
+        {
+          "details": "試卷庫數據健全無損（已調閱存檔 143 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
+          "id": "papers_integrity",
+          "status": "PASS",
+          "title": "歷次實戰試卷庫與整卷詳解完整度"
+        },
+        {
+          "details": "學生名冊檔案完好，累計登記 98 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
+          "id": "user_registry",
+          "status": "PASS",
+          "title": "全服註冊學生名冊與多帳號映射表 (User Registry)"
+        },
+        {
+          "details": "錯題本節點運作正常，支援錯題重複練習、自動消題與名師推導步驟原樣還原。",
+          "id": "mistake_notebook",
+          "status": "PASS",
+          "title": "個人錯題筆記本 (Mistake Notebook) 索引與雲端備份"
+        },
+        {
+          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。",
+          "id": "redemption_codes",
+          "status": "PASS",
+          "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖"
+        },
+        {
+          "details": "交卷即時推播佇列運作良好，維持最新 8 筆即時交卷動態，秒級推播管理員中台。",
+          "id": "live_stream",
+          "status": "PASS",
+          "title": "全服即時交卷動態串流 (Live Feed Stream)"
+        },
+        {
+          "details": "系統唯一總管理員 (jimmylee1020227@gmail.com) 權限保護生效中，嚴格隔離人事任命與審計日誌查閱權限。",
+          "id": "admin_hierarchy",
+          "status": "PASS",
+          "title": "總管理員唯一根憑證與權限隔離 (Super Admin Single Root)"
+        },
+        {
+          "details": "雙層持久化防遺失機制全面啟動：採增量聯集合併 (Union Merge)，禁止任何空陣列覆蓋雲端，永久保護學生試卷與名冊。",
+          "id": "storage_quota_protection",
+          "status": "PASS",
+          "title": "LocalStorage 快取配額與資料庫防遺失雙層保險機制"
+        }
+      ],
+      "durationMs": 482,
+      "healthScore": 100,
+      "id": "report_1790407980634",
+      "isScheduled": false,
+      "overallStatus": "PASS",
+      "summary": "全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "timestamp": "2026-09-26T07:33:00.634Z"
+    },
+    {
+      "checks": [
+        {
+          "details": "連線正常！雲端延遲往返時間：68 ms (極速連線 (雲端秒級同步))",
+          "id": "cloud_sync",
+          "latencyMs": 68,
+          "status": "PASS",
+          "title": "Firebase 雲端即時連線與同步延遲"
+        },
+        {
+          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
+          "id": "lottery_security",
+          "status": "PASS",
+          "title": "抽獎券防重複領取與防刷原子鎖"
+        },
+        {
+          "details": "國中 5 大科目（國文、英文、數學、自然、社會）各年級各單元題目生成引擎、四選一選項演算法與 Mulberry32 種子均運作順暢！",
+          "id": "quiz_generator",
+          "status": "PASS",
+          "title": "題庫動態生成引擎與隨機出題演算法"
+        },
+        {
+          "details": "題庫覆寫節點同步良好，目前全站共有 2 題經管理員核准校對並更新詳解與答案。",
+          "id": "question_overrides",
+          "status": "PASS",
+          "title": "管理員題目修正與題庫覆寫節點 (Overrides)"
+        },
+        {
+          "details": "全服排行榜格式正常（共 45 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
+          "id": "leaderboard_points",
+          "status": "PASS",
+          "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)"
+        },
+        {
+          "details": "試卷庫數據健全無損（已調閱存檔 135 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
+          "id": "papers_integrity",
+          "status": "PASS",
+          "title": "歷次實戰試卷庫與整卷詳解完整度"
+        },
+        {
+          "details": "學生名冊檔案完好，累計登記 97 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
+          "id": "user_registry",
+          "status": "PASS",
+          "title": "全服註冊學生名冊與多帳號映射表 (User Registry)"
+        },
+        {
+          "details": "錯題本節點運作正常，支援錯題重複練習、自動消題與名師推導步驟原樣還原。",
+          "id": "mistake_notebook",
+          "status": "PASS",
+          "title": "個人錯題筆記本 (Mistake Notebook) 索引與雲端備份"
+        },
+        {
+          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。",
+          "id": "redemption_codes",
+          "status": "PASS",
+          "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖"
+        },
+        {
+          "details": "交卷即時推播佇列運作良好，維持最新 8 筆即時交卷動態，秒級推播管理員中台。",
+          "id": "live_stream",
+          "status": "PASS",
+          "title": "全服即時交卷動態串流 (Live Feed Stream)"
+        },
+        {
+          "details": "系統唯一總管理員 (jimmylee1020227@gmail.com) 權限保護生效中，嚴格隔離人事任命與審計日誌查閱權限。",
+          "id": "admin_hierarchy",
+          "status": "PASS",
+          "title": "總管理員唯一根憑證與權限隔離 (Super Admin Single Root)"
+        },
+        {
+          "details": "雙層持久化防遺失機制全面啟動：採增量聯集合併 (Union Merge)，禁止任何空陣列覆蓋雲端，永久保護學生試卷與名冊。",
+          "id": "storage_quota_protection",
+          "status": "PASS",
+          "title": "LocalStorage 快取配額與資料庫防遺失雙層保險機制"
+        }
+      ],
+      "durationMs": 74,
+      "healthScore": 100,
+      "id": "report_1790406016521",
+      "isScheduled": false,
+      "overallStatus": "PASS",
+      "summary": "全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "timestamp": "2026-09-26T07:00:16.521Z"
+    },
+    {
+      "checks": [
+        {
+          "details": "連線正常！雲端延遲往返時間：530 ms (連線穩定良好)",
+          "id": "cloud_sync",
+          "latencyMs": 530,
+          "status": "PASS",
+          "title": "Firebase 雲端即時連線與同步延遲"
+        },
+        {
+          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
+          "id": "lottery_security",
+          "status": "PASS",
+          "title": "抽獎券防重複領取與防刷原子鎖"
+        },
+        {
+          "details": "國中 5 大科目（國文、英文、數學、自然、社會）各年級各單元題目生成引擎、四選一選項演算法與 Mulberry32 種子均運作順暢！",
+          "id": "quiz_generator",
+          "status": "PASS",
+          "title": "題庫動態生成引擎與隨機出題演算法"
+        },
+        {
+          "details": "題庫覆寫節點同步良好，目前全站共有 2 題經管理員核准校對並更新詳解與答案。",
+          "id": "question_overrides",
+          "status": "PASS",
+          "title": "管理員題目修正與題庫覆寫節點 (Overrides)"
+        },
+        {
+          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
+          "id": "leaderboard_points",
+          "status": "PASS",
+          "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)"
+        },
+        {
+          "details": "試卷庫數據健全無損（已調閱存檔 119 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
+          "id": "papers_integrity",
+          "status": "PASS",
+          "title": "歷次實戰試卷庫與整卷詳解完整度"
+        },
+        {
+          "details": "學生名冊檔案完好，累計登記 49 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
+          "id": "user_registry",
+          "status": "PASS",
+          "title": "全服註冊學生名冊與多帳號映射表 (User Registry)"
+        },
+        {
+          "details": "錯題本節點運作正常，支援錯題重複練習、自動消題與名師推導步驟原樣還原。",
+          "id": "mistake_notebook",
+          "status": "PASS",
+          "title": "個人錯題筆記本 (Mistake Notebook) 索引與雲端備份"
+        },
+        {
+          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。",
+          "id": "redemption_codes",
+          "status": "PASS",
+          "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖"
+        },
+        {
+          "details": "交卷即時推播佇列運作良好，維持最新 1 筆即時交卷動態，秒級推播管理員中台。",
+          "id": "live_stream",
+          "status": "PASS",
+          "title": "全服即時交卷動態串流 (Live Feed Stream)"
+        },
+        {
+          "details": "系統唯一總管理員 (jimmylee1020227@gmail.com) 權限保護生效中，嚴格隔離人事任命與審計日誌查閱權限。",
+          "id": "admin_hierarchy",
+          "status": "PASS",
+          "title": "總管理員唯一根憑證與權限隔離 (Super Admin Single Root)"
+        },
+        {
+          "details": "雙層持久化防遺失機制全面啟動：採增量聯集合併 (Union Merge)，禁止任何空陣列覆蓋雲端，永久保護學生試卷與名冊。",
+          "id": "storage_quota_protection",
+          "status": "PASS",
+          "title": "LocalStorage 快取配額與資料庫防遺失雙層保險機制"
+        }
+      ],
+      "durationMs": 535,
+      "healthScore": 100,
+      "id": "report_1790398253594",
+      "isScheduled": false,
+      "overallStatus": "PASS",
+      "summary": "全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "timestamp": "2026-09-26T04:50:53.594Z"
+    },
+    {
+      "checks": [
+        {
+          "details": "連線正常！雲端延遲往返時間：639 ms (連線穩定良好)",
+          "id": "cloud_sync",
+          "latencyMs": 639,
+          "status": "PASS",
+          "title": "Firebase 雲端即時連線與同步延遲"
+        },
+        {
+          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
+          "id": "lottery_security",
+          "status": "PASS",
+          "title": "抽獎券防重複領取與防刷原子鎖"
+        },
+        {
+          "details": "國中 5 大科目（國文、英文、數學、自然、社會）各年級各單元題目生成引擎、四選一選項演算法與 Mulberry32 種子均運作順暢！",
+          "id": "quiz_generator",
+          "status": "PASS",
+          "title": "題庫動態生成引擎與隨機出題演算法"
+        },
+        {
+          "details": "題庫覆寫節點同步良好，目前全站共有 2 題經管理員核准校對並更新詳解與答案。",
+          "id": "question_overrides",
+          "status": "PASS",
+          "title": "管理員題目修正與題庫覆寫節點 (Overrides)"
+        },
+        {
+          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
+          "id": "leaderboard_points",
+          "status": "PASS",
+          "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)"
+        },
+        {
+          "details": "試卷庫數據健全無損（已調閱存檔 119 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
+          "id": "papers_integrity",
+          "status": "PASS",
+          "title": "歷次實戰試卷庫與整卷詳解完整度"
+        },
+        {
+          "details": "學生名冊檔案完好，累計登記 49 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
+          "id": "user_registry",
+          "status": "PASS",
+          "title": "全服註冊學生名冊與多帳號映射表 (User Registry)"
+        },
+        {
+          "details": "錯題本節點運作正常，支援錯題重複練習、自動消題與名師推導步驟原樣還原。",
+          "id": "mistake_notebook",
+          "status": "PASS",
+          "title": "個人錯題筆記本 (Mistake Notebook) 索引與雲端備份"
+        },
+        {
+          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。",
+          "id": "redemption_codes",
+          "status": "PASS",
+          "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖"
+        },
+        {
+          "details": "交卷即時推播佇列運作良好，維持最新 1 筆即時交卷動態，秒級推播管理員中台。",
+          "id": "live_stream",
+          "status": "PASS",
+          "title": "全服即時交卷動態串流 (Live Feed Stream)"
+        },
+        {
+          "details": "系統唯一總管理員 (jimmylee1020227@gmail.com) 權限保護生效中，嚴格隔離人事任命與審計日誌查閱權限。",
+          "id": "admin_hierarchy",
+          "status": "PASS",
+          "title": "總管理員唯一根憑證與權限隔離 (Super Admin Single Root)"
+        },
+        {
+          "details": "雙層持久化防遺失機制全面啟動：採增量聯集合併 (Union Merge)，禁止任何空陣列覆蓋雲端，永久保護學生試卷與名冊。",
+          "id": "storage_quota_protection",
+          "status": "PASS",
+          "title": "LocalStorage 快取配額與資料庫防遺失雙層保險機制"
+        }
+      ],
+      "durationMs": 644,
+      "healthScore": 100,
+      "id": "report_1790398249308",
+      "isScheduled": false,
+      "overallStatus": "PASS",
+      "summary": "全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "timestamp": "2026-09-26T04:50:49.308Z"
+    },
+    {
+      "checks": [
+        {
+          "details": "連線正常！雲端延遲往返時間：14 ms (極速連線 (雲端秒級同步))",
+          "id": "cloud_sync",
+          "latencyMs": 14,
+          "status": "PASS",
+          "title": "Firebase 雲端即時連線與同步延遲"
+        },
+        {
+          "details": "抽獎券每日防刷雙向原子鎖完整生效中！全服無異常票券帳號。",
+          "id": "lottery_security",
+          "status": "PASS",
+          "title": "抽獎券防重複領取與防刷原子鎖"
+        },
+        {
+          "details": "國中 5 大科目（國文、英文、數學、自然、社會）各年級各單元題目生成引擎、四選一選項演算法與 Mulberry32 種子均運作順暢！",
+          "id": "quiz_generator",
+          "status": "PASS",
+          "title": "題庫動態生成引擎與隨機出題演算法"
+        },
+        {
+          "details": "題庫覆寫節點同步良好，目前全站共有 2 題經管理員核准校對並更新詳解與答案。",
+          "id": "question_overrides",
+          "status": "PASS",
+          "title": "管理員題目修正與題庫覆寫節點 (Overrides)"
+        },
+        {
+          "details": "全服排行榜格式正常（共 46 位在榜學生），當前台北週次：2026-W39，積點無溢出。",
+          "id": "leaderboard_points",
+          "status": "PASS",
+          "title": "積分排行榜與每週結算系統 (每週一台北時間 00:00 自動結算)"
+        },
+        {
+          "details": "試卷庫數據健全無損（已調閱存檔 117 份考卷），包含完整題目、學生選擇、正解、名師推導詳解與得分，無遺失。",
+          "id": "papers_integrity",
+          "status": "PASS",
+          "title": "歷次實戰試卷庫與整卷詳解完整度"
+        },
+        {
+          "details": "學生名冊檔案完好，累計登記 49 位學員，支援 Google OAuth 官方認證、同校區合併與跨裝置識別。",
+          "id": "user_registry",
+          "status": "PASS",
+          "title": "全服註冊學生名冊與多帳號映射表 (User Registry)"
+        },
+        {
+          "details": "錯題本節點運作正常，支援錯題重複練習、自動消題與名師推導步驟原樣還原。",
+          "id": "mistake_notebook",
+          "status": "PASS",
+          "title": "個人錯題筆記本 (Mistake Notebook) 索引與雲端備份"
+        },
+        {
+          "details": "全站共有 2 組有效兌換碼，每組序號具備單一學生防重複兌換鎖與推播小鈴鐺聯動機制。",
           "id": "redemption_codes",
           "status": "PASS",
           "title": "自訂序號兌換碼庫 (Redemption Codes) 與防重複兌換鎖"
@@ -9307,13 +10158,13 @@
           "title": "LocalStorage 快取配額與資料庫防遺失雙層保險機制"
         }
       ],
-      "durationMs": 59,
-      "healthScore": 95,
-      "id": "report_1790396820684",
+      "durationMs": 21,
+      "healthScore": 100,
+      "id": "report_1790398116981",
       "isScheduled": false,
-      "overallStatus": "WARNING",
-      "summary": "全系統 12 大維度深度自檢完成：11 項通過、1 項警示、0 項異常，系統總健康評分：95 分。",
-      "timestamp": "2026-09-26T04:27:00.684Z"
+      "overallStatus": "PASS",
+      "summary": "全系統 12 大維度深度自檢完成：12 項通過、0 項警示、0 項異常，系統總健康評分：100 分。",
+      "timestamp": "2026-09-26T04:48:36.981Z"
     }
   ],
   "user_quiz_papers_admin_super_jimmy": [

@@ -9,7 +9,7 @@ export function generateChineseQuestion(gradeId, unitId, index, difficulty = 'me
   const uNum = parseInt(String(unitId).split('-').pop().replace(/u/i, ''), 10) || 1;
 
   // ── 進階挑戰難度分流 (Extreme / Hardest) ──
-  if (isExtreme) {
+  if (isExtreme && (index % 4 === 0)) {
     const hardQ = getHardChineseQuestion(gradeId, unitId, index, rand, preamble, conceptTag);
     if (hardQ) return hardQ;
   }

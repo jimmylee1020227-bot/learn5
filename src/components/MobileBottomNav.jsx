@@ -67,6 +67,31 @@ export default function MobileBottomNav({
         </span>
       </button>
 
+      {/* 重點筆記 */}
+      <button
+        onClick={() => setActiveTab('notes')}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: activeTab === 'notes' ? '#f5ebd9' : 'transparent',
+          border: 'none',
+          borderRadius: '10px',
+          padding: '5px 8px',
+          cursor: 'pointer',
+          color: activeTab === 'notes' ? 'var(--theme-accent, var(--theme-accent, #ef8354))' : '#5b6772',
+          flex: 1,
+          maxWidth: '68px',
+          transition: 'all 0.15s ease'
+        }}
+      >
+        <FileText size={20} strokeWidth={activeTab === 'notes' ? 2.6 : 2} />
+        <span style={{ fontSize: '0.68rem', fontWeight: activeTab === 'notes' ? 800 : 600, marginTop: '2px' }}>
+          筆記
+        </span>
+      </button>
+
       {/* 2. 錯題加強 */}
       <button
         onClick={() => setActiveTab('reinforce')}
