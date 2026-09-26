@@ -6,11 +6,12 @@
   <link rel="icon" type="image/jpeg" href="/learn5/logo.jpg" />
   <title>正在前往 108課綱國中全科複習學習網...</title>
   <script>
-    // GitHub Pages SPA 智能跳轉修復
+    // GitHub Pages SPA 智能跳轉修復：若造訪子路由404，平滑重定向回學習網根目錄
     (function () {
-      var isGh = window.location.hostname.includes('github.io');
-      var target = isGh ? '/learn5/docs/' : '/';
-      window.location.replace(target + window.location.search + window.location.hash);
+      var repoBase = '/learn5/';
+      if (window.location.pathname !== repoBase) {
+        window.location.replace(repoBase + window.location.search + window.location.hash);
+      }
     })();
   </script>
   <style>
