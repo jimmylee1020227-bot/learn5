@@ -8,11 +8,9 @@
   <script>
     // GitHub Pages SPA 智能跳轉修復
     (function () {
-      var currentPath = window.location.pathname;
-      var repoBase = '/learn5/';
-      if (!currentPath.startsWith(repoBase) || currentPath !== repoBase) {
-        window.location.replace(repoBase);
-      }
+      var isGh = window.location.hostname.includes('github.io');
+      var target = isGh ? '/learn5/docs/' : '/';
+      window.location.replace(target + window.location.search + window.location.hash);
     })();
   </script>
   <style>

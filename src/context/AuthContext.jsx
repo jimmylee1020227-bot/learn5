@@ -135,6 +135,7 @@ export function AuthProvider({ children }) {
             savedAvatar = localStorage.getItem(avatarKey) || cloudProfile?.avatar || cloudProfile?.photoURL;
           } catch (_) {}
 
+          const resolvedDisplayName = baseDisplayName;
           const resolvedAvatar = savedAvatar || (isJimmy 
             ? siteLogo 
             : (googleUser.avatar || generateInitialsAvatar(resolvedDisplayName, googleUser.email)));
