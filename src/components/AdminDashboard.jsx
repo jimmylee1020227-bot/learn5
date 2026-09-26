@@ -380,11 +380,33 @@ function AdminDashboard() {
     // 讀取 user_registry，補充 email 等完整資訊
     const userRegistry = getJson('user_registry', {});
 
+    // 輔助函式：嚴格排查並過濾所有測資帳號，保證快篩按鈕僅呈現真實學生
+    const isTestData = (name, email, uid) => {
+      const n = String(name || '').toLowerCase();
+      const e = String(email || '').toLowerCase();
+      const u = String(uid || '').toLowerCase();
+      return (
+        n.includes('測試') || 
+        n.includes('test') || 
+        n === '王小明' ||
+        e.includes('test@') || 
+        e.includes('example.com') ||
+        u.startsWith('test_') ||
+        u.includes('_test_') ||
+        u === 'student_test_all_sync' ||
+        u === 'test_student_fix_check' ||
+        u === 'test_student_synctest' ||
+        u === 'u_btnvoclzbcu'
+      );
+    };
+
     // 1. 先用 registeredStudents 初始化名冊框架 (記錄名冊初始數據作為 fallback)
     (Array.isArray(registeredStudents) ? registeredStudents : []).forEach(st => {
       if (!st) return;
       let targetEmail = st.email || (st.id && userRegistry[st.id]?.email) || '';
       targetEmail = targetEmail.trim().toLowerCase();
+      if (isTestData(st.name || st.displayName, targetEmail, st.id)) return;
+
       const key = targetEmail || st.id || st.name || '匿名同學';
       const sName = st.name || '匿名同學';
       studentMap[key] = {
@@ -411,9 +433,8 @@ function AdminDashboard() {
       const regEntry = (log.userId && userRegistry[log.userId]) || {};
       let targetEmail = regEntry.email || log.userEmail || '';
       targetEmail = targetEmail.trim().toLowerCase();
-      
-      const key = targetEmail || log.userId || log.userName || '匿名同學';
       const sName = log.userName || '匿名同學';
+      if (isTestData(regEntry.name || sName, targetEmail, log.userId)) return;
       
       if (!studentMap[key]) {
         studentMap[key] = {
