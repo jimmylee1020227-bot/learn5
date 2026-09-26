@@ -15,17 +15,6 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <script>
-    // 🛡️ GitHub Pages 根目錄白屏防護（零延遲自動轉導至 docs 生產目錄）
-    if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
-      var pathname = window.location.pathname;
-      if (!pathname.includes('/docs')) {
-        var cleanPath = pathname.replace(/\/+$/, '');
-        var targetUrl = cleanPath + '/docs/' + window.location.search + window.location.hash;
-        window.location.replace(targetUrl);
-      }
-    }
-  </script>
   <!-- ══════ Security Headers (防火牆) ══════ -->
   <!-- CSP：只允許指定來源，封鎖 inline script 外的任意注入 -->
   <meta http-equiv="Content-Security-Policy" content="
