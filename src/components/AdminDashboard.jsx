@@ -36,7 +36,14 @@ import {
   getAuditLogs,
   fetchCloudAuditLogs,
   pushPlayerLeaderboardSync,
-  getNoteReports
+  getNoteReports,
+  getGlobalSystemBuff,
+  setGlobalSystemBuff,
+  fetchCloudGlobalSystemBuff,
+  BUFF_MODES,
+  adminAdjustStudentPoints,
+  adminResetStudentMistakes,
+  adminToggleStudentLock
 } from '../services/cloudStorage';
 import AdminNotesManager from './AdminNotesManager';
 import { AvatarImage } from '../utils/avatarHelper.jsx';
@@ -73,7 +80,8 @@ import {
   FileText,
   Activity,
   Server,
-  UserX
+  UserX,
+  Wrench
 } from 'lucide-react';
 
 function AdminDashboard() {
@@ -142,6 +150,10 @@ function AdminDashboard() {
   const [recalibrateNotice, setRecalibrateNotice] = useState('');
   const [isRecalibrating, setIsRecalibrating] = useState(false);
 
+  // 全站測驗 Buff 狀態
+  const [currentBuff, setCurrentBuff] = useState(() => getGlobalSystemBuff());
+  const [isBuffUpdating, setIsBuffUpdating] = useState(false);
+
   // 獎勵發放狀態
   const [targetPlayerId, setTargetPlayerId] = useState('ALL');
   const [pointsToGrant, setPointsToGrant] = useState(50);
@@ -166,6 +178,7 @@ function AdminDashboard() {
     setQuizPapers(getJson('all_quiz_papers', []));
     setRegisteredStudents(getRegisteredStudents());
     setRecentStream(getRecentPracticeStream());
+    fetchCloudGlobalSystemBuff().then(b => { if (b) setCurrentBuff(b); }).catch(() => {});
     setRedemptionCodes(getRedemptionCodes());
     setAdminNotifications(getAdminNotifications());
     setAuditLogs(getAuditLogs(currentUser));
@@ -801,6 +814,71 @@ function AdminDashboard() {
     }, currentUser);
   };
 
+  // 5.1 全站測驗 Buff 模式切換
+  const handleSelectBuff = async (buffModeId) => {
+    setIsBuffUpdating(true);
+    try {
+      const updated = await setGlobalSystemBuff(buffModeId, currentUser);
+      setCurrentBuff(updated);
+      setAccountActionNotice(`🎉 全站測驗 Buff 已切換為【${updated.label}】！全服即時生效`);
+    } catch (e) {
+      alert(`切換失敗：${e.message}`);
+    } finally {
+      setIsBuffUpdating(false);
+    }
+  };
+
+  // 5.2 學生深度操作：微調積分
+  const handleAdjustPoints = async (delta) => {
+    if (!selectedStudentId || selectedStudentId === 'ALL') {
+      alert('請先在學生名冊中選擇欲操作的具體學生！');
+      return;
+    }
+    try {
+      await adminAdjustStudentPoints(selectedStudentId, delta, currentUser);
+      setAccountActionNotice(`✅ 已成功為學生【${selectedStudent}】調整 ${delta > 0 ? '+' + delta : delta} 點數！`);
+      const freshReg = await fetchCloudUserRegistry();
+      setRegisteredStudents(freshReg);
+      const freshBoard = await fetchCloudLeaderboard();
+      setPlayers(freshBoard);
+    } catch (e) {
+      alert(`操作失敗：${e.message}`);
+    }
+  };
+
+  // 5.3 學生深度操作：重置錯題本
+  const handleResetMistakes = async () => {
+    if (!selectedStudentId || selectedStudentId === 'ALL') {
+      alert('請先在學生名冊中選擇欲操作的具體學生！');
+      return;
+    }
+    if (!window.confirm(`確定要清空學生【${selectedStudent}】的個人雲端錯題本嗎？此操作不可逆！`)) return;
+    try {
+      await adminResetStudentMistakes(selectedStudentId, currentUser);
+      setAccountActionNotice(`🧹 已成功清空學生【${selectedStudent}】的個人雲端錯題本！`);
+      // 重新整理錯題與作答歷史
+      await handleStudentChipClick({ name: selectedStudent, userId: selectedStudentId });
+    } catch (e) {
+      alert(`操作失敗：${e.message}`);
+    }
+  };
+
+  // 5.4 學生深度操作：帳號凍結/解凍
+  const handleToggleLock = async (isLocked) => {
+    if (!selectedStudentId || selectedStudentId === 'ALL') {
+      alert('請先在學生名冊中選擇欲操作的具體學生！');
+      return;
+    }
+    try {
+      await adminToggleStudentLock(selectedStudentId, isLocked, currentUser);
+      setAccountActionNotice(`🛡️ 已成功${isLocked ? '凍結封鎖' : '解除凍結'}學生【${selectedStudent}】帳號！`);
+      const freshReg = await fetchCloudUserRegistry();
+      setRegisteredStudents(freshReg);
+    } catch (e) {
+      alert(`操作失敗：${e.message}`);
+    }
+  };
+
   // 6. 搜尋題庫並修改
   const handleInspectQuestion = () => {
     const qId = (searchQId || '').trim().toUpperCase();
@@ -1067,19 +1145,39 @@ function AdminDashboard() {
               {isHealthChecking ? '正在深度自檢中...' : '⚡ 執行全系統智能巡檢'}
             </button>
 
-            {/* 全服 2 倍活動快速開關 */}
-            <div className="glass-panel" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '10px', borderRadius: 'var(--radius-md)', border: globalSettings.global2xActive ? '1px solid #ef4444' : '1px solid var(--border-subtle)' }}>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: globalSettings.global2xActive ? '#f87171' : 'var(--text-muted)' }}>
-                {globalSettings.global2xActive ? '🔥 全服雙倍' : '雙倍活動關閉'}
+            {/* 全站測驗 Buff 模式即時切換器 */}
+            <div className="glass-panel" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--theme-accent, #ef8354)', background: '#fff9f5' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>
+                <Sparkles size={14} color="#ef8354" />
+                <span>全站 Buff:</span>
               </div>
-              <button
-                onClick={handleToggleGlobal2x}
-                className={`btn ${globalSettings.global2xActive ? 'btn-fire' : 'btn-secondary'}`}
-                style={{ padding: '5px 10px', fontSize: '0.78rem' }}
-              >
-                <Flame size={14} />
-                {globalSettings.global2xActive ? '關閉' : '開啟'}
-              </button>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {Object.values(BUFF_MODES).map((mode) => {
+                  const isActive = currentBuff.mode === mode.id;
+                  return (
+                    <button
+                      key={mode.id}
+                      onClick={() => handleSelectBuff(mode.id)}
+                      disabled={isBuffUpdating}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '0.74rem',
+                        fontWeight: 800,
+                        borderRadius: '8px',
+                        border: isActive ? '1.5px solid #ef8354' : '1px solid #ded3c5',
+                        background: isActive ? '#ef8354' : '#fff',
+                        color: isActive ? '#fff' : 'var(--theme-border, #17324d)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        boxShadow: isActive ? '1px 1px 0 #17324d' : 'none'
+                      }}
+                      title={`${mode.label}：${mode.desc} (全站學生作答即時生效)`}
+                    >
+                      {mode.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -1949,42 +2047,122 @@ function AdminDashboard() {
                 })}
             </div>
 
-            {/* 篩選狀態條 */}
+            {/* 篩選狀態與學生深度管理面板 */}
             {selectedStudent !== 'ALL' && (
-              <div style={{ marginTop: '14px', padding: '10px 16px', background: '#fff0e9', border: '1.5px solid var(--theme-accent, #ef8354)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                <span style={{ fontSize: '0.86rem', fontWeight: 800, color: '#c8643d' }}>
-                  🎯 目前正在調閱【{selectedStudent}】的作答紀錄：{onlyMistakes ? '⚠️ 僅顯示錯題清單' : '顯示全部作答紀錄'}
-                </span>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <button
-                    onClick={() => setOnlyMistakes(!onlyMistakes)}
-                    className="btn btn-secondary"
-                    style={{ padding: '4px 10px', fontSize: '0.76rem', fontWeight: 800 }}
-                  >
-                    {onlyMistakes ? '切換為顯示該生全部題目' : '切換為僅看錯題'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const target = studentAnalytics.studentsList.find(s => s.name === selectedStudent || s.userId === selectedStudentId);
-                      if (target) handleOpenDeleteModal(target);
-                    }}
-                    className="btn btn-secondary"
-                    style={{ padding: '4px 10px', fontSize: '0.76rem', fontWeight: 800, background: '#fee2e2', color: '#b91c1c', borderColor: '#fca5a5' }}
-                    title="徹底註銷此學生帳號，清除所有名冊、試卷、錯題與雲端節點"
-                  >
-                    <UserX size={13} /> 🚫 註銷此帳號
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedStudent('ALL');
-                      setSelectedStudentId('ALL');
-                      setOnlyMistakes(false);
-                    }}
-                    className="btn btn-ghost"
-                    style={{ padding: '4px 8px', fontSize: '0.76rem', color: '#78818a', fontWeight: 700 }}
-                  >
-                    清除學生篩選
-                  </button>
+              <div style={{ marginTop: '14px', padding: '14px 18px', background: '#fff0e9', border: '2px solid var(--theme-accent, #ef8354)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '2px 2px 0 var(--theme-border, #17324d)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.92rem', fontWeight: 900, color: '#c8643d' }}>
+                      🎯 調閱學生：【{selectedStudent}】
+                    </span>
+                    {registeredStudents.find(s => s.id === selectedStudentId || s.userId === selectedStudentId)?.isLocked && (
+                      <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
+                        ⛔ 帳號已凍結
+                      </span>
+                    )}
+                    <span style={{ fontSize: '0.82rem', color: '#78818a' }}>
+                      ({onlyMistakes ? '⚠️ 僅顯示錯題清單' : '顯示全部作答紀錄'})
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => setOnlyMistakes(!onlyMistakes)}
+                      className="btn btn-secondary"
+                      style={{ padding: '5px 12px', fontSize: '0.76rem', fontWeight: 800 }}
+                    >
+                      {onlyMistakes ? '顯示全部題目' : '僅看錯題'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedStudent('ALL');
+                        setSelectedStudentId('ALL');
+                        setOnlyMistakes(false);
+                      }}
+                      className="btn btn-ghost"
+                      style={{ padding: '5px 10px', fontSize: '0.76rem', fontWeight: 800 }}
+                    >
+                      ✕ 清除選取
+                    </button>
+                  </div>
+                </div>
+
+                {/* 學生深度實時操作列 */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', paddingTop: '10px', borderTop: '1px dashed #ded3c5' }}>
+                  {/* 積分微調 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#5b6772' }}>積分微調:</span>
+                    <button
+                      onClick={() => handleAdjustPoints(10)}
+                      className="btn btn-secondary"
+                      style={{ padding: '4px 8px', fontSize: '0.74rem', fontWeight: 800, background: '#ecfdf5', borderColor: '#10b981', color: '#047857' }}
+                      title="立即增加 10 積分 (同步排行榜與個人成績)"
+                    >
+                      +10
+                    </button>
+                    <button
+                      onClick={() => handleAdjustPoints(50)}
+                      className="btn btn-secondary"
+                      style={{ padding: '4px 8px', fontSize: '0.74rem', fontWeight: 800, background: '#ecfdf5', borderColor: '#10b981', color: '#047857' }}
+                      title="立即增加 50 積分"
+                    >
+                      +50
+                    </button>
+                    <button
+                      onClick={() => handleAdjustPoints(-10)}
+                      className="btn btn-secondary"
+                      style={{ padding: '4px 8px', fontSize: '0.74rem', fontWeight: 800, background: '#fff1f2', borderColor: '#f43f5e', color: '#be123c' }}
+                      title="立即扣除 10 積分"
+                    >
+                      -10
+                    </button>
+                  </div>
+
+                  {/* 錯題重置、凍結、註銷 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={handleResetMistakes}
+                      className="btn btn-secondary"
+                      style={{ padding: '5px 10px', fontSize: '0.76rem', fontWeight: 800, background: '#eff6ff', color: '#1d4ed8', borderColor: '#93c5fd' }}
+                      title="清空此學生雲端錯題紀錄"
+                    >
+                      🧹 清空雲端錯題本
+                    </button>
+
+                    {(() => {
+                      const studentRecord = registeredStudents.find(s => s.id === selectedStudentId || s.userId === selectedStudentId);
+                      const isLocked = !!studentRecord?.isLocked;
+                      return (
+                        <button
+                          onClick={() => handleToggleLock(!isLocked)}
+                          className="btn btn-secondary"
+                          style={{
+                            padding: '5px 10px',
+                            fontSize: '0.76rem',
+                            fontWeight: 800,
+                            background: isLocked ? '#fef3c7' : '#fee2e2',
+                            color: isLocked ? '#b45309' : '#b91c1c',
+                            borderColor: isLocked ? '#fcd34d' : '#fca5a5'
+                          }}
+                          title={isLocked ? "解除帳號凍結，允許正常登入與測驗" : "凍結此帳號，禁止作答與領取獎勵"}
+                        >
+                          {isLocked ? '🔓 解除凍結' : '🛡️ 凍結帳號'}
+                        </button>
+                      );
+                    })()}
+
+                    <button
+                      onClick={() => {
+                        const target = studentAnalytics.studentsList.find(s => s.name === selectedStudent || s.userId === selectedStudentId);
+                        if (target) handleOpenDeleteModal(target);
+                      }}
+                      className="btn btn-secondary"
+                      style={{ padding: '5px 10px', fontSize: '0.76rem', fontWeight: 800, background: '#fee2e2', color: '#b91c1c', borderColor: '#fca5a5' }}
+                      title="徹底註銷此學生帳號，清除所有名冊、試卷、錯題與雲端節點"
+                    >
+                      <UserX size={13} /> 🚫 註銷此帳號
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -2609,10 +2787,64 @@ function AdminDashboard() {
       {/* 5. 題庫改題與刪除 */}
       {activeSubTab === 'questions' && (
         <div className="glass-panel" style={{ padding: '24px' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BookOpen size={18} color="#ec4899" />
-            題庫答案修正與題目管理
-          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--theme-border, #17324d)' }}>
+              <BookOpen size={18} color="#ec4899" />
+              題庫深度答案修正、健康度診斷與去重
+            </h3>
+            
+            {/* 題庫體檢與去重按鈕 */}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button
+                onClick={handleScanQuestionBank}
+                disabled={isDiagnosingBank}
+                className="btn btn-secondary"
+                style={{ padding: '6px 12px', fontSize: '0.8rem', fontWeight: 800 }}
+              >
+                <Activity size={14} className={isDiagnosingBank ? 'animate-spin' : ''} />
+                {isDiagnosingBank ? '正在掃描全站題庫...' : '🔍 題庫健康度診斷'}
+              </button>
+              {qBankReport && qBankReport.duplicates.length > 0 && (
+                <button
+                  onClick={handleAutoFixDuplicates}
+                  className="btn btn-primary"
+                  style={{ padding: '6px 12px', fontSize: '0.8rem', fontWeight: 800, background: '#ef4444', borderColor: '#b91c1c' }}
+                >
+                  <Wrench size={14} /> 一鍵標記去除 {qBankReport.duplicates.length} 筆重複題目
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* 題庫診斷結果面板 */}
+          {qBankReport && (
+            <div style={{ marginBottom: '20px', padding: '14px 18px', background: qBankReport.duplicates.length === 0 ? '#ecfdf5' : '#fff7ed', border: qBankReport.duplicates.length === 0 ? '1.5px solid #10b981' : '1.5px solid #f97316', borderRadius: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontWeight: 800, fontSize: '0.88rem', color: qBankReport.duplicates.length === 0 ? '#047857' : '#c2410c' }}>
+                  {qBankReport.duplicates.length === 0 ? '✅ 題庫健康診斷完畢：全庫健康健全，無重複題幹或選項異常' : `⚠️ 題庫診斷發現：檢測到 ${qBankReport.duplicates.length} 組疑似重複題幹`}
+                </span>
+                <span style={{ fontSize: '0.78rem', color: '#78818a' }}>
+                  已審核題數：{qBankReport.totalScanned} 題 • 覆蓋 5 大核心科目
+                </span>
+              </div>
+              {qBankReport.duplicates.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' }}>
+                  {qBankReport.duplicates.slice(0, 3).map((dup, i) => (
+                    <div key={i} style={{ fontSize: '0.76rem', color: '#7c2d12', background: '#ffedd5', padding: '6px 10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>重複題號：<strong>{dup.primaryId}</strong> 與 <strong>{dup.duplicateId}</strong>（題幹：{dup.snippet}）</span>
+                      <button
+                        onClick={() => { setSearchQId(dup.duplicateId); }}
+                        className="btn btn-ghost"
+                        style={{ padding: '2px 6px', fontSize: '0.72rem', color: '#c2410c', fontWeight: 800 }}
+                      >
+                        帶入調閱 →
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
             <input

@@ -3276,27 +3276,101 @@ export async function deleteStudentAccount(targetUserId, operatorUser) {
   setJson('all_quiz_papers', nextPapers);
   updateServerSync('all_quiz_papers', nextPapers);
 
-  // 5. 抹除本地 localStorage 該用戶的專屬節點
+  // 5. 抹除本地 localStorage 該用戶的專屬節點與所有快取
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
-      window.localStorage.removeItem(STORAGE_PREFIX + `practice_history_${targetUserId}`);
-      window.localStorage.removeItem(STORAGE_PREFIX + `mistakes_${targetUserId}`);
-      window.localStorage.removeItem(STORAGE_PREFIX + `game_state_${targetUserId}`);
-      window.localStorage.removeItem(STORAGE_PREFIX + `privacy_consent_${targetUserId}`);
-    } catch (e) {}
+      const keysToRemove = [];
+      const cleanEmail = (studentEmail || '').trim().toLowerCase();
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const k = window.localStorage.key(i);
+        if (k && (
+          k.includes(targetUserId) || 
+          (cleanEmail && cleanEmail !== '無 email' && k.includes(cleanEmail))
+        )) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach(k => window.localStorage.removeItem(k));
+
+      // 從快取的雲端做題日誌中徹底剔除該生紀錄
+      const cloudHistRaw = window.localStorage.getItem(STORAGE_PREFIX + 'cloud_practice_history');
+      if (cloudHistRaw) {
+        try {
+          const cloudHist = JSON.parse(cloudHistRaw);
+          if (Array.isArray(cloudHist)) {
+            const cleanHist = cloudHist.filter(h => h && h.userId !== targetUserId);
+            window.localStorage.setItem(STORAGE_PREFIX + 'cloud_practice_history', JSON.stringify(cleanHist));
+          }
+        } catch (_) {}
+      }
+
+      // 若目前使用者恰好是被註銷者，一併清除當前工作狀態
+      const curUser = window.localStorage.getItem('studyhub_current_user');
+      if (curUser && curUser.includes(targetUserId)) {
+        window.localStorage.removeItem('studyhub_current_user');
+        window.localStorage.removeItem('studyhub_auth_user');
+      }
+    } catch (e) {
+      console.warn('[LocalStorage purge error]', e);
+    }
   }
 
-  // 6. 抹除 Firebase 雲端對應的所有獨立子節點
+  // 6. 徹底抹除 Firebase 雲端對應的所有獨立子節點與做題考卷庫 (Zero Residue)
   if (db) {
     try {
-      await Promise.allSettled([
+      const deletePromises = [
         set(ref(db, `studyhub/user_registry/${targetUserId}`), null),
         set(ref(db, `studyhub/leaderboard_players/${targetUserId}`), null),
+        // 真實題庫與相容節點
+        set(ref(db, `studyhub/practice_history_${targetUserId}`), null),
         set(ref(db, `studyhub/studyhub_practice_history_${targetUserId}`), null),
+        // 專屬考卷庫與相容節點
+        set(ref(db, `studyhub/user_quiz_papers_${targetUserId}`), null),
+        set(ref(db, `studyhub/studyhub_user_quiz_papers_${targetUserId}`), null),
+        // 個人錯題本節點 (防止錯題殘留)
+        set(ref(db, `studyhub/mistake_notebook/${targetUserId}`), null),
         set(ref(db, `studyhub/studyhub_mistakes_${targetUserId}`), null),
+        // 抽獎次數與遊戲狀態
+        set(ref(db, `studyhub/game_state_${targetUserId}`), null),
         set(ref(db, `studyhub/studyhub_game_state_${targetUserId}`), null),
-        set(ref(db, `studyhub/privacy_consent_${targetUserId}`), null)
-      ]);
+        // 條款同意紀錄與用戶 Profile
+        set(ref(db, `studyhub/privacy_consent_${targetUserId}`), null),
+        set(ref(db, `studyhub/user_profiles/${targetUserId}`), null),
+        // 客服對話紀錄
+        set(ref(db, `studyhub/support_chats/thread_${targetUserId}`), null)
+      ];
+
+      // 深度清查 Firebase 雲端 studyhub 根節點下所有含有該 targetUserId 的動態節點 (例如 daily_stats_u_xxx_2026-xx-xx)
+      try {
+        const rootSnap = await get(ref(db, 'studyhub'));
+        if (rootSnap.exists()) {
+          const rootData = rootSnap.val() || {};
+          Object.keys(rootData).forEach(key => {
+            if (key.includes(targetUserId)) {
+              deletePromises.push(set(ref(db, `studyhub/${key}`), null));
+            }
+          });
+          // 深度清查全域 all_quiz_papers 節點
+          if (rootData.all_quiz_papers && typeof rootData.all_quiz_papers === 'object') {
+            const cleanedPapers = {};
+            let hasPaperChanged = false;
+            Object.entries(rootData.all_quiz_papers).forEach(([pid, p]) => {
+              if (p && (p.userId === targetUserId || p.ownerId === targetUserId)) {
+                hasPaperChanged = true;
+              } else {
+                cleanedPapers[pid] = p;
+              }
+            });
+            if (hasPaperChanged) {
+              deletePromises.push(set(ref(db, 'studyhub/all_quiz_papers'), cleanedPapers));
+            }
+          }
+        }
+      } catch (scanErr) {
+        console.warn('[Firebase root deep scan error during deleteStudentAccount]', scanErr);
+      }
+
+      await Promise.allSettled(deletePromises);
     } catch (err) {
       console.warn('[Firebase deleteStudentAccount partial error]', err);
     }
@@ -4160,5 +4234,234 @@ export async function fetchCloudCustomNotes() {
   return getCustomNotes();
 }
 
+// --- 20. 創新功能：全站測驗 Buff 活動管理系統 (Global Quiz Buff Mode) ---
+export const BUFF_MODES = {
+  NORMAL: { id: 'NORMAL', label: '標準常態', desc: '標準點數累積模式', multiplier: 1, badge: '⚡ 常態' },
+  DOUBLE_EXP: { id: 'DOUBLE_EXP', label: '🔥 會考雙倍衝刺', desc: '全服做題答對獲得 2 倍每週點數加成！', multiplier: 2, badge: '🔥 雙倍積分' },
+  CRITICAL_STRIKE: { id: 'CRITICAL_STRIKE', label: '⚡ 答題暴擊加成', desc: '答對有 30% 機率觸發 3 倍暴擊點數！', multiplier: 1, criticalChance: 0.3, badge: '⚡ 30%暴擊' },
+  MISTAKE_BOOST: { id: 'MISTAKE_BOOST', label: '🎯 錯題強化特訓', desc: '做錯題本答對加碼 +2 額外點數', multiplier: 1, mistakeBonus: 2, badge: '🎯 錯題加倍' }
+};
+
+export function getGlobalSystemBuff() {
+  return getJson('global_system_buff', {
+    mode: 'NORMAL',
+    updatedAt: new Date().toISOString(),
+    updatedBy: '系統'
+  });
+}
+
+export async function setGlobalSystemBuff(buffModeId, operatorUser) {
+  assertAdminPermission(operatorUser, '變更全站測驗Buff活動');
+  const targetMode = BUFF_MODES[buffModeId] || BUFF_MODES.NORMAL;
+  const buffData = {
+    mode: targetMode.id,
+    label: targetMode.label,
+    desc: targetMode.desc,
+    updatedAt: new Date().toISOString(),
+    updatedBy: operatorUser.displayName || operatorUser.name || '管理員'
+  };
+
+  setJson('global_system_buff', buffData);
+  updateServerSync('global_system_buff', buffData);
+
+  if (db) {
+    try {
+      await set(ref(db, 'studyhub/global_system_buff'), buffData);
+    } catch (e) {
+      console.warn('[Firebase setGlobalSystemBuff error]', e);
+    }
+  }
+
+  // 跨視窗即時廣播
+  const payload = { type: 'BUFF_MODE_CHANGED', buff: buffData, timestamp: Date.now() };
+  localSyncListeners.forEach(cb => { try { cb(payload); } catch (_) {} });
+  if (cloudBus) cloudBus.postMessage(payload);
+
+  logAuditEvent({
+    operatorId: operatorUser.id,
+    operatorName: operatorUser.displayName || operatorUser.name || '管理員',
+    operatorRole: operatorUser.role || 'admin',
+    actionType: 'UPDATE_SYSTEM_BUFF',
+    details: `管理員將全服測驗Buff切換為【${targetMode.label}】(${targetMode.desc})`
+  });
+
+  return buffData;
+}
+
+export async function fetchCloudGlobalSystemBuff() {
+  if (!db) return getGlobalSystemBuff();
+  try {
+    const snap = await Promise.race([
+      get(ref(db, 'studyhub/global_system_buff')),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 8000))
+    ]);
+    if (snap.exists()) {
+      const val = snap.val();
+      setJson('global_system_buff', val);
+      return val;
+    }
+  } catch (_) {}
+  return getGlobalSystemBuff();
+}
+
+// --- 21. 創新功能：學生端帳號自主註銷 (Self Delete Account - GDPR Friendly) ---
+export async function selfDeleteStudentAccount(user, confirmationText) {
+  if (!user || !user.id || user.id === 'guest_student' || user.id === 'admin_super_jimmy') {
+    throw new Error('無法註銷訪客帳號或總管理員帳號！');
+  }
+  if (confirmationText.trim() !== '確認註銷我的帳號') {
+    throw new Error('請完整輸入「確認註銷我的帳號」以完成安全驗證！');
+  }
+
+  // 構造操作者執行徹底註銷
+  const operatorProxy = {
+    id: user.id,
+    name: user.displayName || user.name || '學生本人',
+    displayName: user.displayName || user.name || '學生本人',
+    role: 'super_admin'
+  };
+
+  return await deleteStudentAccount(user.id, operatorProxy);
+}
+
+// --- 22. 創新功能：自訂兌換碼生成與管理工作台 (Custom Redemption Codes) ---
+export async function createCustomRedemptionCode({ code, points, maxUses, description }, operatorUser) {
+  assertAdminPermission(operatorUser, '建立兌換碼');
+  const cleanCode = (code || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+  if (!cleanCode || cleanCode.length < 3) {
+    throw new Error('兌換碼必須為至少 3 個英數字元！');
+  }
+  const pointNum = parseInt(points, 10);
+  if (isNaN(pointNum) || pointNum < 1 || pointNum > 5000) {
+    throw new Error('兌換點數需介於 1 到 5000 點之間！');
+  }
+  const usesNum = maxUses ? parseInt(maxUses, 10) : 99999;
+
+  const currentCodes = getJson('redemption_codes', {});
+  currentCodes[cleanCode] = {
+    code: cleanCode,
+    points: pointNum,
+    maxUses: isNaN(usesNum) ? 99999 : usesNum,
+    usedCount: 0,
+    usedBy: {},
+    description: (description || '管理員專屬活動贈送禮包').trim().slice(0, 100),
+    createdAt: new Date().toISOString(),
+    createdBy: operatorUser.displayName || '總管理員'
+  };
+
+  setJson('redemption_codes', currentCodes);
+  updateServerSync('redemption_codes', currentCodes);
+
+  if (db) {
+    try {
+      await set(ref(db, `studyhub/redemption_codes/${cleanCode}`), currentCodes[cleanCode]);
+    } catch (e) {
+      console.warn('[Firebase createCustomRedemptionCode error]', e);
+    }
+  }
+
+  logAuditEvent({
+    operatorId: operatorUser.id,
+    operatorName: operatorUser.displayName || operatorUser.name || '管理員',
+    operatorRole: operatorUser.role || 'admin',
+    actionType: 'CREATE_REDEMPTION_CODE',
+    details: `管理員生成了全新兌換碼【${cleanCode}】(獎勵 ${pointNum} 點，上限 ${usesNum} 次)`
+  });
+
+  return currentCodes;
+}
 
 
+// --- 23. 創新功能：管理員全方位學生深度控制 (Admin Student Deep Controls) ---
+export async function adminAdjustStudentPoints(targetUserId, deltaPoints, operatorUser) {
+  assertAdminPermission(operatorUser, '微調學生積分');
+  const leaderboard = getJson('leaderboard_players', {});
+  const player = leaderboard[targetUserId];
+  if (!player) throw new Error('在排行榜中找不到該學生資料！');
+
+  const oldWeekly = player.weeklyPoints || 0;
+  const newWeekly = Math.max(0, oldWeekly + deltaPoints);
+  const oldTotal = player.totalPoints || 0;
+  const newTotal = Math.max(0, oldTotal + deltaPoints);
+
+  player.weeklyPoints = newWeekly;
+  player.totalPoints = newTotal;
+  player.lastActive = new Date().toISOString();
+
+  leaderboard[targetUserId] = player;
+  setJson('leaderboard_players', leaderboard);
+  updateServerSync('leaderboard_players', leaderboard);
+  pushPlayerLeaderboardSync(targetUserId, player);
+
+  logAuditEvent({
+    operatorId: operatorUser.id,
+    operatorName: operatorUser.displayName || operatorUser.name || '管理員',
+    operatorRole: operatorUser.role || 'admin',
+    actionType: 'MANUAL_POINTS_GRANT',
+    details: `管理員手動調整學生【${player.name}】點數：變動 ${deltaPoints > 0 ? '+' + deltaPoints : deltaPoints} 點 (目前：每週 ${newWeekly} 點 / 累計 ${newTotal} 點)`,
+    targetId: targetUserId
+  });
+
+  return player;
+}
+
+export async function adminResetStudentMistakes(targetUserId, operatorUser) {
+  assertAdminPermission(operatorUser, '重置學生錯題本');
+  const notebook = getJson('mistake_notebook', {});
+  notebook[targetUserId] = [];
+  setJson('mistake_notebook', notebook);
+  updateServerSync('mistake_notebook', notebook);
+
+  if (db) {
+    try {
+      await Promise.allSettled([
+        set(ref(db, `studyhub/mistake_notebook/${targetUserId}`), null),
+        set(ref(db, `studyhub/studyhub_mistakes_${targetUserId}`), null)
+      ]);
+    } catch (_) {}
+  }
+
+  logAuditEvent({
+    operatorId: operatorUser.id,
+    operatorName: operatorUser.displayName || operatorUser.name || '管理員',
+    operatorRole: operatorUser.role || 'admin',
+    actionType: 'RESET_STUDENT_MISTAKES',
+    details: `管理員清空並重置了學生 (ID: ${targetUserId}) 之個人雲端錯題本`,
+    targetId: targetUserId
+  });
+
+  return true;
+}
+
+export async function adminToggleStudentLock(targetUserId, isLocked, operatorUser) {
+  assertAdminPermission(operatorUser, '鎖定/解除學生帳號');
+  const userRegistry = getJson('user_registry', {});
+  if (!userRegistry[targetUserId]) throw new Error('名冊中無此學生！');
+
+  userRegistry[targetUserId].isLocked = !!isLocked;
+  userRegistry[targetUserId].lockReason = isLocked ? '違反學習規範，管理員暫時凍結' : null;
+  userRegistry[targetUserId].lockedAt = isLocked ? new Date().toISOString() : null;
+
+  setJson('user_registry', userRegistry);
+  updateServerSync('user_registry', userRegistry);
+
+  if (db) {
+    try {
+      await update(ref(db, `studyhub/user_registry/${targetUserId}`), {
+        isLocked: !!isLocked,
+        lockReason: isLocked ? '違反學習規範，管理員暫時凍結' : null
+      });
+    } catch (_) {}
+  }
+
+  logAuditEvent({
+    operatorId: operatorUser.id,
+    operatorName: operatorUser.displayName || operatorUser.name || '管理員',
+    operatorRole: operatorUser.role || 'admin',
+    actionType: isLocked ? 'FREEZE_STUDENT_ACCOUNT' : 'UNFREEZE_STUDENT_ACCOUNT',
+    details: `管理員${isLocked ? '凍結封鎖' : '解除凍結'}了學生【${userRegistry[targetUserId].name || targetUserId}】的帳號`,
+    targetId: targetUserId
+  });
+
+  return userRegistry[targetUserId];
+}
