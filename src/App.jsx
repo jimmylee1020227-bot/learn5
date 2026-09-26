@@ -149,6 +149,7 @@ function MainAppContent() {
       userId: activeUserId,
       userName: activeUserName,
       userSchool: activeUserSchool,
+      userEmail: currentUser?.email || '',
       results,
       timeSpentSec
     });

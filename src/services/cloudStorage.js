@@ -59,15 +59,19 @@ let activeUserListenerUnsub = null;
 // 動態題庫還原器 (由 questionGenerator 註冊，實現 0 空間負擔的完整解析還原)
 let registeredQuestionHydrator = null;
 
-// Firebase 同步推播函數 (移至最前方避免混淆器 Hoisting 失效)
+// Firebase 同步推播函數 (移至最前方避免混淆器 Hoisting 失效，支援陣列與物件安全推播)
 export function updateServerSync(key, updates) {
   if (typeof window === 'undefined' || !db) return;
   try {
+    const cleanPayload = sanitizeForFirebase(updates);
+    if (cleanPayload === undefined) return;
     const r = ref(db, `studyhub/${key}`);
-    update(r, updates).catch(err => {
-      console.error(`[Firebase Update Error: ${key}]`, err);
+    set(r, cleanPayload).catch(err => {
+      console.error(`[Firebase Write/Update Error: ${key}]`, err);
     });
-  } catch (e) {}
+  } catch (e) {
+    console.error(`[Firebase Write/Update Exception: ${key}]`, e);
+  }
 }
 export function registerQuestionHydrator(fn) {
   registeredQuestionHydrator = fn;
@@ -203,6 +207,21 @@ export function initFirebaseRealtimeSync() {
             safeSetLocalStorage(STORAGE_PREFIX + 'studyhub_weekly_leaderboard', arrStr);
             const boardPayload = { type: 'SYNC_UPDATE', key: 'studyhub_weekly_leaderboard', timestamp: Date.now(), fromRemote: true };
             localSyncListeners.forEach(cb => { try { cb(boardPayload); } catch (e) {} });
+          }
+
+          // 若更新的是試卷庫 (quiz_papers)，自動轉為按時間排序的試卷陣列並存入 all_quiz_papers，管理員秒級同步
+          if (key === 'quiz_papers') {
+            let papersArr = [];
+            if (val && typeof val === 'object') {
+              papersArr = Array.isArray(val) ? val : Object.values(val);
+            }
+            papersArr = papersArr
+              .filter(p => p && p.id)
+              .sort((a, b) => new Date(b.timestamp || b.completedAt || 0) - new Date(a.timestamp || a.completedAt || 0));
+            const papersStr = JSON.stringify(papersArr);
+            safeSetLocalStorage(STORAGE_PREFIX + 'all_quiz_papers', papersStr);
+            const paperPayload = { type: 'SYNC_UPDATE', key: 'all_quiz_papers', timestamp: Date.now(), fromRemote: true };
+            localSyncListeners.forEach(cb => { try { cb(paperPayload); } catch (e) {} });
           }
         } catch (err) {}
       }, (err) => {
@@ -718,12 +737,13 @@ export function getAuditLogs(currentUser) {
 const INITIAL_PRACTICE_HISTORY = [];
 
 // 批次記錄整份測驗結果 (Slim Schema 題號代碼化，體積縮小 30 倍，每位學生獨立節點)
-export function recordPracticeBatch({ userId, userName, userSchool, results, timeSpentSec }) {
+export function recordPracticeBatch({ userId, userName, userSchool, userEmail, results, timeSpentSec }) {
   if (!results || results.length === 0) return [];
 
   const finalUserId = userId || 'guest_student';
   const finalUserName = userName || '匿名同學';
   const finalUserSchool = userSchool || '會考戰友';
+  const finalUserEmail = (userEmail || '').trim().toLowerCase();
   const perQTime = Math.max(1, Math.round((timeSpentSec || 15) / results.length));
   const nowIso = new Date().toISOString();
   const correctCount = results.filter(r => r.isCorrect).length;
@@ -737,6 +757,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
     userId: finalUserId,
     userName: finalUserName,
     userSchool: finalUserSchool,
+    userEmail: finalUserEmail,
     questionId: item.id,
     subjectId: item.subjectId,
     gradeId: item.gradeId,
@@ -767,6 +788,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
       userId: finalUserId,
       userName: finalUserName,
       userSchool: finalUserSchool,
+      userEmail: finalUserEmail,
       subjectId: results[0]?.subjectId || 'math',
       gradeId: results[0]?.gradeId || 'g9',
       unitName: results[0]?.unitName || '全科綜合測驗',
@@ -788,12 +810,14 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
       id: finalUserId,
       name: finalUserName,
       school: finalUserSchool,
+      email: finalUserEmail,
       totalQuizzes: 0,
       totalQuestions: 0,
       totalCorrect: 0
     };
     existingU.name = finalUserName;
     existingU.school = finalUserSchool;
+    if (finalUserEmail && !existingU.email) existingU.email = finalUserEmail;
     existingU.lastActive = nowIso;
     existingU.totalQuizzes = (existingU.totalQuizzes || 0) + 1;
     existingU.totalQuestions = (existingU.totalQuestions || 0) + results.length;
@@ -869,6 +893,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, results, tim
       userId: finalUserId,
       userName: finalUserName,
       userSchool: finalUserSchool,
+      userEmail: finalUserEmail,
       subjectId: firstQ.subjectId || 'math',
       gradeId: firstQ.gradeId || 'g8',
       unitId: firstQ.unitId || 'u1',
@@ -1473,7 +1498,7 @@ export function getRegisteredStudents() {
     return timeA - timeB;
   });
 
-  // 同名改名改成：原名字1, 原名字2, 依此類推
+  // 區分同名學生標籤（保留真實姓名 s.name 不改動，以防做題記錄與帳號名稱錯位）
   const nameGroups = {};
   resultList.forEach(s => {
     let raw = (s.name || '會考戰友').trim();
@@ -1485,21 +1510,19 @@ export function getRegisteredStudents() {
     nameGroups[baseName].push(s);
   });
 
-  let hasNameChanged = false;
   Object.entries(nameGroups).forEach(([baseName, students]) => {
     if (students.length > 1) {
       students.forEach((s, idx) => {
-        const targetName = `${baseName}${idx + 1}`;
-        if (s.name !== targetName) {
-          s.name = targetName;
-          hasNameChanged = true;
-        }
+        s.displaySuffix = idx + 1;
+        s.displayName = `${baseName} (${s.school || '校區'} · #${idx + 1})`;
       });
+    } else if (students.length === 1) {
+      students[0].displayName = students[0].name;
     }
   });
 
-  // 5. 持久化回寫：若有同名修改或重複帳號合併，更新 user_registry 本地與雲端
-  if (hasNameChanged || obsoleteUserIds.size > 0) {
+  // 5. 持久化回寫：若有重複帳號合併，清理 user_registry 本地與雲端
+  if (obsoleteUserIds.size > 0) {
     let registryUpdated = false;
     obsoleteUserIds.forEach(delId => {
       if (registry[delId]) {
@@ -1513,19 +1536,8 @@ export function getRegisteredStudents() {
       }
     });
 
-    resultList.forEach(s => {
-      if (s.id && registry[s.id] && registry[s.id].name !== s.name) {
-        registry[s.id].name = s.name;
-        registryUpdated = true;
-        if (db) {
-          try {
-            set(ref(db, `studyhub/user_registry/${s.id}/name`), s.name).catch(() => {});
-          } catch (e) {}
-        }
-      }
-    });
-
     if (registryUpdated) {
+      safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(registry));
       setJson('user_registry', registry);
     }
   }

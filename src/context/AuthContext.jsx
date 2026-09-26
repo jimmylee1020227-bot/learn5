@@ -189,6 +189,23 @@ export function AuthProvider({ children }) {
     }
   }, [currentUser?.id]);
 
+  // 1.3 跨裝置個人資料完整水合（抽獎券、點數、試卷、做題歷史、錯題本，保證換設備數據 100% 完全相同）
+  useEffect(() => {
+    if (currentUser?.id && currentUser.id !== 'guest_student') {
+      import('../services/cloudStorage').then(({ 
+        fetchCloudUserGameState, 
+        fetchCloudUserQuizPapers, 
+        fetchCloudUserPracticeHistory, 
+        fetchCloudUserMistakeNotebook 
+      }) => {
+        fetchCloudUserGameState(currentUser.id);
+        fetchCloudUserQuizPapers(currentUser.id);
+        fetchCloudUserPracticeHistory(currentUser.id);
+        fetchCloudUserMistakeNotebook(currentUser.id);
+      }).catch(() => {});
+    }
+  }, [currentUser?.id]);
+
   // 1.5 自動自雲端同步最新管理員名冊並即時響應任命/撤銷
   useEffect(() => {
     const updateRoleFromList = (adminList) => {

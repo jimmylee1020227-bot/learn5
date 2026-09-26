@@ -142,9 +142,14 @@ export default function AdminDashboard() {
 
     const unsub = subscribeToCloudSync((ev) => {
       refreshAll();
-      if (!ev?.key || ev.key === 'quiz_papers' || ev.key === 'user_quiz_papers') {
+      if (!ev?.key || ev.key.includes('quiz_papers') || ev.key === 'recent_practice_stream') {
         fetchAllCloudQuizPapers().then(papers => {
           if (papers && papers.length > 0) setQuizPapers(papers);
+        });
+      }
+      if (!ev?.key || ev.key === 'recent_practice_stream' || ev.key.includes('practice_history')) {
+        fetchAllCloudPracticeLogs().then(logs => {
+          if (logs && logs.length > 0) setAllHistory(logs);
         });
       }
     });
@@ -204,39 +209,59 @@ export default function AdminDashboard() {
       });
     }
     
-    // 掃描 allHistory 找出同名或同 email 的 userId (兼容舊訪客帳號)
+    // 掃描 allHistory 找出同名或同 email 的 userId (兼容舊訪客帳號與同名前綴)
+    const cleanTargetName = sName.replace(/\s*\d+$/, '').trim().toLowerCase();
     allHistory.forEach(log => {
       const logEmail = ((log.userId && userRegistry[log.userId]?.email) || log.userEmail || '').trim().toLowerCase();
+      const cleanLogName = (log.userName || '').replace(/\s*\d+$/, '').trim().toLowerCase();
       if (
         (targetEmail && logEmail === targetEmail) || 
-        (log.userName === sName)
+        (log.userName === sName) ||
+        (cleanTargetName && cleanLogName === cleanTargetName)
       ) {
         if (log.userId) relatedUserIds.add(log.userId);
       }
     });
 
-    // 向 Firebase 雲端發起精確調閱該生所有做題與錯題本（加 2.5 秒超時保護，秒級降級保護防卡死）
+    // 向 Firebase 雲端發起精確調閱該生所有做題、錯題本與完整試卷（加 2.5 秒超時保護，秒級降級保護防卡死）
     if (relatedUserIds.size > 0) {
       setIsLoadingStudentHistory(true);
       try {
         const fetchPromises = Array.from(relatedUserIds).map(uid => 
-          fetchCloudUserAllMistakesAndLogs(uid, sName, student.school)
+          Promise.all([
+            fetchCloudUserAllMistakesAndLogs(uid, sName, student.school),
+            fetchCloudUserQuizPapers(uid)
+          ])
         );
         const results = await Promise.race([
           Promise.all(fetchPromises),
           new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2500))
         ]);
         
-        const mergedLogs = results.flat();
+        const mergedLogs = [];
+        const mergedPapers = [];
+        results.forEach(([logs, papers]) => {
+          if (Array.isArray(logs)) mergedLogs.push(...logs);
+          if (Array.isArray(papers)) mergedPapers.push(...papers);
+        });
         
-        if (mergedLogs && mergedLogs.length > 0) {
+        if (mergedLogs.length > 0) {
           setAllHistory(prev => {
             const others = prev.filter(p => !relatedUserIds.has(p.userId));
             return [...mergedLogs, ...others].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
           });
         }
+
+        if (mergedPapers.length > 0) {
+          setQuizPapers(prev => {
+            const map = new Map();
+            mergedPapers.forEach(p => { if (p && p.id) map.set(p.id, p); });
+            prev.forEach(p => { if (p && p.id && !map.has(p.id)) map.set(p.id, p); });
+            return Array.from(map.values()).sort((a, b) => new Date(b.timestamp || b.completedAt || 0) - new Date(a.timestamp || a.completedAt || 0));
+          });
+        }
       } catch (err) {
-        console.warn('Error fetching cloud logs for student', err);
+        console.warn('Error fetching cloud logs/papers for student', err);
       } finally {
         setIsLoadingStudentHistory(false);
       }
@@ -257,7 +282,7 @@ export default function AdminDashboard() {
     // 讀取 user_registry，補充 email 等完整資訊
     const userRegistry = getJson('user_registry', {});
 
-    // 1. 先用 registeredStudents 初始化名冊，保證即便本地尚未載入題目細節的學生也會顯示在名冊中
+    // 1. 先用 registeredStudents 初始化名冊框架 (記錄名冊初始數據作為 fallback)
     registeredStudents.forEach(st => {
       let targetEmail = st.email || (st.id && userRegistry[st.id]?.email) || '';
       targetEmail = targetEmail.trim().toLowerCase();
@@ -265,20 +290,24 @@ export default function AdminDashboard() {
       const sName = st.name || '匿名同學';
       studentMap[key] = {
         name: sName,
+        displayName: st.displayName || sName,
         school: st.school || '會考戰友',
-        total: st.totalQuestions || 0,
-        correct: st.totalCorrect || 0,
-        wrong: Math.max(0, (st.totalQuestions || 0) - (st.totalCorrect || 0)),
+        total: 0,
+        correct: 0,
+        wrong: 0,
         userId: st.id,
         email: targetEmail,
         lastActive: st.lastActive || '',
-        accuracy: st.accuracy !== undefined ? st.accuracy : 0
+        accuracy: 0,
+        registryTotal: st.totalQuestions || 0,
+        registryCorrect: st.totalCorrect || 0,
+        registryWrong: Math.max(0, (st.totalQuestions || 0) - (st.totalCorrect || 0)),
+        hasHistoryLogs: false
       };
     });
 
-    // 2. 用已載入的 allHistory 補充精確細節
+    // 2. 用已載入的 allHistory 統計精準做題題數與正錯細節
     allHistory.forEach(log => {
-      // 透過 userId 查找 registry 中的 email
       const regEntry = (log.userId && userRegistry[log.userId]) || {};
       let targetEmail = regEntry.email || log.userEmail || '';
       targetEmail = targetEmail.trim().toLowerCase();
@@ -289,28 +318,32 @@ export default function AdminDashboard() {
       if (!studentMap[key]) {
         studentMap[key] = {
           name: regEntry.name || sName,
+          displayName: regEntry.name || sName,
           school: log.userSchool || regEntry.school || '會考戰友',
           total: 0,
           correct: 0,
           wrong: 0,
-          userId: log.userId, // 保留最先遇到的 userId
+          userId: log.userId,
           email: targetEmail,
           lastActive: log.timestamp || '',
-          accuracy: 0
+          accuracy: 0,
+          registryTotal: 0,
+          registryCorrect: 0,
+          registryWrong: 0,
+          hasHistoryLogs: true
         };
       }
       
-      // 不再強制使用 regEntry.name 覆蓋，以保留可能已在 registeredStudents 中處理過的後綴名
       if (targetEmail && !studentMap[key].email) studentMap[key].email = targetEmail;
-      
-      studentMap[key].total = (studentMap[key].total || 0) + 1;
+      studentMap[key].hasHistoryLogs = true;
+      studentMap[key].total += 1;
       if (log.isCorrect) {
         studentMap[key].correct += 1;
       } else {
         studentMap[key].wrong += 1;
       }
-      if (studentMap[key].total > 0) {
-        studentMap[key].accuracy = Math.round((studentMap[key].correct / studentMap[key].total) * 100);
+      if (log.timestamp && (!studentMap[key].lastActive || new Date(log.timestamp) > new Date(studentMap[key].lastActive))) {
+        studentMap[key].lastActive = log.timestamp;
       }
 
       const tag = log.conceptTag || log.unitName || '基礎核心綜合';
@@ -331,20 +364,36 @@ export default function AdminDashboard() {
       }
     });
 
+    // 3. 結合同步：若尚未載入歷史題目記錄但名冊已有總數，採用名冊數據作為準確基礎
+    Object.values(studentMap).forEach(s => {
+      if (!s.hasHistoryLogs && s.registryTotal > 0) {
+        s.total = s.registryTotal;
+        s.correct = s.registryCorrect;
+        s.wrong = s.registryWrong;
+      }
+      if (s.total > 0) {
+        s.accuracy = Math.round((s.correct / s.total) * 100);
+      }
+    });
+
     let studentsList = Object.values(studentMap);
     
-    // 根據最後活動時間(越早創建或活躍的排前面)處理同名後綴 (原名字1 依此類推)
+    // 依最後活動時間排序，並若有同名提供區分標籤（保留 s.name 真實姓名，不破壞篩選匹配）
     studentsList.sort((a, b) => new Date(a.lastActive || 0) - new Date(b.lastActive || 0));
-    const nameCounts = {};
+    const nameMap = {};
     studentsList.forEach(s => {
-      const rawName = s.name || '會考戰友';
-      if (rawName === '總管理員') return;
-      if (!nameCounts[rawName]) {
-        nameCounts[rawName] = 1;
-      } else {
-        const count = nameCounts[rawName];
-        s.name = `${rawName} ${count}`;
-        nameCounts[rawName] = count + 1;
+      const raw = (s.name || '會考戰友').trim();
+      if (!nameMap[raw]) nameMap[raw] = [];
+      nameMap[raw].push(s);
+    });
+
+    Object.entries(nameMap).forEach(([rawName, list]) => {
+      if (list.length > 1) {
+        list.forEach((s, idx) => {
+          s.displayName = `${rawName} (${s.school || '校區'} · #${idx + 1})`;
+        });
+      } else if (list.length === 1) {
+        s.displayName = s.name;
       }
     });
 
@@ -386,10 +435,12 @@ export default function AdminDashboard() {
   const filteredPracticeLogs = React.useMemo(() => {
     const userRegistry = getJson('user_registry', {});
     return allHistory.filter(log => {
-      // 學生姓名與 ID 快篩按鈕 (支援姓名與 userId 雙向精準匹配，杜絕任何過濾遺漏)
+      // 學生姓名與 ID 快篩按鈕 (支援姓名、基本姓名去除序號與 userId / Email 多向精準匹配)
       if (selectedStudent !== 'ALL') {
-        const sName = log.userName || '匿名同學';
-        const matchName = sName === selectedStudent || sName.toLowerCase() === selectedStudent.toLowerCase();
+        const sName = (log.userName || '匿名同學').trim();
+        const baseSName = sName.replace(/\s*\d+$/, '').trim().toLowerCase();
+        const baseSelected = selectedStudent.replace(/\s*\d+$/, '').trim().toLowerCase();
+        const matchName = sName.toLowerCase() === selectedStudent.toLowerCase() || (baseSelected && baseSName === baseSelected);
         const matchId = log.userId && (log.userId === selectedStudent || (selectedStudentId !== 'ALL' && log.userId === selectedStudentId));
         
         // 追加 Email 跨帳號合併匹配
@@ -435,8 +486,10 @@ export default function AdminDashboard() {
     const userRegistry = getJson('user_registry', {});
     return quizPapers.filter(paper => {
       if (selectedStudent !== 'ALL') {
-        const sName = paper.userName || '匿名同學';
-        const matchName = sName === selectedStudent || sName.toLowerCase() === selectedStudent.toLowerCase();
+        const sName = (paper.userName || '匿名同學').trim();
+        const baseSName = sName.replace(/\s*\d+$/, '').trim().toLowerCase();
+        const baseSelected = selectedStudent.replace(/\s*\d+$/, '').trim().toLowerCase();
+        const matchName = sName.toLowerCase() === selectedStudent.toLowerCase() || (baseSelected && baseSName === baseSelected);
         const matchId = paper.userId && (paper.userId === selectedStudent || (selectedStudentId !== 'ALL' && paper.userId === selectedStudentId));
         
         // 追加 Email 跨帳號合併匹配
@@ -1446,7 +1499,7 @@ export default function AdminDashboard() {
                   );
                 })
                 .map((student, idx) => {
-                  const isSelected = selectedStudent === student.name;
+                  const isSelected = selectedStudent === student.name || (selectedStudentId !== 'ALL' && selectedStudentId === student.userId);
                   return (
                     <button
                       key={student.email || student.userId || `student-${idx}`}
@@ -1468,7 +1521,7 @@ export default function AdminDashboard() {
                       title={`點擊調閱【${student.name}】(${student.email || '未登入'}) 的雲端做題與錯題紀錄`}
                     >
                       <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
-                        <span>👤 {student.name}</span>
+                        <span>👤 {student.displayName || student.name}</span>
                         <span style={{ fontSize: '0.68rem', color: '#78818a', fontWeight: 600, fontFamily: 'monospace' }}>
                           ✉ {student.email || '早期紀錄 (無 Email)'}
                         </span>

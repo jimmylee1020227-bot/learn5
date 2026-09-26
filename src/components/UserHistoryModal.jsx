@@ -185,6 +185,7 @@ export default function UserHistoryModal({ onLaunchRetryQuiz, onStartQuizTab }) 
       if (
         !ev.key || 
         ev.key.startsWith('quiz_papers') ||
+        ev.key.startsWith('all_quiz_papers') ||
         ev.key.startsWith(`user_quiz_papers_${userId}`) ||
         ev.key.startsWith(`practice_history_${userId}`) ||
         ev.key.startsWith(`mistake_notebook_${userId}`)
