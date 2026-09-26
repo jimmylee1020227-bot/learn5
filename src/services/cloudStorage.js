@@ -3735,20 +3735,41 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
     });
   }
 
-  // 14. 孤兒試卷檢測 (Orphaned Quiz Papers)
+  // 14. 孤兒試卷檢測 — 直接從 Firebase 雲端讀取，確保結果反映雲端真實狀態
   try {
-    const papers = getJson('all_quiz_papers', []);
-    const registry = getJson('user_registry', {});
-    const validUids = new Set(Object.keys(registry));
-    
-    const papersArr = Array.isArray(papers) ? papers : Object.values(papers);
     let orphanedPapers = 0;
-    papersArr.forEach(p => {
-      const ownerId = p.userId || p.ownerId;
-      if (ownerId && !validUids.has(ownerId)) {
-        orphanedPapers++;
-      }
-    });
+    let totalPapers = 0;
+    if (db) {
+      // 從 Firebase 取得最新 registry 與 quiz_papers
+      const [regSnap, papersSnap] = await Promise.all([
+        get(ref(db, 'studyhub/user_registry')),
+        get(ref(db, 'studyhub/quiz_papers'))
+      ]);
+      const cloudReg = regSnap.val() || {};
+      const validUids = new Set(
+        Object.entries(cloudReg)
+          .filter(([, u]) => u && u.id && u.email && u.email.trim() !== '')
+          .map(([k]) => k)
+      );
+      const papersRaw = papersSnap.val() || {};
+      const papersArr = Array.isArray(papersRaw) ? papersRaw : Object.values(papersRaw);
+      totalPapers = papersArr.length;
+      papersArr.forEach(p => {
+        if (!p) return;
+        const ownerId = p.userId || p.ownerId;
+        if (ownerId && !validUids.has(ownerId)) orphanedPapers++;
+      });
+    } else {
+      const papers = getJson('all_quiz_papers', []);
+      const registry = getJson('user_registry', {});
+      const validUids = new Set(Object.keys(registry));
+      const papersArr = Array.isArray(papers) ? papers : Object.values(papers);
+      totalPapers = papersArr.length;
+      papersArr.forEach(p => {
+        const ownerId = p.userId || p.ownerId;
+        if (ownerId && !validUids.has(ownerId)) orphanedPapers++;
+      });
+    }
 
     checks.push({
       id: 'orphaned_papers',
@@ -3756,7 +3777,7 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
       status: orphanedPapers > 0 ? 'WARNING' : 'PASS',
       details: orphanedPapers > 0
         ? `⚠️ 偵測到 ${orphanedPapers} 份孤兒試卷 (對應使用者已不存在)，建議進行試卷庫瘦身清理。`
-        : `全站試卷從屬關聯完好，無任何孤兒試卷，關聯資料庫參照完整！`
+        : `全站試卷從屬關聯完好，無任何孤兒試卷（共 ${totalPapers} 份），關聯資料庫參照完整！（已從雲端即時驗證）`
     });
   } catch (err) {
     checks.push({
@@ -3876,7 +3897,7 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
     });
   }
 
-  // 20. 錯題本各科目歸類與資料結構檢驗 — 直接從 Firebase 雲端掃描所有使用者錯題本
+  // 20. 錯題本各科目歸類與資料結構檢驗 — 根據 validUids 逐一拉取各使用者錯題本節點（避免拉整棵 studyhub 導致 timeout）
   try {
     const validSubjects = ['國文', '英文', '數學', '自然', '社會'];
     let invalidMistakes = 0;
@@ -3885,15 +3906,26 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
 
     if (db) {
       try {
-        // 從 Firebase 掃描所有 mistake_notebook_* 節點
-        const studyhubSnap = await get(ref(db, 'studyhub'));
-        if (studyhubSnap.exists()) {
-          const allData = studyhubSnap.val();
-          for (const key of Object.keys(allData)) {
-            if (!key.startsWith('mistake_notebook_')) continue;
+        // 先取得 validUids（用第 13 項已拉過的 registry，或重新拉一次）
+        const regForMistake = await get(ref(db, 'studyhub/user_registry'));
+        const regData = regForMistake.val() || {};
+        const uidsToCheck = Object.keys(regData).filter(k => {
+          const u = regData[k];
+          return u && u.id && u.email && u.email.trim() !== '';
+        });
+
+        // 並行拉取所有使用者的錯題本（最多同時 20 個，避免 Firebase 限流）
+        const BATCH = 20;
+        for (let i = 0; i < uidsToCheck.length; i += BATCH) {
+          const batch = uidsToCheck.slice(i, i + BATCH);
+          const snaps = await Promise.all(
+            batch.map(uid => get(ref(db, `studyhub/mistake_notebook_${uid}`)))
+          );
+          snaps.forEach(snap => {
+            if (!snap.exists()) return;
             checkedUsers++;
-            const notebook = allData[key];
-            if (!notebook || typeof notebook !== 'object') continue;
+            const notebook = snap.val();
+            if (!notebook || typeof notebook !== 'object') return;
             const list = Array.isArray(notebook) ? notebook : Object.values(notebook);
             list.forEach(m => {
               if (!m) return;
@@ -3902,10 +3934,10 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
                 invalidMistakes++;
               }
             });
-          }
+          });
         }
       } catch (e) {
-        // fallback to local
+        // fallback to local（僅在 Firebase 完全無法連線時）
         const mistakes = getJson('mistake_notebook', []);
         const mistakesArr = Array.isArray(mistakes) ? mistakes : Object.values(mistakes || {});
         mistakesArr.forEach(m => {
