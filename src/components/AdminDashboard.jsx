@@ -301,15 +301,15 @@ function AdminDashboard() {
     setSelectedStudentEmail(student.email || 'ALL'); // 追加 Email
     setOnlyMistakes(true); // 預設聚焦顯示該生錯題
     
-    // 找出所有屬於這個「合併帳號」的 userId
+    // 找出屬於該獨立學生的唯一 userId (同名不同人保持獨立，嚴禁以同名模糊合併)
     const userRegistry = getJson('user_registry', {});
     const targetEmail = (student.email || '').trim().toLowerCase();
     const relatedUserIds = new Set();
     
     if (sId && sId !== 'ALL') relatedUserIds.add(sId);
     
-    // 如果有 email，掃描 registry 找出所有同 email 的 userId
-    if (targetEmail) {
+    // 僅在有明確有效且非預設/空 Email 時，關聯同 Email 帳號
+    if (targetEmail && targetEmail !== 'test@example.com' && !targetEmail.includes('anonymous')) {
       Object.entries(userRegistry).forEach(([uid, u]) => {
         if ((u.email || '').trim().toLowerCase() === targetEmail) {
           relatedUserIds.add(uid);
@@ -317,16 +317,12 @@ function AdminDashboard() {
       });
     }
     
-    // 掃描 allHistory 找出同名或同 email 的 userId (兼容舊訪客帳號與同名前綴)
-    const cleanTargetName = sName.replace(/\s*\d+$/, '').trim().toLowerCase();
+    // 掃描 allHistory：僅關聯相同 userId 或同一特定 Email，絕不以同名模糊合併！
     allHistory.forEach(log => {
       const logEmail = ((log.userId && userRegistry[log.userId]?.email) || log.userEmail || '').trim().toLowerCase();
-      const cleanLogName = (log.userName || '').replace(/\s*\d+$/, '').trim().toLowerCase();
-      if (
-        (targetEmail && logEmail === targetEmail) || 
-        (log.userName === sName) ||
-        (cleanTargetName && cleanLogName === cleanTargetName)
-      ) {
+      if (sId && sId !== 'ALL' && log.userId === sId) {
+        relatedUserIds.add(log.userId);
+      } else if (targetEmail && targetEmail !== 'test@example.com' && logEmail === targetEmail) {
         if (log.userId) relatedUserIds.add(log.userId);
       }
     });
@@ -417,7 +413,8 @@ function AdminDashboard() {
       targetEmail = targetEmail.trim().toLowerCase();
       if (isTestData(st.name || st.displayName, targetEmail, st.id)) return;
 
-      const key = targetEmail || st.id || st.name || '匿名同學';
+      // 以唯一 st.id 為主鍵，同名學生各自獨立，不互相覆蓋！
+      const key = st.id || (targetEmail && targetEmail !== 'test@example.com' ? `email_${targetEmail}` : (st.name || '匿名同學'));
       const sName = st.name || '匿名同學';
       studentMap[key] = {
         name: sName,
@@ -446,7 +443,8 @@ function AdminDashboard() {
       const sName = log.userName || '匿名同學';
       if (isTestData(regEntry.name || sName, targetEmail, log.userId)) return;
       
-      const key = targetEmail || log.userId || log.userName || '匿名同學';
+      // 依做題紀錄之 userId 歸屬到該特定學生，絕不以同名合併不同人！
+      const key = log.userId || (targetEmail && targetEmail !== 'test@example.com' ? `email_${targetEmail}` : (log.userName || '匿名同學'));
       if (!studentMap[key]) {
         studentMap[key] = {
           name: regEntry.name || sName,
@@ -570,21 +568,22 @@ function AdminDashboard() {
     const userRegistry = getJson('user_registry', {});
     return (Array.isArray(allHistory) ? allHistory : []).filter(log => {
       if (!log) return false;
-      // 學生姓名與 ID 快篩按鈕 (支援姓名、基本姓名去除序號與 userId / Email 多向精準匹配)
-      if (selectedStudent !== 'ALL') {
-        const sName = (log.userName || '匿名同學').trim();
-        const baseSName = sName.replace(/\s*\d+$/, '').trim().toLowerCase();
-        const baseSelected = selectedStudent.replace(/\s*\d+$/, '').trim().toLowerCase();
-        const matchName = sName.toLowerCase() === selectedStudent.toLowerCase() || (baseSelected && baseSName === baseSelected);
-        const matchId = log.userId && (log.userId === selectedStudent || (selectedStudentId !== 'ALL' && log.userId === selectedStudentId));
-        
-        // 追加 Email 跨帳號合併匹配
+      // 學生姓名與 ID 快篩按鈕 (依據唯一 studentId 精準篩選，同名不同人保持獨立，嚴禁模糊合併)
+      if (selectedStudentId !== 'ALL') {
+        const isMatchedId = log.userId && log.userId === selectedStudentId;
         const regEntry = (log.userId && userRegistry[log.userId]) || {};
         let targetEmail = regEntry.email || log.userEmail || '';
         targetEmail = targetEmail.trim().toLowerCase();
-        const matchEmail = selectedStudentEmail !== 'ALL' && targetEmail && targetEmail === selectedStudentEmail.trim().toLowerCase();
+        const isMatchedEmail = selectedStudentEmail !== 'ALL' && targetEmail && targetEmail !== 'test@example.com' && targetEmail === selectedStudentEmail.trim().toLowerCase();
+        
+        // 若歷史紀錄無 userId，才精確比對完整名稱（絕不去除序號模糊合併他人）
+        const isMatchedName = !log.userId && (log.userName === selectedStudent || (log.displayName && log.displayName === selectedStudent));
 
-        if (!matchName && !matchId && !matchEmail) {
+        if (!isMatchedId && !isMatchedEmail && !isMatchedName) {
+          return false;
+        }
+      } else if (selectedStudent !== 'ALL') {
+        if (log.userName !== selectedStudent && log.displayName !== selectedStudent) {
           return false;
         }
       }
@@ -617,25 +616,26 @@ function AdminDashboard() {
     });
   }, [allHistory, selectedStudent, selectedStudentId, selectedStudentEmail, studentSearchKeyword, onlyMistakes, questionSearchKeyword]);
 
-  // 篩選完整試卷列表 (支援學生姓名、學校、題目關鍵字與科目快篩)
+  // 篩選完整試卷列表 (支援學生姓名、學校、題目關鍵字與科目快篩，同名不同人保持獨立)
   const filteredQuizPapers = React.useMemo(() => {
     const userRegistry = getJson('user_registry', {});
     return (Array.isArray(quizPapers) ? quizPapers : []).filter(paper => {
       if (!paper) return false;
-      if (selectedStudent !== 'ALL') {
-        const sName = (paper.userName || '匿名同學').trim();
-        const baseSName = sName.replace(/\s*\d+$/, '').trim().toLowerCase();
-        const baseSelected = selectedStudent.replace(/\s*\d+$/, '').trim().toLowerCase();
-        const matchName = sName.toLowerCase() === selectedStudent.toLowerCase() || (baseSelected && baseSName === baseSelected);
-        const matchId = paper.userId && (paper.userId === selectedStudent || (selectedStudentId !== 'ALL' && paper.userId === selectedStudentId));
-        
-        // 追加 Email 跨帳號合併匹配
-        const regEntry = (paper.userId && userRegistry[paper.userId]) || {};
+      if (selectedStudentId !== 'ALL') {
+        const paperUid = paper.userId || paper.ownerId;
+        const isMatchedId = paperUid && paperUid === selectedStudentId;
+        const regEntry = (paperUid && userRegistry[paperUid]) || {};
         let targetEmail = regEntry.email || paper.userEmail || '';
         targetEmail = targetEmail.trim().toLowerCase();
-        const matchEmail = selectedStudentEmail !== 'ALL' && targetEmail && targetEmail === selectedStudentEmail.trim().toLowerCase();
+        const isMatchedEmail = selectedStudentEmail !== 'ALL' && targetEmail && targetEmail !== 'test@example.com' && targetEmail === selectedStudentEmail.trim().toLowerCase();
+        
+        const isMatchedName = !paperUid && (paper.userName === selectedStudent || (paper.displayName && paper.displayName === selectedStudent));
 
-        if (!matchName && !matchId && !matchEmail) {
+        if (!isMatchedId && !isMatchedEmail && !isMatchedName) {
+          return false;
+        }
+      } else if (selectedStudent !== 'ALL') {
+        if (paper.userName !== selectedStudent && paper.displayName !== selectedStudent) {
           return false;
         }
       }
