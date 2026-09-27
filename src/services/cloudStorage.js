@@ -22,8 +22,14 @@ export const SUPER_ADMIN_EMAIL = 'jimmylee1020227@gmail.com';
 
 // ── 管理員 Email 即時發信模組 ──
 export async function sendAdminEmailNotification({ title, message, details = {} }) {
-  const targetEmail = SUPER_ADMIN_EMAIL || 'jimmylee1020227@gmail.com';
-  console.log('[Email Notify] 準備發送 Email 至管理員信箱:', targetEmail, title);
+  let targetEmail = SUPER_ADMIN_EMAIL || 'jimmylee1020227@gmail.com';
+  
+  // 若為每週排行榜結算，改寄到指定的 Gmail
+  if (title.includes('結算') || title.includes('排行榜')) {
+    targetEmail = 'happybrother0717@gmail.com';
+  }
+
+  console.log('[Email Notify] 準備發送 Email 至信箱:', targetEmail, title);
 
   const payload = {
     to: targetEmail,
@@ -46,7 +52,9 @@ export async function sendAdminEmailNotification({ title, message, details = {} 
           template_id: 'template_ckgv0wm',
           user_id: '52OwIYNBqyXqUQdgc',
           template_params: {
+            to_email: targetEmail,
             reporter_name: details.reporterName || '系統通報',
+            reporter_email: details.reporterEmail || '無提供',
             report_reason: details.reason || title,
             question_id: details.questionId || details.id || 'N/A',
             question_text: details.questionText || title,
@@ -2188,7 +2196,7 @@ export function getUnresolvedErrorConcepts(userId) {
 }
 
 // --- 5. 題目回報管理系統 (Question Reports) ---
-export function submitQuestionReport({ questionId, unitName, reason, comment, reporterId, reporterName, questionText, questionAnswer }) {
+export function submitQuestionReport({ questionId, unitName, reason, comment, reporterId, reporterName, reporterEmail, questionText, questionAnswer }) {
   const cleanComment = (comment || '').trim().slice(0, 300).replace(/[<>'"/\\`]/g, '');
   const cleanReporter = (reporterName || '同學').trim().slice(0, 20).replace(/[<>'"/\\`]/g, '');
 
@@ -2201,6 +2209,7 @@ export function submitQuestionReport({ questionId, unitName, reason, comment, re
     comment: cleanComment,
     reporterId: reporterId || 'guest',
     reporterName: cleanReporter,
+    reporterEmail: reporterEmail || '無提供',
     status: 'pending',
     timestamp: new Date().toISOString(),
     questionText: questionText || '',

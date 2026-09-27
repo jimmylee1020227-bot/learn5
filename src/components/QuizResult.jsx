@@ -140,7 +140,8 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
       reason: reportReason,
       comment: reportComment,
       reporterId: currentUser?.id,
-      reporterName: currentUser?.name,
+      reporterName: currentUser?.displayName || currentUser?.name || '同學',
+      reporterEmail: currentUser?.email || '無提供',
       questionText: q.question || '(無文字內容)',
       questionAnswer: q.options ? q.options[q.answer] : '(無選項)'
     });

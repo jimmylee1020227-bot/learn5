@@ -302,6 +302,8 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
       reason: reportReason,
       comment: reportComment,
       reporterId: currentUser?.id || 'guest_student',
+      reporterName: currentUser?.displayName || '同學',
+      reporterEmail: currentUser?.email || '無提供',
       questionText: currentQ.question || '(無文字內容)',
       questionAnswer: currentQ.options ? currentQ.options[currentQ.answer] : '(無選項)'
     });
