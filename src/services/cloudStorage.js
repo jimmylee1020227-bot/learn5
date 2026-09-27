@@ -633,17 +633,41 @@ if (Array.isArray(INITIAL_QUIZ_PAPERS) && INITIAL_QUIZ_PAPERS.length > 0) {
   memoryStore.set(STORAGE_PREFIX + 'quiz_papers', quizObj);
 }
 
+// 這些 key 的值永遠應該是陣列，若 Firebase 存成物件格式，自動轉回陣列
+const ARRAY_KEYS = new Set([
+  'audit_logs',
+  'practice_history',
+  'site_issue_reports',
+  'question_reports',
+  'health_check_reports',
+  'recent_practice_stream',
+  'all_quiz_papers',
+  'quiz_papers',
+  'note_reports',
+  'admin_notifications',
+  'redemption_codes',
+]);
+
+function coerceToExpectedType(key, value) {
+  if (value === null || value === undefined) return value;
+  if (ARRAY_KEYS.has(key)) {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'object') return Object.values(value).filter(Boolean);
+  }
+  return value;
+}
+
 export function getJson(key, defaultValue) {
   let localVal = null;
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       const raw = window.localStorage.getItem(STORAGE_PREFIX + key);
-      if (raw) localVal = JSON.parse(raw);
+      if (raw) localVal = coerceToExpectedType(key, JSON.parse(raw));
     }
   } catch (e) {}
 
   if (memoryStore.has(STORAGE_PREFIX + key)) {
-    const memVal = memoryStore.get(STORAGE_PREFIX + key);
+    const memVal = coerceToExpectedType(key, memoryStore.get(STORAGE_PREFIX + key));
     // 🛡️ 鋼鐵聯集守護：若快照/記憶體中的名冊或試卷筆數更多，自動保護不被本地空快取縮水！
     if (key === 'user_registry' && memVal && typeof memVal === 'object') {
       const memCount = Object.keys(memVal).length;
@@ -670,6 +694,7 @@ export function getJson(key, defaultValue) {
   }
   return localVal !== null && localVal !== undefined ? localVal : defaultValue;
 }
+
 
 export function setJson(key, value) {
   memoryStore.set(STORAGE_PREFIX + key, value);
@@ -959,9 +984,10 @@ export async function fetchCloudAuditLogs(currentUser) {
   try {
     const snap = await get(ref(db, 'studyhub/audit_logs'));
     const val = snap.val();
-    if (val && Array.isArray(val)) {
-      safeSetLocalStorage(STORAGE_PREFIX + 'audit_logs', JSON.stringify(val));
-      return val;
+    if (val) {
+      const arr = Array.isArray(val) ? val : Object.values(val).filter(Boolean);
+      safeSetLocalStorage(STORAGE_PREFIX + 'audit_logs', JSON.stringify(arr));
+      return arr;
     }
   } catch (e) {
     console.warn('[Fetch Cloud Audit Logs Warning]', e);
