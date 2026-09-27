@@ -103,7 +103,9 @@ async function testMistakeNotebooks() {
       list.forEach(m => {
         if (!m) return;
         totalMistakes++;
-        if (!m.id || !m.subject || !validSubjects.includes(m.subject)) invalidMistakes++;
+        const sub = m.subject || ({ english: '英文', chinese: '國文', math: '數學', science: '自然', social: '社會' })[m.subjectId];
+        const qId = m.id || m.questionId;
+        if (!qId || !sub || !validSubjects.includes(sub)) invalidMistakes++;
       });
     });
     

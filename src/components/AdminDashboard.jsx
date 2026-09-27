@@ -81,7 +81,8 @@ import {
   Activity,
   Server,
   UserX,
-  Wrench
+  Wrench,
+  Sparkles
 } from 'lucide-react';
 
 function AdminDashboard() {
