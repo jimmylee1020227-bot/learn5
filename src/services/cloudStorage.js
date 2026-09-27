@@ -4025,7 +4025,7 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
 
   // 20. 錯題本各科目歸類與資料結構檢驗 — 根據 validUids 逐一拉取各使用者錯題本節點（避免拉整棵 studyhub 導致 timeout）
   try {
-    const validSubjects = ['國文', '英文', '數學', '自然', '社會'];
+    const validSubjects = ['chinese', 'english', 'math', 'science', 'social'];
     let invalidMistakes = 0;
     let totalMistakes = 0;
     let checkedUsers = 0;
@@ -4056,7 +4056,7 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
             list.forEach(m => {
               if (!m) return;
               totalMistakes++;
-              if (!m.id || !m.subject || !validSubjects.includes(m.subject)) {
+              if (!m.questionId || !m.subjectId || !validSubjects.includes(m.subjectId)) {
                 invalidMistakes++;
               }
             });
@@ -4067,7 +4067,7 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
         const mistakes = getJson('mistake_notebook', []);
         const mistakesArr = Array.isArray(mistakes) ? mistakes : Object.values(mistakes || {});
         mistakesArr.forEach(m => {
-          if (!m || !m.subject || !validSubjects.includes(m.subject)) invalidMistakes++;
+          if (!m || !m.questionId || !m.subjectId || !validSubjects.includes(m.subjectId)) invalidMistakes++;
           totalMistakes++;
         });
       }
@@ -4075,7 +4075,7 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
       const mistakes = getJson('mistake_notebook', []);
       const mistakesArr = Array.isArray(mistakes) ? mistakes : Object.values(mistakes || {});
       mistakesArr.forEach(m => {
-        if (!m || !m.subject || !validSubjects.includes(m.subject)) invalidMistakes++;
+        if (!m || !m.questionId || !m.subjectId || !validSubjects.includes(m.subjectId)) invalidMistakes++;
         totalMistakes++;
       });
     }
