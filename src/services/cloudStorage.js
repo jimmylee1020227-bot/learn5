@@ -35,19 +35,24 @@ export async function sendAdminEmailNotification({ title, message, details = {} 
 
   try {
     if (typeof window !== 'undefined' && window.fetch) {
-      fetch('https://api.web3forms.com/submit', {
+      fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          access_key: 'e22e5a78-b118-4790-84cf-240166297316',
-          subject: `【學習網即時提醒】${title}`,
-          from_name: '學習網 AI 智慧回報中心',
-          email: 'noreply@studyhub-system.com',
-          replyto: 'noreply@studyhub-system.com',
-          message: `==== 學習網系統即時通知 ====\n標題：${title}\n內容：${message}\n時間：${payload.timestamp}\n詳細資訊：\n${JSON.stringify(details, null, 2)}`
+          service_id: 'service_928ruqe',
+          template_id: 'template_ckgv0wm',
+          user_id: '52OwIYNBqyXqUQdgc',
+          template_params: {
+            reporter_name: details.reporterName || '系統通報',
+            report_reason: details.reason || title,
+            question_id: details.questionId || details.id || 'N/A',
+            question_text: details.questionText || title,
+            question_answer: details.questionAnswer || '（無答案或詳見後台）',
+            report_comment: `${message}\n\n時間：${payload.timestamp}`
+          }
         })
       })
       .then(res => res.json())
@@ -2183,7 +2188,7 @@ export function getUnresolvedErrorConcepts(userId) {
 }
 
 // --- 5. 題目回報管理系統 (Question Reports) ---
-export function submitQuestionReport({ questionId, unitName, reason, comment, reporterId, reporterName }) {
+export function submitQuestionReport({ questionId, unitName, reason, comment, reporterId, reporterName, questionText, questionAnswer }) {
   const cleanComment = (comment || '').trim().slice(0, 300).replace(/[<>'"/\\`]/g, '');
   const cleanReporter = (reporterName || '同學').trim().slice(0, 20).replace(/[<>'"/\\`]/g, '');
 
@@ -2197,7 +2202,9 @@ export function submitQuestionReport({ questionId, unitName, reason, comment, re
     reporterId: reporterId || 'guest',
     reporterName: cleanReporter,
     status: 'pending',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    questionText: questionText || '',
+    questionAnswer: questionAnswer || ''
   };
   const updatedReports = [reportItem, ...reports].slice(0, 200);
   setJson('question_reports', updatedReports);

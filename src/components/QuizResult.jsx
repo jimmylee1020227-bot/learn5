@@ -140,7 +140,9 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
       reason: reportReason,
       comment: reportComment,
       reporterId: currentUser?.id,
-      reporterName: currentUser?.name
+      reporterName: currentUser?.name,
+      questionText: q.question || '(無文字內容)',
+      questionAnswer: q.options ? q.options[q.answer] : '(無選項)'
     });
 
     setReportSuccessNotice(true);
