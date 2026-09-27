@@ -39,37 +39,49 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
   const seed = hashStringToSeed(seedKey);
   const rand = mulberry32(seed);
 
-  const unitList = CURRICULUM_UNITS[subjectId]?.[gradeId] || [];
-  const currentUnit = unitList.find(u => u.id === unitId) || unitList[0] || { id: unitId || 'u1', name: '綜合複習單元', tags: ['核心觀念素養'] };
-  const finalUnitId = currentUnit.id || (unitId ? String(unitId) : 'u1');
+  let effectiveGradeId = gradeId;
+  let effectiveUnitId = unitId;
+  
+  if (gradeId === 'junior-all') {
+    const juniorGrades = ['g7', 'g8', 'g9'];
+    effectiveGradeId = juniorGrades[Math.floor(rand() * juniorGrades.length)];
+    const possibleUnits = CURRICULUM_UNITS[subjectId]?.[effectiveGradeId] || [];
+    if (possibleUnits.length > 0) {
+      effectiveUnitId = possibleUnits[Math.floor(rand() * possibleUnits.length)].id;
+    }
+  }
+
+  const unitList = CURRICULUM_UNITS[subjectId]?.[effectiveGradeId] || [];
+  const currentUnit = unitList.find(u => u.id === effectiveUnitId) || unitList[0] || { id: effectiveUnitId || 'u1', name: '綜合複習單元', tags: ['核心觀念素養'] };
+  const finalUnitId = currentUnit.id || (effectiveUnitId ? String(effectiveUnitId) : 'u1');
   const conceptTags = currentUnit.tags || ['108課綱核心素養'];
   const tagIdx = Math.floor(rand() * conceptTags.length);
   const conceptTag = conceptTags[tagIdx];
 
   let qData;
   try {
-    const isSeniorHigh = ['h1', 'h2', 'h3', 'gsat', 'mock-exam', 'olympiad', 'senior-all'].includes(gradeId);
+    const isSeniorHigh = ['h1', 'h2', 'h3', 'gsat', 'mock-exam', 'olympiad', 'senior-all'].includes(effectiveGradeId) || ['h1', 'h2', 'h3', 'gsat', 'mock-exam', 'olympiad', 'senior-all'].includes(gradeId);
     if (isSeniorHigh) {
       qData = generateHighSchoolQuestion(subjectId, gradeId, finalUnitId, index, difficulty, rand, conceptTag);
     } else {
       switch (subjectId) {
         case 'math':
-          qData = generateMathQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
+          qData = generateMathQuestion(effectiveGradeId, finalUnitId, index, difficulty, rand, conceptTag);
           break;
         case 'english':
-          qData = generateEnglishQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
+          qData = generateEnglishQuestion(effectiveGradeId, finalUnitId, index, difficulty, rand, conceptTag);
           break;
         case 'science':
-          qData = generateScienceQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
+          qData = generateScienceQuestion(effectiveGradeId, finalUnitId, index, difficulty, rand, conceptTag);
           break;
         case 'chinese':
-          qData = generateChineseQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
+          qData = generateChineseQuestion(effectiveGradeId, finalUnitId, index, difficulty, rand, conceptTag);
           break;
         case 'social':
-          qData = generateSocialQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
+          qData = generateSocialQuestion(effectiveGradeId, finalUnitId, index, difficulty, rand, conceptTag);
           break;
         default:
-          qData = generateMathQuestion(gradeId, finalUnitId, index, difficulty, rand, conceptTag);
+          qData = generateMathQuestion(effectiveGradeId, finalUnitId, index, difficulty, rand, conceptTag);
           break;
       }
     }

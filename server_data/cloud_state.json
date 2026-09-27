@@ -789,31 +789,14 @@
       "avatar": "https://jimmylee1020227-bot.github.io/learn5/assets/logo-BuHSCSMm.jpg",
       "email": "jimmylee1020227@gmail.com",
       "id": "admin_super_jimmy",
-      "lastActive": "2026-09-26T11:14:00.295Z",
-      "name": "總管理員",
+      "lastActive": "2026-09-27T04:10:39.705Z",
+      "name": "總管理員 (Jimmy)",
+      "photoURL": "https://jimmylee1020227-bot.github.io/learn5/assets/logo-BuHSCSMm.jpg",
       "role": "super_admin",
-      "school": "系統總管理員"
-    },
-    "student_test_all_sync": {
-      "email": "",
-      "id": "student_test_all_sync",
-      "name": "同步測試生",
-      "role": "student",
-      "school": "示範中學"
-    },
-    "test_student_fix_check": {
-      "email": "",
-      "id": "test_student_fix_check",
-      "name": "測試同學",
-      "role": "student",
-      "school": "會考實驗中學"
-    },
-    "test_student_synctest": {
-      "email": "",
-      "id": "test_student_synctest",
-      "name": "王小明",
-      "role": "student",
-      "school": "示範中學"
+      "school": "系統總管理員",
+      "totalCorrect": 7,
+      "totalQuestions": 10,
+      "totalQuizzes": 1
     },
     "u_1enhjs248o7e": {
       "email": "twn030064@gmail.com",
@@ -950,6 +933,16 @@
       "totalCorrect": 0,
       "totalQuestions": 0
     },
+    "u_6m6ktb5nvofx": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKKQuo3ivNnI-15OL2_kFK9giJh73c31j1airEbxQfmAiL9Oqzt=s96-c",
+      "email": "kevin340737@gmail.com",
+      "id": "u_6m6ktb5nvofx",
+      "lastActive": "2026-09-27T00:58:20.002Z",
+      "name": "林郁翔",
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocKKQuo3ivNnI-15OL2_kFK9giJh73c31j1airEbxQfmAiL9Oqzt=s96-c",
+      "role": "student",
+      "school": "會考戰友"
+    },
     "u_6zy6n3t6l85f": {
       "email": "alberthj19821109@gmail.com",
       "grade": "國三",
@@ -1026,11 +1019,15 @@
       "email": "yiyun0128@gmail.com",
       "grade": "國三",
       "id": "u_a2t5gj6pgytd",
+      "lastActive": "2026-09-26T12:00:33.880Z",
       "name": "賴羿筠",
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJItQUW-aG224SqiSX02PdfGvCdtYuEH-HTyPhqGxb00McxxA=s96-c",
       "registeredAt": "2026-09-25T01:45:25.512Z",
+      "role": "student",
       "school": "會考戰友",
-      "totalCorrect": 30,
-      "totalQuestions": 30
+      "totalCorrect": 40,
+      "totalQuestions": 40,
+      "totalQuizzes": 1
     },
     "u_a42c728zmdek": {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJXwl0g1DLYlVMlIHJxKA9ODE0Eg8itNayR9-m06kbKRABbNiTD=s96-c",
@@ -1097,13 +1094,6 @@
       "totalCorrect": 3,
       "totalQuestions": 31
     },
-    "u_btnvoclzbcu": {
-      "email": "",
-      "id": "u_btnvoclzbcu",
-      "name": "測試帳號",
-      "role": "student",
-      "school": "會考戰友"
-    },
     "u_c3ybek86okx2": {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKpkRJ_PS77IdRLl5SSVWrR27MXaicvVDQ1_5U74aJ8yLWJ_9jT=s96-c",
       "createdAt": "2026-09-25T17:36:24.530Z",
@@ -1136,6 +1126,16 @@
       "school": "會考戰友",
       "totalCorrect": 0,
       "totalQuestions": 0
+    },
+    "u_e5ytrsdph14a": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocINedzgFYMyTqlqljFvT08CKs9O2AwKnG5p42GOKhUfssDxbA=s96-c",
+      "email": "wbh.hsieh@gmail.com",
+      "id": "u_e5ytrsdph14a",
+      "lastActive": "2026-09-27T01:47:00.550Z",
+      "name": "Wen",
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocINedzgFYMyTqlqljFvT08CKs9O2AwKnG5p42GOKhUfssDxbA=s96-c",
+      "role": "student",
+      "school": "會考戰友"
     },
     "u_e63qy64hs7ao": {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocK5d4tEHJZHxwEN29XNazYWK1_-pAQJ4IXCpoXAsNRSj_mRhg=s96-c",
@@ -1251,13 +1251,6 @@
       "totalCorrect": 5,
       "totalQuestions": 27
     },
-    "u_iad3vdk82wbs": {
-      "email": "",
-      "id": "u_iad3vdk82wbs",
-      "name": "總管理員 1",
-      "role": "student",
-      "school": "會考戰友"
-    },
     "u_ien84q41lttg": {
       "email": "1311323@stu.nknush.kh.edu.tw",
       "grade": "國三",
@@ -1300,15 +1293,16 @@
       "totalQuestions": 0
     },
     "u_knbo67cox0xp": {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
+      "avatar": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%22120%22%20height%3D%22120%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2260%22%20r%3D%2258%22%20fill%3D%22%23bee3f8%22%20%2F%3E%0A%20%20%20%20%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2266%22%20r%3D%2238%22%20fill%3D%22%232b6cb0%22%20%2F%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2260%22%20cy%3D%2272%22%20rx%3D%2224%22%20ry%3D%2226%22%20fill%3D%22%23ffffff%22%20%2F%3E%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2248%22%20cy%3D%2260%22%20r%3D%224%22%20fill%3D%22%231a202c%22%20%2F%3E%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2272%22%20cy%3D%2260%22%20r%3D%224%22%20fill%3D%22%231a202c%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2260%2C66%2053%2C74%2067%2C74%22%20fill%3D%22%23dd6b20%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2260%2C26%2040%2C36%2080%2C36%22%20fill%3D%22%231a202c%22%20%2F%3E%0A%20%20%20%20%20%20%3Crect%20x%3D%2252%22%20y%3D%2234%22%20width%3D%2216%22%20height%3D%225%22%20fill%3D%22%23e53e3e%22%20%2F%3E%0A%20%20%20%20%0A%20%20%3C%2Fsvg%3E",
       "email": "happybrother0717@gmail.com",
       "id": "u_knbo67cox0xp",
-      "lastActive": "2026-09-26T07:44:24.751Z",
+      "lastActive": "2026-09-27T03:03:06.394Z",
       "name": "小編",
+      "photoURL": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%22120%22%20height%3D%22120%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2260%22%20r%3D%2258%22%20fill%3D%22%23bee3f8%22%20%2F%3E%0A%20%20%20%20%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2266%22%20r%3D%2238%22%20fill%3D%22%232b6cb0%22%20%2F%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2260%22%20cy%3D%2272%22%20rx%3D%2224%22%20ry%3D%2226%22%20fill%3D%22%23ffffff%22%20%2F%3E%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2248%22%20cy%3D%2260%22%20r%3D%224%22%20fill%3D%22%231a202c%22%20%2F%3E%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2272%22%20cy%3D%2260%22%20r%3D%224%22%20fill%3D%22%231a202c%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2260%2C66%2053%2C74%2067%2C74%22%20fill%3D%22%23dd6b20%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2260%2C26%2040%2C36%2080%2C36%22%20fill%3D%22%231a202c%22%20%2F%3E%0A%20%20%20%20%20%20%3Crect%20x%3D%2252%22%20y%3D%2234%22%20width%3D%2216%22%20height%3D%225%22%20fill%3D%22%23e53e3e%22%20%2F%3E%0A%20%20%20%20%0A%20%20%3C%2Fsvg%3E",
       "role": "admin",
       "school": "會考戰友",
-      "totalCorrect": 1,
-      "totalQuestions": 5,
+      "totalCorrect": 50,
+      "totalQuestions": 50,
       "totalQuizzes": 1
     },
     "u_kshd2h11ttzf": {
@@ -1337,11 +1331,15 @@
       "email": "book102121211@gmail.com",
       "grade": "國三",
       "id": "u_l273emducboc",
+      "lastActive": "2026-09-27T01:36:10.744Z",
       "name": "黃尹芃",
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocLOdEYE79-bfkvLlKhH4v9ReB1lgusT5x8fOMWJO0MEj8g5CDYm=s96-c",
       "registeredAt": "2026-09-26T02:56:51.229Z",
+      "role": "student",
       "school": "會考戰友",
-      "totalCorrect": 5,
-      "totalQuestions": 5
+      "totalCorrect": 9,
+      "totalQuestions": 15,
+      "totalQuizzes": 1
     },
     "u_lhg0fb5vjf7": {
       "email": "gordonyu888@gmail.com",
@@ -1389,8 +1387,9 @@
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJp_nxzY23ZJHgKNLwY0aP0ottShbA1GRuU2QNuIukiPHISSQ=s96-c",
       "email": "ghoop701@gmail.com",
       "id": "u_maz0qbwbetnz",
-      "lastActive": "2026-09-26T08:12:53.192Z",
+      "lastActive": "2026-09-26T16:23:03.788Z",
       "name": "胡明智",
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJp_nxzY23ZJHgKNLwY0aP0ottShbA1GRuU2QNuIukiPHISSQ=s96-c",
       "role": "student",
       "school": "會考戰友"
     },
@@ -1788,8 +1787,9 @@
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=english_star",
       "email": "t1140068@twnt5.thsh.tyc.edu.tw",
       "id": "u_xznu07drsnwb",
-      "lastActive": "2026-09-26T11:14:54.216Z",
+      "lastActive": "2026-09-26T13:45:33.140Z",
       "name": "66666",
+      "photoURL": "https://api.dicebear.com/7.x/bottts/svg?seed=english_star",
       "role": "student",
       "school": "會考戰友"
     },
@@ -1818,8 +1818,9 @@
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIANgF2ETQ2llbHNhbv4E5e_72FcSlJ9fWf5jfBsUS-PcaIyQ=s96-c",
       "email": "fternoona50@gmail.com",
       "id": "u_z6zfph78ipyf",
-      "lastActive": "2026-09-26T06:15:47.206Z",
+      "lastActive": "2026-09-27T03:43:52.717Z",
       "name": "fternoon A",
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocIANgF2ETQ2llbHNhbv4E5e_72FcSlJ9fWf5jfBsUS-PcaIyQ=s96-c",
       "role": "student",
       "school": "會考戰友",
       "totalCorrect": 33,
@@ -1847,6 +1848,19 @@
       "school": "會考戰友",
       "totalCorrect": 19,
       "totalQuestions": 41
+    },
+    "u_zg62h44xo78q": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocK_8C4N0QqvSLrwN_QITt-7lJ9GRnhCOLGk6EZGufjhYnUm1Q=s96-c",
+      "email": "kiwichen167@gmail.com",
+      "id": "u_zg62h44xo78q",
+      "lastActive": "2026-09-27T04:04:03.994Z",
+      "name": "chen奇異果",
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocK_8C4N0QqvSLrwN_QITt-7lJ9GRnhCOLGk6EZGufjhYnUm1Q=s96-c",
+      "role": "student",
+      "school": "會考戰友",
+      "totalCorrect": 22,
+      "totalQuestions": 26,
+      "totalQuizzes": 3
     }
   },
   "studyhub_game_state_admin_super_jimmy": {
@@ -1868,26 +1882,15 @@
   },
   "studyhub_weekly_leaderboard": [
     {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
-      "displayName": "小編",
-      "email": "happybrother0717@gmail.com",
-      "tickets": 1,
-      "totalPoints": 101,
-      "updatedAt": 1790408688320,
-      "userId": "u_knbo67cox0xp",
-      "weekId": "2026-W39",
-      "weeklyPoints": 153
-    },
-    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIANgF2ETQ2llbHNhbv4E5e_72FcSlJ9fWf5jfBsUS-PcaIyQ=s96-c",
       "displayName": "fternoon A",
       "email": "fternoona50@gmail.com",
       "tickets": 3,
-      "totalPoints": 120,
-      "updatedAt": 1790403347160,
+      "totalPoints": 122,
+      "updatedAt": 1790480363529,
       "userId": "u_z6zfph78ipyf",
       "weekId": "2026-W39",
-      "weeklyPoints": 120
+      "weeklyPoints": 122
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJp_nxzY23ZJHgKNLwY0aP0ottShbA1GRuU2QNuIukiPHISSQ=s96-c",
@@ -1912,6 +1915,17 @@
       "weeklyPoints": 55
     },
     {
+      "avatar": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%22120%22%20height%3D%22120%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2260%22%20r%3D%2258%22%20fill%3D%22%23bee3f8%22%20%2F%3E%0A%20%20%20%20%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2266%22%20r%3D%2238%22%20fill%3D%22%232b6cb0%22%20%2F%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2260%22%20cy%3D%2272%22%20rx%3D%2224%22%20ry%3D%2226%22%20fill%3D%22%23ffffff%22%20%2F%3E%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2248%22%20cy%3D%2260%22%20r%3D%224%22%20fill%3D%22%231a202c%22%20%2F%3E%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2272%22%20cy%3D%2260%22%20r%3D%224%22%20fill%3D%22%231a202c%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2260%2C66%2053%2C74%2067%2C74%22%20fill%3D%22%23dd6b20%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2260%2C26%2040%2C36%2080%2C36%22%20fill%3D%22%231a202c%22%20%2F%3E%0A%20%20%20%20%20%20%3Crect%20x%3D%2252%22%20y%3D%2234%22%20width%3D%2216%22%20height%3D%225%22%20fill%3D%22%23e53e3e%22%20%2F%3E%0A%20%20%20%20%0A%20%20%3C%2Fsvg%3E",
+      "displayName": "小編",
+      "email": "happybrother0717@gmail.com",
+      "tickets": 1,
+      "totalPoints": 50,
+      "updatedAt": 1790463631460,
+      "userId": "u_knbo67cox0xp",
+      "weekId": "2026-W39",
+      "weeklyPoints": 50
+    },
+    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLboIHW536zX2jEvcithca6343MnG-hm7qtZk8Qj1VsOwbzyf7x=s96-c",
       "displayName": "李肜",
       "email": "fuis2738@gmail.com",
@@ -1934,17 +1948,6 @@
       "weeklyPoints": 47
     },
     {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJItQUW-aG224SqiSX02PdfGvCdtYuEH-HTyPhqGxb00McxxA=s96-c",
-      "displayName": "賴羿筠",
-      "email": "yiyun0128@gmail.com",
-      "tickets": 1,
-      "totalPoints": 40,
-      "updatedAt": 1790423971686,
-      "userId": "u_a2t5gj6pgytd",
-      "weekId": "2026-W39",
-      "weeklyPoints": 40
-    },
-    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKggCzcn4NCHHQhiQnbkseo1O6mzh8-vKkItpf8SIAeQ22LWe0=s96-c",
       "displayName": "李",
       "email": "lijingyan41@gmail.com",
@@ -1956,7 +1959,7 @@
       "weeklyPoints": 39
     },
     {
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=english_star",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLqjMdMeNFbPY9BJhQE4MVv9DQ6ob4ahcEXq2WBkmDne_h5HQ=s96-c",
       "displayName": "66666",
       "email": "t1140068@twnt5.thsh.tyc.edu.tw",
       "tickets": 3,
@@ -1965,6 +1968,17 @@
       "userId": "u_xznu07drsnwb",
       "weekId": "2026-W39",
       "weeklyPoints": 38
+    },
+    {
+      "avatar": "https://jimmylee1020227-bot.github.io/learn5/assets/logo-BuHSCSMm.jpg",
+      "displayName": "總管理員",
+      "email": "jimmylee1020227@gmail.com",
+      "tickets": 1,
+      "totalPoints": 16,
+      "updatedAt": 1790466835769,
+      "userId": "admin_super_jimmy",
+      "weekId": "2026-W39",
+      "weeklyPoints": 36
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIxfE2HL2zVZiGKED_9Uo27OvSUp46tjTlTxCSYkzsvpfTMUQ=s96-c",
@@ -1989,6 +2003,17 @@
       "weeklyPoints": 31
     },
     {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJItQUW-aG224SqiSX02PdfGvCdtYuEH-HTyPhqGxb00McxxA=s96-c",
+      "displayName": "賴羿筠",
+      "email": "yiyun0128@gmail.com",
+      "tickets": 1,
+      "totalPoints": 30,
+      "updatedAt": 1790383010278,
+      "userId": "u_a2t5gj6pgytd",
+      "weekId": "2026-W39",
+      "weeklyPoints": 30
+    },
+    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLn2TSm30u8ZumiTxLj6DDiLKdJbd_G-W1gBlnH1x8dmA_cY54=s96-c",
       "displayName": "李京諺3",
       "email": "goodgg1020831@gmail.com",
@@ -2000,15 +2025,15 @@
       "weeklyPoints": 30
     },
     {
-      "avatar": "https://jimmylee1020227-bot.github.io/learn5/assets/logo-BuHSCSMm.jpg",
-      "displayName": "總管理員",
-      "email": "jimmylee1020227@gmail.com",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocK_8C4N0QqvSLrwN_QITt-7lJ9GRnhCOLGk6EZGufjhYnUm1Q=s96-c",
+      "displayName": "chen奇異果",
+      "email": "kiwichen167@gmail.com",
       "tickets": 1,
-      "totalPoints": 8,
-      "updatedAt": 1790421163657,
-      "userId": "admin_super_jimmy",
+      "totalPoints": 22,
+      "updatedAt": 1790481843610,
+      "userId": "u_zg62h44xo78q",
       "weekId": "2026-W39",
-      "weeklyPoints": 28
+      "weeklyPoints": 22
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJiQg4uA9yqKh7hqkrDSAvogyZShe9o2FobNOZS7W9G-VnrHxBm=s96-c",
@@ -2064,6 +2089,17 @@
       "userId": "u_e63qy64hs7ao",
       "weekId": "2026-W39",
       "weeklyPoints": 11
+    },
+    {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLOdEYE79-bfkvLlKhH4v9ReB1lgusT5x8fOMWJO0MEj8g5CDYm=s96-c",
+      "displayName": "黃尹芃",
+      "email": "book102121211@gmail.com",
+      "tickets": 1,
+      "totalPoints": 9,
+      "updatedAt": 1790472970121,
+      "userId": "u_l273emducboc",
+      "weekId": "2026-W39",
+      "weeklyPoints": 9
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIUHnRSAzHCC5DGuKn_55lz0Wr_m4z3KEPeaQ_fiz4yLyep3g=s96-c",
@@ -2161,17 +2197,6 @@
       "totalPoints": 27,
       "updatedAt": 1790357784640,
       "userId": "u_hqx969af5kfh",
-      "weekId": "2026-W39",
-      "weeklyPoints": 5
-    },
-    {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLOdEYE79-bfkvLlKhH4v9ReB1lgusT5x8fOMWJO0MEj8g5CDYm=s96-c",
-      "displayName": "黃尹芃",
-      "email": "book102121211@gmail.com",
-      "tickets": 1,
-      "totalPoints": 5,
-      "updatedAt": 1790394305429,
-      "userId": "u_l273emducboc",
       "weekId": "2026-W39",
       "weeklyPoints": 5
     },
@@ -173394,5 +173419,12 @@
       "userSchool": "會考戰友",
       "wrongCount": 2
     }
-  ]
+  ],
+  "global_system_buff": {
+    "desc": "做錯題本答對加碼 +2 額外點數",
+    "label": "🎯 錯題強化特訓",
+    "mode": "MISTAKE_BOOST",
+    "updatedAt": "2026-09-27T00:22:03.017Z",
+    "updatedBy": "總管理員"
+  }
 }

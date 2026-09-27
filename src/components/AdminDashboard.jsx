@@ -114,6 +114,8 @@ function AdminDashboard() {
   const [selectedStudentEmail, setSelectedStudentEmail] = useState('ALL');
   const [studentSearchKeyword, setStudentSearchKeyword] = useState('');
   const [questionSearchKeyword, setQuestionSearchKeyword] = useState('');
+  const [auditSearchKeyword, setAuditSearchKeyword] = useState('');
+  const [auditActionFilter, setAuditActionFilter] = useState('ALL');
   const [onlyMistakes, setOnlyMistakes] = useState(false);
   const [expandedLogIds, setExpandedLogIds] = useState({});
 
@@ -157,8 +159,6 @@ function AdminDashboard() {
 
   // 審計日誌狀態
   const [auditLogs, setAuditLogs] = useState(() => getAuditLogs(currentUser));
-  const [auditSearchKeyword, setAuditSearchKeyword] = useState('');
-  const [auditActionFilter, setAuditActionFilter] = useState('ALL');
 
   // 帳號註銷確認對話框狀態
   const [deletingStudent, setDeletingStudent] = useState(null);
@@ -843,19 +843,6 @@ function AdminDashboard() {
     }, currentUser);
   };
 
-  // 5.1 全站測驗 Buff 模式切換
-  const handleSelectBuff = async (buffModeId) => {
-    setIsBuffUpdating(true);
-    try {
-      const updated = await setGlobalSystemBuff(buffModeId, currentUser);
-      setCurrentBuff(updated);
-      setAccountActionNotice(`🎉 全站測驗 Buff 已切換為【${updated.label}】！全服即時生效`);
-    } catch (e) {
-      alert(`切換失敗：${e.message}`);
-    } finally {
-      setIsBuffUpdating(false);
-    }
-  };
 
   // 5.2 學生深度操作：微調積分
   const handleAdjustPoints = async (delta) => {
@@ -1174,40 +1161,26 @@ function AdminDashboard() {
               {isHealthChecking ? '正在深度自檢中...' : '⚡ 執行全系統智能巡檢'}
             </button>
 
-            {/* 全站測驗 Buff 模式即時切換器 */}
-            <div className="glass-panel" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--theme-accent, #ef8354)', background: '#fff9f5' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>
-                <Sparkles size={14} color="#ef8354" />
-                <span>全站 Buff:</span>
-              </div>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {Object.values(BUFF_MODES).map((mode) => {
-                  const isActive = currentBuff.mode === mode.id;
-                  return (
-                    <button
-                      key={mode.id}
-                      onClick={() => handleSelectBuff(mode.id)}
-                      disabled={isBuffUpdating}
-                      style={{
-                        padding: '4px 8px',
-                        fontSize: '0.74rem',
-                        fontWeight: 800,
-                        borderRadius: '8px',
-                        border: isActive ? '1.5px solid #ef8354' : '1px solid #ded3c5',
-                        background: isActive ? '#ef8354' : '#fff',
-                        color: isActive ? '#fff' : 'var(--theme-border, #17324d)',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        boxShadow: isActive ? '1px 1px 0 #17324d' : 'none'
-                      }}
-                      title={`${mode.label}：${mode.desc} (全站學生作答即時生效)`}
-                    >
-                      {mode.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            {/* 全站測驗 2倍積分切換器 */}
+            <button
+              onClick={handleToggleGlobal2x}
+              className="btn btn-outline"
+              style={{
+                padding: '8px 14px',
+                fontSize: '0.84rem',
+                fontWeight: 800,
+                border: `1.5px solid ${globalSettings.global2xActive ? '#ef4444' : '#3b82f6'}`,
+                background: globalSettings.global2xActive ? '#fef2f2' : '#eff6ff',
+                color: globalSettings.global2xActive ? '#ef4444' : '#3b82f6',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+              title="一鍵開關全場 2 倍積分"
+            >
+              <Zap size={15} className={globalSettings.global2xActive ? 'animate-pulse' : ''} />
+              {globalSettings.global2xActive ? '關閉全服雙倍' : '開啟全服雙倍'}
+            </button>
           </div>
         </div>
 
