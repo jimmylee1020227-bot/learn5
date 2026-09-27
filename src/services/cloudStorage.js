@@ -2196,7 +2196,8 @@ export function submitQuestionReport({ questionId, unitName, reason, comment, re
   const cleanComment = (comment || '').trim().slice(0, 300).replace(/[<>'"/\\`]/g, '');
   const cleanReporter = (reporterName || '同學').trim().slice(0, 20).replace(/[<>'"/\\`]/g, '');
 
-  const reports = getJson('question_reports', []);
+  let reports = getJson('question_reports', []);
+  if (!Array.isArray(reports)) reports = Object.values(reports || {});
   const reportItem = {
     id: 'rep_' + Date.now(),
     questionId: questionId || '',
@@ -4191,7 +4192,9 @@ export function submitNoteReport({ noteId, subjectId, gradeId, unitId, unitTitle
   const cleanSugg = (suggestion || '').trim().slice(0, 500);
   const cleanReporter = (reporterName || '同學').trim().slice(0, 20);
 
-  const reports = getJson('notes_reports', []);
+  let reports = getJson('notes_reports', []);
+  if (!Array.isArray(reports)) reports = Object.values(reports || {});
+  
   const reportItem = {
     id: 'noterep_' + Date.now(),
     noteId: noteId || '',
