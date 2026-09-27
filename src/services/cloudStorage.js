@@ -22,12 +22,8 @@ export const SUPER_ADMIN_EMAIL = 'jimmylee1020227@gmail.com';
 
 // ── 管理員 Email 即時發信模組 ──
 export async function sendAdminEmailNotification({ title, message, details = {} }) {
-  let targetEmail = SUPER_ADMIN_EMAIL || 'jimmylee1020227@gmail.com';
-  
-  // 若為每週排行榜結算，改寄到指定的 Gmail
-  if (title.includes('結算') || title.includes('排行榜')) {
-    targetEmail = 'happybrother0717@gmail.com';
-  }
+  // 所有通知（回報與結算）都會同時發送給這兩個信箱
+  const targetEmail = 'jimmylee1020227@gmail.com,happybrother0717@gmail.com';
 
   console.log('[Email Notify] 準備發送 Email 至信箱:', targetEmail, title);
 
