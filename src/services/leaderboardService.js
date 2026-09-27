@@ -7,7 +7,9 @@ import {
   pushPlayerLeaderboardSync, 
   fetchCloudLeaderboardRaw,
   assertAdminPermission,
-  adminPushGameStateTickets
+  adminPushGameStateTickets,
+  getAdminNotifications,
+  sendAdminEmailNotification
 } from './cloudStorage.js';
 import { getRealDate, getRealTime } from './timeService.js';
 
@@ -111,6 +113,41 @@ export function checkAndExecuteWeeklyReset() {
       });
       setJson(HALL_OF_FAME_KEY, fameList);
       updateServerSync(HALL_OF_FAME_KEY, fameList);
+
+      // 傳送系統廣播訊息給當週排行榜前三名
+      try {
+        const top3Names = board.slice(0, 3).map((u, i) => `${i + 1}. ${u.displayName} (${u.weeklyPoints}分)`).join('、');
+        const currentNotifs = getAdminNotifications();
+        const newNotif = {
+          id: 'notif_' + Date.now(),
+          title: `🏆 ${lastResetWeek} 冠軍週結算公告`,
+          message: `本週榜單已順利結算！恭喜前三名戰友：${top3Names}。新的一週已經開跑，請大家繼續努力刷題拿高分！`,
+          type: 'event',
+          relatedCode: null,
+          sender: '系統自動排程 (System)',
+          timestamp: new Date().toISOString()
+        };
+        const updatedNotifs = [newNotif, ...currentNotifs];
+        setJson('admin_notifications', updatedNotifs);
+        updateServerSync('admin_notifications', updatedNotifs);
+
+        // 傳送 Email 通知總管理員前三名名單 (以便發放獎勵)
+        const top3Details = board.slice(0, 3).map((u, i) => 
+          `第 ${i + 1} 名: ${u.displayName} (Email: ${u.email || '未提供'}, 點數: ${u.weeklyPoints}分)`
+        ).join('\n');
+        
+        sendAdminEmailNotification({
+          title: `🏆 ${lastResetWeek} 排行榜結算結果出爐`,
+          message: `本週排行榜已於 00:00 結算！以下是前三名玩家，請注意發放獎勵：\n\n${top3Details}`,
+          details: {
+            week: lastResetWeek,
+            top3: board.slice(0, 3)
+          }
+        });
+
+      } catch (e) {
+        console.error('Failed to send weekly reset notification:', e);
+      }
     }
 
     // 每週一分數歸零！同時原子化更新雲端玩家節點
