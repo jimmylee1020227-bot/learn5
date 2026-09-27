@@ -117,6 +117,27 @@ function AdminDashboard() {
   const [onlyMistakes, setOnlyMistakes] = useState(false);
   const [expandedLogIds, setExpandedLogIds] = useState({});
 
+  // 效能優化：極限降低 DOM 節點的分頁與非阻塞延遲搜尋
+  const [paperPage, setPaperPage] = useState(1);
+  const [logPage, setLogPage] = useState(1);
+  const [auditPage, setAuditPage] = useState(1);
+  const PAPERS_PER_PAGE = 10;
+  const LOGS_PER_PAGE = 20;
+  const AUDIT_PER_PAGE = 25;
+
+  const deferredStudentSearchKeyword = React.useDeferredValue(studentSearchKeyword);
+  const deferredQuestionSearchKeyword = React.useDeferredValue(questionSearchKeyword);
+  const deferredAuditSearchKeyword = React.useDeferredValue(auditSearchKeyword);
+
+  useEffect(() => {
+    setPaperPage(1);
+    setLogPage(1);
+  }, [deferredQuestionSearchKeyword, selectedStudent, selectedStudentId, onlyMistakes]);
+
+  useEffect(() => {
+    setAuditPage(1);
+  }, [deferredAuditSearchKeyword, auditActionFilter]);
+
   // 兌換碼管理狀態
   const [newCodeName, setNewCodeName] = useState('');
   const [newCodeType, setNewCodeType] = useState('points');
@@ -260,20 +281,27 @@ function AdminDashboard() {
       setRegisteredStudents(getRegisteredStudents());
     });
 
+    let syncThrottleTimer = null;
     const unsub = subscribeToCloudSync((ev) => {
-      refreshAll();
-      if (!ev?.key || ev.key.includes('quiz_papers') || ev.key === 'recent_practice_stream') {
-        fetchAllCloudQuizPapers().then(papers => {
-          if (papers && papers.length > 0) setQuizPapers(papers);
-        });
-      }
-      if (!ev?.key || ev.key === 'recent_practice_stream' || ev.key.includes('practice_history')) {
-        fetchAllCloudPracticeLogs().then(logs => {
-          if (logs && logs.length > 0) setAllHistory(logs);
-        });
-      }
+      if (syncThrottleTimer) clearTimeout(syncThrottleTimer);
+      syncThrottleTimer = setTimeout(() => {
+        refreshAll();
+        if (!ev?.key || ev.key.includes('quiz_papers') || ev.key === 'recent_practice_stream') {
+          fetchAllCloudQuizPapers().then(papers => {
+            if (papers && papers.length > 0) setQuizPapers(papers);
+          });
+        }
+        if (!ev?.key || ev.key === 'recent_practice_stream' || ev.key.includes('practice_history')) {
+          fetchAllCloudPracticeLogs().then(logs => {
+            if (logs && logs.length > 0) setAllHistory(logs);
+          });
+        }
+      }, 1500);
     });
-    return () => unsub();
+    return () => {
+      if (syncThrottleTimer) clearTimeout(syncThrottleTimer);
+      unsub();
+    };
   }, []);
 
   // 手動強制自 Firebase 雲端重新整理名冊、即時做題串流、全服錯題紀錄與所有試卷
@@ -602,8 +630,8 @@ function AdminDashboard() {
         }
       }
       // 學生名稱搜尋框
-      if (studentSearchKeyword.trim()) {
-        const kw = studentSearchKeyword.trim().toLowerCase();
+      if (deferredStudentSearchKeyword.trim()) {
+        const kw = deferredStudentSearchKeyword.trim().toLowerCase();
         const sName = (log.userName || '').toLowerCase();
         const sSchool = (log.userSchool || '').toLowerCase();
         const matchKw = (text) => text.includes(kw) || text.includes(kw.replace(/彤/g, '肜')) || text.includes(kw.replace(/肜/g, '彤'));
@@ -616,8 +644,8 @@ function AdminDashboard() {
         return false;
       }
       // 查詢特定題號代碼、單元或關鍵字
-      if (questionSearchKeyword.trim()) {
-        const qkw = questionSearchKeyword.trim().toLowerCase();
+      if (deferredQuestionSearchKeyword.trim()) {
+        const qkw = deferredQuestionSearchKeyword.trim().toLowerCase();
         const qId = (log.questionId || '').toLowerCase();
         const unit = (log.unitName || '').toLowerCase();
         const tag = (log.conceptTag || '').toLowerCase();
@@ -628,7 +656,7 @@ function AdminDashboard() {
       }
       return true;
     });
-  }, [allHistory, selectedStudent, selectedStudentId, selectedStudentEmail, studentSearchKeyword, onlyMistakes, questionSearchKeyword]);
+  }, [allHistory, selectedStudent, selectedStudentId, selectedStudentEmail, deferredStudentSearchKeyword, onlyMistakes, deferredQuestionSearchKeyword]);
 
   // 篩選完整試卷列表 (支援學生姓名、學校、題目關鍵字與科目快篩，同名不同人保持獨立)
   const filteredQuizPapers = React.useMemo(() => {
@@ -653,8 +681,8 @@ function AdminDashboard() {
           return false;
         }
       }
-      if (studentSearchKeyword.trim()) {
-        const kw = studentSearchKeyword.trim().toLowerCase();
+      if (deferredStudentSearchKeyword.trim()) {
+        const kw = deferredStudentSearchKeyword.trim().toLowerCase();
         const sName = (paper.userName || '').toLowerCase();
         const sSchool = (paper.userSchool || '').toLowerCase();
         const matchKw = (text) => text.includes(kw) || text.includes(kw.replace(/彤/g, '肜')) || text.includes(kw.replace(/肜/g, '彤'));
@@ -662,8 +690,8 @@ function AdminDashboard() {
           return false;
         }
       }
-      if (questionSearchKeyword.trim()) {
-        const kw = questionSearchKeyword.trim().toLowerCase();
+      if (deferredQuestionSearchKeyword.trim()) {
+        const kw = deferredQuestionSearchKeyword.trim().toLowerCase();
         const title = (paper.paperTitle || '').toLowerCase();
         const unit = (paper.unitName || '').toLowerCase();
         const hasMatchingQ = paper.questions?.some(q => 
@@ -677,7 +705,7 @@ function AdminDashboard() {
       }
       return true;
     });
-  }, [quizPapers, selectedStudent, selectedStudentId, selectedStudentEmail, studentSearchKeyword, questionSearchKeyword]);
+  }, [quizPapers, selectedStudent, selectedStudentId, selectedStudentEmail, deferredStudentSearchKeyword, deferredQuestionSearchKeyword]);
 
   // 全服學習活動時段熱力統計 (Study Activity Peak Hours)
   const hourlyActivityStats = React.useMemo(() => {
@@ -1995,8 +2023,8 @@ function AdminDashboard() {
               {studentAnalytics.studentsList
                 .filter(s => {
                   if (!s) return false;
-                  if (!studentSearchKeyword.trim()) return true;
-                  const kw = (studentSearchKeyword || '').trim().toLowerCase();
+                  if (!deferredStudentSearchKeyword.trim()) return true;
+                  const kw = (deferredStudentSearchKeyword || '').trim().toLowerCase();
                   const sName = (s.name || s.displayName || '').toLowerCase();
                   const sSchool = (s.school || '').toLowerCase();
                   const sEmail = (s.email || '').toLowerCase();
