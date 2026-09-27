@@ -20,16 +20,27 @@ import {
   X,
   AlertCircle,
   Play,
-  FileText
+  FileText,
+  AlertTriangle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import MathText from './MathText';
 import MathSymbolLegend from './MathSymbolLegend';
+import { submitQuestionReport } from '../services/cloudStorage';
+import { useAuth } from '../context/AuthContext';
 
 export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinforce, onBackHome, onGoHistory }) {
+  const { currentUser } = useAuth();
   const { effectiveMultiplier } = useGame();
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'wrong' | 'correct'
   const [activeHighlightIdx, setActiveHighlightIdx] = useState(null);
+
+  // 題目疑義回報狀態
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportQuestionIdx, setReportQuestionIdx] = useState(null);
+  const [reportReason, setReportReason] = useState('答案錯誤');
+  const [reportComment, setReportComment] = useState('');
+  const [reportSuccessNotice, setReportSuccessNotice] = useState(false);
 
   const playAudio = (text) => {
     if ('speechSynthesis' in window) {
@@ -109,6 +120,33 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
       }
       setTimeout(() => setActiveHighlightIdx(null), 2500);
     }, 100);
+  };
+
+  const handleOpenReportModal = (idx) => {
+    setReportQuestionIdx(idx);
+    setReportReason('答案錯誤');
+    setReportComment('');
+    setReportSuccessNotice(false);
+    setIsReportModalOpen(true);
+  };
+
+  const handleConfirmReport = async () => {
+    const q = results[reportQuestionIdx];
+    if (!q) return;
+    
+    await submitQuestionReport({
+      questionId: q.id,
+      unitName: q.conceptTag || '未知單元',
+      reason: reportReason,
+      comment: reportComment,
+      reporterId: currentUser?.id,
+      reporterName: currentUser?.name
+    });
+
+    setReportSuccessNotice(true);
+    setTimeout(() => {
+      setIsReportModalOpen(false);
+    }, 2000);
   };
 
   const formatDifficultyStars = (diff) => {
@@ -772,6 +810,19 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
                 <MathText text={q.explanation} />
               </div>
 
+              {/* 題目疑義回報按鈕 */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+                <button
+                  type="button"
+                  onClick={() => handleOpenReportModal(idx)}
+                  className="btn btn-ghost"
+                  style={{ color: '#78818a', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px' }}
+                >
+                  <AlertTriangle size={14} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
+                  <span>題目有誤或超範圍？</span>
+                </button>
+              </div>
+
             </div>
           );
         })}
@@ -823,6 +874,66 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
           </button>
         </div>
       </div>
+
+      {isReportModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-card" style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                <AlertTriangle size={18} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
+                <span>回報題目疑義 (題號: {reportQuestionIdx !== null ? reportQuestionIdx + 1 : ''})</span>
+              </div>
+              <button onClick={() => setIsReportModalOpen(false)} className="btn btn-ghost btn-icon">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '20px' }}>
+              {reportSuccessNotice ? (
+                <div style={{ padding: '16px', background: '#e8f6ed', border: '2px solid #347650', borderRadius: '12px', color: '#347650', fontWeight: 800, textAlign: 'center' }}>
+                  ✅ 感謝你的回報，管理員會盡快查驗並調整題庫！
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#5b6772', marginBottom: '6px' }}>疑義類型：</label>
+                    <select
+                      value={reportReason}
+                      onChange={e => setReportReason(e.target.value)}
+                      style={{ width: '100%', padding: '10px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700 }}
+                    >
+                      <option value="答案錯誤">答案或選項標示錯誤</option>
+                      <option value="題目語意不清">題目語意不清或缺少條件</option>
+                      <option value="超出108課綱">超出該年級 108 課綱範圍</option>
+                      <option value="需要加上的東西">需要加上的東西 (詳解或考點補充)</option>
+                      <option value="其他問題">其他排版或錯字問題</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#5b6772', marginBottom: '6px' }}>補充說明（選填）：</label>
+                    <textarea
+                      value={reportComment}
+                      onChange={e => setReportComment(e.target.value)}
+                      rows={4}
+                      placeholder="請描述您認為錯誤的地方，或是您的見解..."
+                      style={{ width: '100%', padding: '10px', background: '#fff', color: '#000', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700, resize: 'vertical' }}
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleConfirmReport}
+                    className="btn btn-primary"
+                    style={{ width: '100%', padding: '12px', marginTop: '10px' }}
+                  >
+                    送出疑義
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

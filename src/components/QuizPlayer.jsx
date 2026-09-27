@@ -1459,6 +1459,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                       <option value="答案錯誤">答案或選項標示錯誤</option>
                       <option value="題目語意不清">題目語意不清或缺少條件</option>
                       <option value="超出108課綱">超出該年級 108 課綱範圍</option>
+                      <option value="需要加上的東西">需要加上的東西</option>
                       <option value="其他問題">其他排版或錯字問題</option>
                     </select>
                   </div>

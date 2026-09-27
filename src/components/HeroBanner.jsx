@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
 import { useDevice } from '../context/DeviceContext';
-import { getDailyPracticeStats, subscribeToCloudSync } from '../services/cloudStorage';
+import { getDailyPracticeStats, subscribeToCloudSync, submitSiteReport } from '../services/cloudStorage';
 import { getStudentWeeklyPoints } from '../services/leaderboardService';
 import { getRealTime } from '../services/timeService';
 import { 
@@ -17,7 +17,9 @@ import {
   Trophy,
   Users,
   MessageCircle,
-  FileText
+  FileText,
+  AlertTriangle,
+  X
 } from 'lucide-react';
 
 const EXAM_TARGETS = [
@@ -42,6 +44,13 @@ export default function HeroBanner({
   const [examCountdown, setExamCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [dailyStats, setDailyStats] = useState({ count: 0, target: 10, correctCount: 0 });
   const [userWeeklyPoints, setUserWeeklyPoints] = useState(() => getStudentWeeklyPoints(currentUser));
+
+  // 系統回報 Modal 狀態
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportCategory, setReportCategory] = useState('系統錯誤/Bug');
+  const [reportContact, setReportContact] = useState(currentUser?.email || '');
+  const [reportDescription, setReportDescription] = useState('');
+  const [reportSuccess, setReportSuccess] = useState(false);
 
   useEffect(() => {
     setUserWeeklyPoints(getStudentWeeklyPoints(currentUser));
@@ -89,6 +98,26 @@ export default function HeroBanner({
   }, [currentUser]);
 
   const progressPercent = Math.min(100, Math.round((dailyStats.count / dailyStats.target) * 100));
+
+  const handleSubmitSiteReport = (e) => {
+    e.preventDefault();
+    if (!reportDescription.trim()) return;
+
+    submitSiteReport({
+      category: reportCategory,
+      contact: reportContact,
+      description: reportDescription,
+      userId: currentUser?.id,
+      userName: currentUser?.name
+    });
+
+    setReportSuccess(true);
+    setTimeout(() => {
+      setReportSuccess(false);
+      setIsReportModalOpen(false);
+      setReportDescription('');
+    }, 2000);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px', marginBottom: '28px' }}>
@@ -191,6 +220,22 @@ export default function HeroBanner({
               </button>
 
               <button 
+                onClick={() => window.open('https://examcommunit-mdqeyikj.manus.space/', '_blank')}
+                className="btn btn-secondary"
+                style={{
+                  padding: '14px 22px',
+                  fontSize: '0.98rem',
+                  border: '2px solid #2563eb',
+                  background: '#eff6ff',
+                  color: '#2563eb'
+                }}
+                title="紙本考卷列印下載 (直通官方下載中心與 A4 考卷輸出)"
+              >
+                <FileText size={18} color="#2563eb" />
+                紙本考卷下載
+              </button>
+
+              <button 
                 onClick={() => setIsLuckyDrawOpen(true)} 
                 className="btn btn-gold"
                 style={{ padding: '14px 20px', fontSize: '0.95rem' }}
@@ -256,6 +301,28 @@ export default function HeroBanner({
                 <MessageCircle size={18} />
                 聯絡管理員
               </a>
+
+              <button 
+                onClick={() => setIsReportModalOpen(true)}
+                className="btn btn-secondary"
+                style={{ 
+                  padding: '14px 22px', 
+                  fontSize: '0.98rem',
+                  fontWeight: 800,
+                  background: '#fff0e9',
+                  color: '#c8643d',
+                  border: '2.5px solid #c8643d',
+                  borderRadius: '16px',
+                  boxShadow: '4px 4px 0px #c8643d',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                <AlertTriangle size={18} />
+                問題回報與建議
+              </button>
             </div>
           </div>
 
@@ -429,6 +496,80 @@ export default function HeroBanner({
 
       </div>
 
+      {/* 系統回報 Modal */}
+      {isReportModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-card" style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, color: 'var(--theme-border, var(--theme-border, #17324d))' }}>
+                <AlertTriangle size={18} color="#c8643d" />
+                <span>問題回報與建議</span>
+              </div>
+              <button onClick={() => setIsReportModalOpen(false)} className="btn btn-ghost btn-icon">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitSiteReport} className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '20px' }}>
+              {reportSuccess ? (
+                <div style={{ padding: '16px', background: '#e8f6ed', border: '2px solid #347650', borderRadius: '12px', color: '#347650', fontWeight: 800, textAlign: 'center' }}>
+                  ✅ 感謝您的回報！總管理員已收到您的建議。
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#5b6772', marginBottom: '6px' }}>回報類別：</label>
+                    <select
+                      value={reportCategory}
+                      onChange={e => setReportCategory(e.target.value)}
+                      style={{ width: '100%', padding: '10px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700 }}
+                    >
+                      <option value="系統錯誤/Bug">系統錯誤 / Bug / 畫面破圖</option>
+                      <option value="需要加上的東西">需要加上的東西 (功能許願)</option>
+                      <option value="帳號與點數問題">帳號與排行榜點數問題</option>
+                      <option value="題庫內容建議">題庫內容相關建議</option>
+                      <option value="其他">其他</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#5b6772', marginBottom: '6px' }}>聯絡方式（Email 或 LINE ID）：</label>
+                    <input
+                      type="text"
+                      required
+                      value={reportContact}
+                      onChange={e => setReportContact(e.target.value)}
+                      placeholder="以便我們聯繫您"
+                      style={{ width: '100%', padding: '10px', background: '#fff', color: '#000', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700 }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#5b6772', marginBottom: '6px' }}>詳細說明：</label>
+                    <textarea
+                      required
+                      value={reportDescription}
+                      onChange={e => setReportDescription(e.target.value)}
+                      rows={4}
+                      placeholder="請詳細描述遇到的問題或您的建議..."
+                      style={{ width: '100%', padding: '10px', background: '#fff', color: '#000', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700, resize: 'vertical' }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={!reportDescription.trim() || !reportContact.trim()}
+                    className="btn btn-primary"
+                    style={{ width: '100%', padding: '12px', marginTop: '10px' }}
+                  >
+                    送出回報
+                  </button>
+                </>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

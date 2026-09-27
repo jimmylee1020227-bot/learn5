@@ -155,14 +155,6 @@ export default function SuperAdminConsole() {
             </p>
           </div>
 
-          <button 
-            onClick={handlePurgeData}
-            className="btn btn-secondary"
-            style={{ borderColor: '#f87171', color: '#f87171', fontSize: '0.85rem' }}
-            title="清空測試紀錄"
-          >
-            <RefreshCw size={15} /> 清除全部測資 (正式上線重設)
-          </button>
         </div>
 
         {/* 次分頁切換 */}

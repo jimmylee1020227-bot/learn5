@@ -872,6 +872,7 @@ export default function UnitNotesView({ onStartQuizForUnit }) {
                     <option value="錯別字或符號錯誤">錯別字或教育部符號錯誤</option>
                     <option value="漏列重要考點">漏列重大考點陷阱</option>
                     <option value="口訣優化建議">口訣或速記法優化建議</option>
+                    <option value="需要加上的東西">需要加上的東西</option>
                     <option value="其他">其他建議</option>
                   </select>
                 </div>
