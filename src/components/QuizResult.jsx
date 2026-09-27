@@ -244,6 +244,26 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
         {/* 快捷行動按鈕列 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '12px', paddingTop: '10px' }}>
           <button 
+            onClick={() => window.open('https://examcommunit-mdqeyikj.manus.space/', '_blank')}
+            className="btn btn-secondary"
+            style={{
+              borderRadius: '14px',
+              padding: '10px 18px',
+              fontSize: '0.86rem',
+              fontWeight: 800,
+              gap: '6px',
+              border: '2px solid #2563eb',
+              background: '#eff6ff',
+              color: '#2563eb',
+              boxShadow: '3px 3px 0px #3b82f6'
+            }}
+            title="紙本考卷列印下載 (直通官方下載中心與 A4 考卷輸出)"
+          >
+            <FileText size={15} color="#2563eb" />
+            <span>紙本考卷列印下載</span>
+          </button>
+
+          <button 
             onClick={onRetry} 
             className="btn btn-secondary"
             style={{ borderRadius: '14px', padding: '10px 18px', fontSize: '0.86rem', fontWeight: 800, gap: '6px' }}
