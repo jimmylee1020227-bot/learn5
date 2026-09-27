@@ -136,9 +136,12 @@ export function checkAndExecuteWeeklyReset() {
           `第 ${i + 1} 名: ${u.displayName} (Email: ${u.email || '未提供'}, 點數: ${u.weeklyPoints}分)`
         ).join('\n');
         
+        const emails = board.slice(0, 3).map(u => u.email).filter(e => e && e.trim() !== '').join(',');
+        const bccHint = emails ? `\n\n📌 快速寄件（點擊即可以密件副本寄出）：\nmailto:?bcc=${emails}\n\n純文字名單供複製：\n${emails}` : '';
+
         sendAdminEmailNotification({
           title: `🏆 ${lastResetWeek} 排行榜結算結果出爐`,
-          message: `本週排行榜已於 00:00 結算！以下是前三名玩家，請注意發放獎勵：\n\n${top3Details}`,
+          message: `本週排行榜已於 00:00 結算！以下是前三名玩家，請注意發放獎勵：\n\n${top3Details}${bccHint}`,
           details: {
             week: lastResetWeek,
             top3: board.slice(0, 3)
