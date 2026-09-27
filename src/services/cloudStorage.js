@@ -1192,15 +1192,29 @@ export function recordQuizPaperSession(paperSession) {
   }
 }
 
-// 異步向 Firebase 雲端主動調閱所有已提交的試卷 (管理員全服試卷調閱核心)
-export async function fetchAllCloudQuizPapers() {
-  const papersMap = new Map();
+let quizPapersMemoryCache = null;
+let lastQuizPapersFetchTime = 0;
+let inFlightQuizPapersPromise = null;
 
-  // 1. 本地快取
-  const localAll = getJson('all_quiz_papers', []);
-  if (Array.isArray(localAll)) {
-    localAll.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
+// 異步向 Firebase 雲端主動調閱所有已提交的試卷 (管理員全服試卷調閱核心，加入節流快取)
+export async function fetchAllCloudQuizPapers(forceRefresh = false) {
+  const now = Date.now();
+  if (!forceRefresh && quizPapersMemoryCache && (now - lastQuizPapersFetchTime < 45000)) {
+    return quizPapersMemoryCache;
   }
+  if (inFlightQuizPapersPromise) {
+    return inFlightQuizPapersPromise;
+  }
+
+  inFlightQuizPapersPromise = (async () => {
+    try {
+      const papersMap = new Map();
+
+      // 1. 本地快取
+      const localAll = getJson('all_quiz_papers', []);
+      if (Array.isArray(localAll)) {
+        localAll.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
+      }
 
   // 2. 向 Firebase 雲端直接讀取 quiz_papers 與 all_quiz_papers 節點 (增加 12 秒寬裕保護與雙節點聯集)
   if (db) {
@@ -1280,11 +1294,22 @@ export async function fetchAllCloudQuizPapers() {
     }
   } catch (err) {}
 
-  const sortedPapers = Array.from(papersMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  if (sortedPapers.length > 0) {
-    safeSetLocalStorage(STORAGE_PREFIX + 'all_quiz_papers', JSON.stringify(sortedPapers));
+    const sortedPapers = Array.from(papersMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    quizPapersMemoryCache = sortedPapers;
+    lastQuizPapersFetchTime = Date.now();
+    if (sortedPapers.length > 0) {
+      safeSetLocalStorage(STORAGE_PREFIX + 'all_quiz_papers', JSON.stringify(sortedPapers));
+    }
+    return sortedPapers;
+  } catch (err) {
+    console.warn('[fetchAllCloudQuizPapers error]', err);
+    return getJson('all_quiz_papers', []);
+  } finally {
+    inFlightQuizPapersPromise = null;
   }
-  return sortedPapers;
+})();
+
+return inFlightQuizPapersPromise;
 }
 
 // 異步向 Firebase 調閱特定學生的歷史試卷（加 2 秒超時保護，移除昂貴的全服遞迴呼叫）
@@ -1529,97 +1554,120 @@ export async function fetchCloudUserAllMistakesAndLogs(userId, userName, userSch
   return Array.from(logMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
 
-// 管理員專用：全服學生做題狀況與錯題狀況完整即時調閱引擎
-export async function fetchAllCloudPracticeLogs() {
+let practiceLogsMemoryCache = null;
+let lastPracticeLogsFetchTime = 0;
+let inFlightPracticeLogsPromise = null;
+
+// 管理員專用：全服學生做題狀況與錯題狀況完整即時調閱引擎（加入快取節流與輕量化聚合，徹底消除卡頓）
+export async function fetchAllCloudPracticeLogs(forceRefresh = false) {
   if (!db) return getUserPracticeHistory();
-  try {
-    const regSnap = await get(ref(db, 'studyhub/user_registry'));
-    const registry = regSnap.val() || {};
-    safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(registry));
-    const userIds = Object.keys(registry);
 
-    const logMap = new Map();
-
-    // 並行向 Firebase 請求所有註冊學生的做題歷程與錯題本（以雲端真實數據為準，徹底杜絕本地殘留幽靈日誌）
-    await Promise.all(userIds.map(async (userId) => {
-      const userInfo = registry[userId] || {};
-      const uName = userInfo.name || '同學';
-      const uSchool = userInfo.school || '會考戰友';
-
-      try {
-        const [histSnap, mistakeSnap] = await Promise.all([
-          get(ref(db, `studyhub/practice_history_${userId}`)),
-          get(ref(db, `studyhub/mistake_notebook_${userId}`))
-        ]);
-
-        const hist = histSnap.val();
-        if (Array.isArray(hist)) {
-          hist.forEach(item => {
-            if (item && item.id) {
-              logMap.set(item.id, hydrateQuestionDetails({
-                ...item,
-                userId: item.userId || userId,
-                userName: item.userName || uName,
-                userSchool: item.userSchool || uSchool
-              }));
-            }
-          });
-        }
-
-        const mistakes = mistakeSnap.val();
-        if (Array.isArray(mistakes)) {
-          mistakes.forEach(m => {
-            if (m && m.questionId) {
-              const syntheticId = `mistake_${userId}_${m.questionId}`;
-              if (!logMap.has(syntheticId)) {
-                logMap.set(syntheticId, hydrateQuestionDetails({
-                  id: syntheticId,
-                  userId: userId,
-                  userName: uName,
-                  userSchool: uSchool,
-                  questionId: m.questionId,
-                  subjectId: m.subjectId,
-                  gradeId: m.gradeId,
-                  unitId: m.unitId,
-                  unitName: m.unitName || '重點單元',
-                  conceptTag: m.conceptTag || '必考觀念',
-                  difficulty: m.difficulty || 'medium',
-                  index: m.index || 1,
-                  isCorrect: false,
-                  userChoice: m.userChoice !== undefined ? m.userChoice : null,
-                  answer: m.answer !== undefined ? m.answer : 0,
-                  wrongCount: m.wrongCount || 1,
-                  status: m.status || 'unresolved',
-                  timeSpentSec: 15,
-                  timestamp: m.lastAttemptAt || m.addedAt || new Date().toISOString()
-                }));
-              }
-            }
-          });
-        }
-      } catch (err) {
-        console.warn(`[Failed to fetch logs for user: ${userId}]`, err);
-      }
-    }));
-
-    // 僅保留未在雲端註冊之訪客學生本地暫存做題紀錄，絕不復活已自雲端清理的註冊學生歷史
-    getUserPracticeHistory().forEach(item => {
-      if (item && item.id && !logMap.has(item.id)) {
-        if (!item.userId || !registry[item.userId]) {
-          logMap.set(item.id, item);
-        }
-      }
-    });
-
-    const aggregated = Array.from(logMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    if (aggregated.length > 0) {
-      safeSetLocalStorage(STORAGE_PREFIX + 'practice_history', JSON.stringify(aggregated));
-    }
-    return aggregated;
-  } catch (e) {
-    console.error('[fetchAllCloudPracticeLogs error]', e);
-    return getUserPracticeHistory();
+  const now = Date.now();
+  if (!forceRefresh && practiceLogsMemoryCache && (now - lastPracticeLogsFetchTime < 60000)) {
+    return practiceLogsMemoryCache;
   }
+
+  if (inFlightPracticeLogsPromise) {
+    return inFlightPracticeLogsPromise;
+  }
+
+  inFlightPracticeLogsPromise = (async () => {
+    try {
+      const regSnap = await get(ref(db, 'studyhub/user_registry'));
+      const registry = regSnap.val() || {};
+      safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(registry));
+      const userIds = Object.keys(registry);
+
+      const logMap = new Map();
+
+      // 並行向 Firebase 請求所有註冊學生的做題歷程與錯題本
+      await Promise.all(userIds.map(async (userId) => {
+        const userInfo = registry[userId] || {};
+        const uName = userInfo.name || '同學';
+        const uSchool = userInfo.school || '會考戰友';
+
+        try {
+          const [histSnap, mistakeSnap] = await Promise.all([
+            get(ref(db, `studyhub/practice_history_${userId}`)),
+            get(ref(db, `studyhub/mistake_notebook_${userId}`))
+          ]);
+
+          const hist = histSnap.val();
+          if (Array.isArray(hist)) {
+            hist.forEach(item => {
+              if (item && item.id) {
+                logMap.set(item.id, {
+                  ...item,
+                  userId: item.userId || userId,
+                  userName: item.userName || uName,
+                  userSchool: item.userSchool || uSchool
+                });
+              }
+            });
+          }
+
+          const mistakes = mistakeSnap.val();
+          if (Array.isArray(mistakes)) {
+            mistakes.forEach(m => {
+              if (m && m.questionId) {
+                const syntheticId = `mistake_${userId}_${m.questionId}`;
+                if (!logMap.has(syntheticId)) {
+                  logMap.set(syntheticId, {
+                    id: syntheticId,
+                    userId: userId,
+                    userName: uName,
+                    userSchool: uSchool,
+                    questionId: m.questionId,
+                    subjectId: m.subjectId,
+                    gradeId: m.gradeId,
+                    unitId: m.unitId,
+                    unitName: m.unitName || '重點單元',
+                    conceptTag: m.conceptTag || '必考觀念',
+                    difficulty: m.difficulty || 'medium',
+                    index: m.index || 1,
+                    isCorrect: false,
+                    userChoice: m.userChoice !== undefined ? m.userChoice : null,
+                    answer: m.answer !== undefined ? m.answer : 0,
+                    wrongCount: m.wrongCount || 1,
+                    status: m.status || 'unresolved',
+                    timeSpentSec: 15,
+                    timestamp: m.lastAttemptAt || m.addedAt || new Date().toISOString()
+                  });
+                }
+              }
+            });
+          }
+        } catch (err) {
+          console.warn(`[Failed to fetch logs for user: ${userId}]`, err);
+        }
+      }));
+
+      // 僅保留未在雲端註冊之訪客學生本地暫存做題紀錄，絕不復活已自雲端清理的註冊學生歷史
+      getUserPracticeHistory().forEach(item => {
+        if (item && item.id && !logMap.has(item.id)) {
+          if (!item.userId || !registry[item.userId]) {
+            logMap.set(item.id, item);
+          }
+        }
+      });
+
+      const aggregated = Array.from(logMap.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      practiceLogsMemoryCache = aggregated;
+      lastPracticeLogsFetchTime = Date.now();
+
+      if (aggregated.length > 0) {
+        safeSetLocalStorage(STORAGE_PREFIX + 'practice_history', JSON.stringify(aggregated));
+      }
+      return aggregated;
+    } catch (e) {
+      console.error('[fetchAllCloudPracticeLogs error]', e);
+      return getUserPracticeHistory();
+    } finally {
+      inFlightPracticeLogsPromise = null;
+    }
+  })();
+
+  return inFlightPracticeLogsPromise;
 }
 
 // 異步向 Firebase 雲端水合個人遊戲狀態 (抽獎券、點數倍率、簽到)

@@ -298,6 +298,15 @@
   ],
   "redemption_codes": [
     {
+      "code": "HAPPY_FESTIVAL2",
+      "createdAt": "2026-09-26T18:02:16.064Z",
+      "createdBy": "小編",
+      "expiresAt": "2026-09-28",
+      "label": "大禮包2",
+      "rewardValue": 2,
+      "type": "points"
+    },
+    {
       "code": "HAPPY_FESTIVAL1",
       "createdAt": "2026-09-26T04:36:20.547Z",
       "createdBy": "總管理員",
@@ -519,6 +528,15 @@
   },
   "admin_notifications": [
     {
+      "id": "notif_1790445736693",
+      "message": "新兌換碼發布：大禮包2，點擊即可一鍵領取！",
+      "relatedCode": "HAPPY_FESTIVAL2",
+      "sender": "小編",
+      "timestamp": "2026-09-26T18:02:16.693Z",
+      "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL2】！",
+      "type": "redemption"
+    },
+    {
       "id": "notif_happy_festival1",
       "message": "新兌換碼發布：中秋快樂 (3張抽獎券)，點擊即可一鍵領取！",
       "relatedCode": "HAPPY_FESTIVAL1",
@@ -535,14 +553,6 @@
       "timestamp": "2026-09-26T04:29:31.516Z",
       "title": "🎁 管理員發放新序號【HAPPY_FESTIVAL】！",
       "type": "redemption"
-    },
-    {
-      "id": "notif_launch",
-      "message": "108 課綱全科複習網正式上線！每週一 00:00 歸零結算榜單，答對一題即得 1 點排行榜積分，祝各位戰友穩穩上岸！",
-      "sender": "總管理員 Jimmy",
-      "timestamp": "2026-09-26T04:00:00.000Z",
-      "title": "🎉 歡迎來到會考讀書網！",
-      "type": "announcement"
     }
   ],
   "admins_list": [
@@ -8883,7 +8893,8 @@
     "117SUNDAY",
     "HAPPY_FESTIVAL",
     "HAPPY_FESTIVAL1",
-    "SYNC_TEST_2026"
+    "SYNC_TEST_2026",
+    "HAPPY_FESTIVAL2"
   ],
   "leaderboard_players": {
     "admin_super_jimmy": {
