@@ -48,6 +48,7 @@ export default function HeroBanner({
   // 系統回報 Modal 狀態
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportCategory, setReportCategory] = useState('系統錯誤/Bug');
+  const [reportUserName, setReportUserName] = useState(currentUser?.displayName || currentUser?.name || (currentUser?.email ? currentUser.email.split('@')[0] : ''));
   const [reportContact, setReportContact] = useState(currentUser?.email || '');
   const [reportDescription, setReportDescription] = useState('');
   const [reportSuccess, setReportSuccess] = useState(false);
@@ -103,12 +104,14 @@ export default function HeroBanner({
     e.preventDefault();
     if (!reportDescription.trim()) return;
 
+    const finalUserName = (reportUserName.trim() || currentUser?.displayName || currentUser?.name || (currentUser?.email ? currentUser.email.split('@')[0] : '') || '同學');
+
     submitSiteReport({
       category: reportCategory,
       contact: reportContact,
       description: reportDescription,
-      userId: currentUser?.id,
-      userName: currentUser?.name
+      userId: currentUser?.id || 'guest',
+      userName: finalUserName
     });
 
     setReportSuccess(true);
@@ -517,6 +520,17 @@ export default function HeroBanner({
                 </div>
               ) : (
                 <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#5b6772', marginBottom: '6px' }}>您的姓名或暱稱：</label>
+                    <input
+                      type="text"
+                      value={reportUserName}
+                      onChange={e => setReportUserName(e.target.value)}
+                      placeholder="請輸入姓名或暱稱（後台顯示與核對用）"
+                      style={{ width: '100%', padding: '10px', background: '#fff', color: '#000', border: '1.5px solid #ded3c5', borderRadius: '12px', fontWeight: 700 }}
+                    />
+                  </div>
+
                   <div>
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#5b6772', marginBottom: '6px' }}>回報類別：</label>
                     <select

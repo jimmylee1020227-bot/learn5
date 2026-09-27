@@ -67,6 +67,8 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState('答案錯誤');
   const [reportComment, setReportComment] = useState('');
+  const [reportReporterName, setReportReporterName] = useState('');
+  const [reportReporterEmail, setReportReporterEmail] = useState('');
   const [reportConsent, setReportConsent] = useState(false);
   const [reportSuccessNotice, setReportSuccessNotice] = useState(false);
 
@@ -293,17 +295,32 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
     onComplete(results, secondsSpent);
   };
 
-  // 疑義回報
+  // 開啟疑義回報
+  const handleOpenReportModal = () => {
+    const defaultName = currentUser?.displayName || currentUser?.name || (currentUser?.email ? currentUser.email.split('@')[0] : '');
+    setReportReporterName(defaultName);
+    setReportReporterEmail(currentUser?.email || '');
+    setReportReason('答案錯誤');
+    setReportComment('');
+    setReportConsent(true);
+    setReportSuccessNotice(false);
+    setIsReportModalOpen(true);
+  };
+
+  // 疑義回報送出
   const handleSubmitReport = () => {
     const qKey = getQKey(currentQ, currentIndex);
+    const finalReporterName = (reportReporterName.trim() || currentUser?.displayName || currentUser?.name || (currentUser?.email ? currentUser.email.split('@')[0] : '') || '同學');
+    const finalReporterEmail = (reportReporterEmail.trim() || currentUser?.email || '無提供');
+
     submitQuestionReport({
       questionId: qKey,
       unitName: currentQ.unitName,
       reason: reportReason,
       comment: reportComment,
       reporterId: currentUser?.id || 'guest_student',
-      reporterName: currentUser?.displayName || '同學',
-      reporterEmail: currentUser?.email || '無提供',
+      reporterName: finalReporterName,
+      reporterEmail: finalReporterEmail,
       questionText: currentQ.question || '(無文字內容)',
       questionAnswer: currentQ.options ? currentQ.options[currentQ.answer] : '(無選項)'
     });
@@ -1169,7 +1186,7 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
             {/* 題目回報 */}
             <button
               type="button"
-              onClick={() => setIsReportModalOpen(true)}
+              onClick={handleOpenReportModal}
               style={{ background: 'none', border: 'none', color: '#78818a', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               <AlertTriangle size={14} color="var(--theme-accent, var(--theme-accent, #ef8354))" />
@@ -1441,6 +1458,28 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
                 </div>
               ) : (
                 <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#5b6772', marginBottom: '6px' }}>回報人姓名 / 暱稱：</label>
+                    <input
+                      type="text"
+                      value={reportReporterName}
+                      onChange={e => setReportReporterName(e.target.value)}
+                      placeholder="請輸入您的真實姓名或暱稱（後台管理員核對用）"
+                      style={{ width: '100%', padding: '10px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#5b6772', marginBottom: '6px' }}>聯絡方式（Email 或 LINE ID，選填）：</label>
+                    <input
+                      type="text"
+                      value={reportReporterEmail}
+                      onChange={e => setReportReporterEmail(e.target.value)}
+                      placeholder="方便管理員回覆修正進度"
+                      style={{ width: '100%', padding: '10px', background: 'var(--theme-bg, var(--theme-bg, #f8f3eb))', color: 'var(--theme-border, var(--theme-border, #17324d))', border: '1.5px solid #ded3c5', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 700 }}
+                    />
+                  </div>
+
                   <div>
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, color: '#5b6772', marginBottom: '6px' }}>疑義類型：</label>
                     <select

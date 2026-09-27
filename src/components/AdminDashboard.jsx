@@ -1336,23 +1336,38 @@ function AdminDashboard() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {reports.map(rep => (
-                <div key={rep.id} className="glass-panel" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: rep.status === 'pending' ? '4px solid #f87171' : '4px solid #10b981' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                <div key={rep.id} className="glass-panel" style={{ padding: '18px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', borderLeft: rep.status === 'pending' ? '4px solid #f87171' : '4px solid #10b981' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
                       <span className="badge badge-fire">{rep.reason}</span>
-                      <strong style={{ color: 'var(--theme-border, var(--theme-border, #17324d))', fontSize: '0.95rem' }}>題號: {rep.questionId}</strong>
-                      <span style={{ fontSize: '0.8rem', color: '#5b6772' }}>{rep.unitName}</span>
+                      <strong style={{ color: 'var(--theme-border, #17324d)', fontSize: '0.95rem' }}>題號: {rep.questionId}</strong>
+                      <span style={{ fontSize: '0.82rem', color: '#5b6772' }}>單元：{rep.unitName}</span>
                     </div>
-                    <div style={{ fontSize: '0.88rem', color: '#5b6772', marginTop: '4px', display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
-                      <span style={{ whiteSpace: 'nowrap' }}>同學說明：</span>
-                      <MathText text={rep.comment || '（無補充備註）'} />
+
+                    <div style={{ fontSize: '0.84rem', color: '#334155', background: '#f8fafc', padding: '10px 14px', borderRadius: '12px', border: '1.5px solid #e2e8f0', marginBottom: '8px', display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
+                      <span>👤 <strong>回報同學：</strong><span style={{ color: '#0369a1', fontWeight: 800 }}>{rep.reporterName || '同學'}</span></span>
+                      <span>📧 <strong>聯絡資訊：</strong><span style={{ color: '#0f766e', fontWeight: 700 }}>{rep.reporterEmail || '無提供'}</span></span>
+                      {rep.reporterId && rep.reporterId !== 'guest' && <span>🆔 <strong>帳號ID：</strong><code style={{ fontSize: '0.78rem', background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px' }}>{rep.reporterId}</code></span>}
+                      <span style={{ color: '#64748b' }}>🕒 {new Date(rep.timestamp).toLocaleString()}</span>
                     </div>
-                    <div style={{ fontSize: '0.72rem', color: '#78818a', marginTop: '4px' }}>
-                      回報者：{rep.reporterName} ・ 時間：{new Date(rep.timestamp).toLocaleString()}
+
+                    <div style={{ fontSize: '0.9rem', color: '#1e293b', marginTop: '6px', display: 'flex', gap: '6px', alignItems: 'flex-start', background: '#fff', padding: '10px 12px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <strong style={{ whiteSpace: 'nowrap', color: '#d97706' }}>💬 同學說明：</strong>
+                      <div style={{ wordBreak: 'break-word', flex: 1 }}>
+                        <MathText text={rep.comment || '（無補充備註）'} />
+                      </div>
                     </div>
+
+                    {rep.questionText && (
+                      <div style={{ marginTop: '8px', padding: '10px 14px', background: '#fffbeb', borderRadius: '12px', border: '1.5px solid #fef3c7', fontSize: '0.84rem' }}>
+                        <div style={{ fontWeight: 800, color: '#92400e', marginBottom: '4px' }}>📝 原題題幹內容：</div>
+                        <div style={{ color: '#78350f', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{rep.questionText}</div>
+                        {rep.questionAnswer && <div style={{ color: '#047857', fontWeight: 800, marginTop: '6px' }}>標準正解選項：{rep.questionAnswer}</div>}
+                      </div>
+                    )}
                   </div>
 
-                  <div>
+                  <div style={{ flexShrink: 0, marginTop: '4px' }}>
                     {rep.status === 'pending' ? (
                       <button
                         onClick={() => handleResolveReport(rep.id)}
@@ -1387,22 +1402,32 @@ function AdminDashboard() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {siteReports.map(rep => (
-                <div key={rep.id} className="glass-panel" style={{ padding: '16px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', borderLeft: rep.status === 'pending' ? '4px solid #a78bfa' : '4px solid #10b981' }}>
+                <div key={rep.id} className="glass-panel" style={{ padding: '18px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', borderLeft: rep.status === 'pending' ? '4px solid #a78bfa' : '4px solid #10b981' }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
                       <span className="badge badge-fire" style={{ background: '#7c3aed' }}>{rep.category}</span>
-                      <span style={{ fontSize: '0.8rem', color: '#5b6772' }}>{rep.userName}</span>
-                      {rep.contact && <span style={{ fontSize: '0.78rem', color: '#78818a' }}>聯絡：{rep.contact}</span>}
+                      <span style={{ fontSize: '0.82rem', color: '#64748b' }}>回報單號：<code>{rep.id}</code></span>
                     </div>
-                    <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '4px' }}>
+
+                    <div style={{ fontSize: '0.84rem', color: '#334155', background: '#f8fafc', padding: '10px 14px', borderRadius: '12px', border: '1.5px solid #e2e8f0', marginBottom: '8px', display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
+                      <span>👤 <strong>回報人：</strong><span style={{ color: '#7c3aed', fontWeight: 800 }}>{rep.userName || '同學'}</span></span>
+                      <span>📞 <strong>聯絡方式：</strong><span style={{ color: '#0f766e', fontWeight: 700 }}>{rep.contact || '無提供'}</span></span>
+                      {rep.userId && rep.userId !== 'guest' && <span>🆔 <strong>帳號ID：</strong><code style={{ fontSize: '0.78rem', background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px' }}>{rep.userId}</code></span>}
+                      <span style={{ color: '#64748b' }}>🕒 {new Date(rep.timestamp).toLocaleString()}</span>
+                    </div>
+
+                    <div style={{ fontSize: '0.9rem', color: '#1e293b', background: '#fff', padding: '10px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
                       {rep.description}
                     </div>
-                    <div style={{ fontSize: '0.72rem', color: '#78818a', marginTop: '4px' }}>
-                      時間：{new Date(rep.timestamp).toLocaleString()}
-                      {rep.status === 'resolved' && rep.resolvedBy && ` ・ 已由「${rep.resolvedBy}」處理`}
-                    </div>
+
+                    {rep.status === 'resolved' && rep.resolvedBy && (
+                      <div style={{ fontSize: '0.76rem', color: '#059669', marginTop: '6px', fontWeight: 700 }}>
+                        ✅ 已由「{rep.resolvedBy}」處理完成（時間：{new Date(rep.resolvedAt || rep.timestamp).toLocaleString()}）
+                        {rep.resolutionNote && ` ・ 備註：${rep.resolutionNote}`}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ flexShrink: 0 }}>
+                  <div style={{ flexShrink: 0, marginTop: '4px' }}>
                     {rep.status === 'pending' ? (
                       <button
                         onClick={() => handleResolveSiteReport(rep.id)}
