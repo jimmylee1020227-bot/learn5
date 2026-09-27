@@ -2,9 +2,13 @@ import { db } from '../src/services/firebase.js';
 import { ref, get, remove, set } from 'firebase/database';
 
 async function cleanupOrphans() {
-  console.log('開始清理雲端孤兒試卷...');
   const registrySnap = await get(ref(db, 'studyhub/user_registry'));
-  const validUids = new Set(Object.keys(registrySnap.val() || {}));
+  const cloudReg = registrySnap.val() || {};
+  const validUids = new Set(
+    Object.entries(cloudReg)
+      .filter(([, u]) => u && u.id && u.email && u.email.trim() !== '')
+      .map(([k]) => k)
+  );
   
   const papersSnap = await get(ref(db, 'studyhub/quiz_papers'));
   const allPapersSnap = await get(ref(db, 'studyhub/all_quiz_papers'));

@@ -3509,20 +3509,35 @@ export async function deleteStudentAccount(targetUserId, operatorUser) {
               deletePromises.push(set(ref(db, `studyhub/${key}`), null));
             }
           });
-          // 深度清查全域 all_quiz_papers 節點
-          if (rootData.all_quiz_papers && typeof rootData.all_quiz_papers === 'object') {
-            const cleanedPapers = {};
-            let hasPaperChanged = false;
-            Object.entries(rootData.all_quiz_papers).forEach(([pid, p]) => {
+          // 深度清查全域 all_quiz_papers 節點 (相容陣列與物件結構)
+          if (rootData.all_quiz_papers) {
+            if (Array.isArray(rootData.all_quiz_papers)) {
+              const cleanedPapers = rootData.all_quiz_papers.filter(p => p && p.userId !== targetUserId && p.ownerId !== targetUserId);
+              if (cleanedPapers.length !== rootData.all_quiz_papers.length) {
+                deletePromises.push(set(ref(db, 'studyhub/all_quiz_papers'), cleanedPapers));
+              }
+            } else if (typeof rootData.all_quiz_papers === 'object') {
+              const cleanedPapers = {};
+              let hasPaperChanged = false;
+              Object.entries(rootData.all_quiz_papers).forEach(([pid, p]) => {
+                if (p && (p.userId === targetUserId || p.ownerId === targetUserId)) {
+                  hasPaperChanged = true;
+                } else {
+                  cleanedPapers[pid] = p;
+                }
+              });
+              if (hasPaperChanged) {
+                deletePromises.push(set(ref(db, 'studyhub/all_quiz_papers'), cleanedPapers));
+              }
+            }
+          }
+          // 深度清查 studyhub/quiz_papers 節點 (徹底防範孤兒試卷殘留)
+          if (rootData.quiz_papers && typeof rootData.quiz_papers === 'object') {
+            Object.entries(rootData.quiz_papers).forEach(([pid, p]) => {
               if (p && (p.userId === targetUserId || p.ownerId === targetUserId)) {
-                hasPaperChanged = true;
-              } else {
-                cleanedPapers[pid] = p;
+                deletePromises.push(set(ref(db, `studyhub/quiz_papers/${pid}`), null));
               }
             });
-            if (hasPaperChanged) {
-              deletePromises.push(set(ref(db, 'studyhub/all_quiz_papers'), cleanedPapers));
-            }
           }
         }
       } catch (scanErr) {
@@ -3616,8 +3631,26 @@ export async function purgeAllTestData(operatorUser) {
   setJson('all_quiz_papers', cleanPapers);
   updateServerSync('all_quiz_papers', cleanPapers);
 
-  // 5. Firebase 節點抹除
+  // 5. Firebase 節點抹除與 quiz_papers 測資清理
   if (db) {
+    try {
+      const qpSnap = await get(ref(db, 'studyhub/quiz_papers'));
+      if (qpSnap.exists()) {
+        const qpData = qpSnap.val() || {};
+        for (const [pid, p] of Object.entries(qpData)) {
+          if (!p) continue;
+          const uid = p.userId || p.ownerId;
+          const isTest = !pid || (uid && (uid.includes('test') || testUids.includes(uid))) ||
+                         (p.userName && (p.userName.includes('測試') || p.userName.includes('小明'))) ||
+                         (p.userEmail && p.userEmail.includes('test.com'));
+          if (isTest) {
+            purgedCount++;
+            await set(ref(db, `studyhub/quiz_papers/${pid}`), null);
+          }
+        }
+      }
+    } catch (e) {}
+
     for (const uid of testUids) {
       try {
         await Promise.allSettled([
@@ -3642,6 +3675,135 @@ export async function purgeAllTestData(operatorUser) {
   });
 
   return { success: true, testUids, purgedCount };
+}
+
+// --- 16.5 一鍵瘦身清理孤兒試卷 (Purge Orphaned Quiz Papers) ---
+export async function purgeOrphanedQuizPapers(operatorUser = null) {
+  if (operatorUser) {
+    assertAdminPermission(operatorUser, '清理孤兒試卷');
+  }
+  let removedCount = 0;
+  let remainingCount = 0;
+
+  // 1. 取得全服有效註冊學生 UIDs
+  let validUids = new Set();
+  if (db) {
+    try {
+      const regSnap = await get(ref(db, 'studyhub/user_registry'));
+      const cloudReg = regSnap.val() || {};
+      validUids = new Set(
+        Object.entries(cloudReg)
+          .filter(([, u]) => u && u.id && u.email && u.email.trim() !== '')
+          .map(([k]) => k)
+      );
+    } catch (e) {
+      console.warn('[purgeOrphanedQuizPapers] 取得雲端名冊失敗，回退至本地名冊', e);
+    }
+  }
+  if (validUids.size === 0) {
+    const localReg = getJson('user_registry', {});
+    validUids = new Set(Object.keys(localReg || {}));
+  }
+
+  // 2. 清理 Firebase 中的 studyhub/quiz_papers
+  if (db) {
+    try {
+      const papersSnap = await get(ref(db, 'studyhub/quiz_papers'));
+      if (papersSnap.exists()) {
+        const papersObj = papersSnap.val() || {};
+        for (const [key, p] of Object.entries(papersObj)) {
+          if (!p) continue;
+          const ownerId = p.userId || p.ownerId;
+          if (ownerId && !validUids.has(ownerId)) {
+            await set(ref(db, `studyhub/quiz_papers/${key}`), null);
+            removedCount++;
+          } else {
+            remainingCount++;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[purgeOrphanedQuizPapers] 清理 studyhub/quiz_papers 異常', err);
+    }
+
+    // 3. 清理 Firebase 中的 studyhub/all_quiz_papers
+    try {
+      const allPapersSnap = await get(ref(db, 'studyhub/all_quiz_papers'));
+      if (allPapersSnap.exists()) {
+        const allPapersObj = allPapersSnap.val() || {};
+        if (Array.isArray(allPapersObj)) {
+          const newList = [];
+          for (const p of allPapersObj) {
+            if (!p) continue;
+            const ownerId = p.userId || p.ownerId;
+            if (ownerId && !validUids.has(ownerId)) {
+              removedCount++;
+            } else {
+              newList.push(p);
+            }
+          }
+          await set(ref(db, 'studyhub/all_quiz_papers'), newList);
+        } else {
+          for (const [key, p] of Object.entries(allPapersObj)) {
+            if (!p) continue;
+            const ownerId = p.userId || p.ownerId;
+            if (ownerId && !validUids.has(ownerId)) {
+              await set(ref(db, `studyhub/all_quiz_papers/${key}`), null);
+              removedCount++;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[purgeOrphanedQuizPapers] 清理 studyhub/all_quiz_papers 異常', err);
+    }
+  }
+
+  // 4. 清理本地快取 (all_quiz_papers, quiz_papers)
+  const localPapers = getJson('all_quiz_papers', []);
+  if (Array.isArray(localPapers)) {
+    const cleanLocalPapers = localPapers.filter(p => {
+      if (!p) return false;
+      const ownerId = p.userId || p.ownerId;
+      return !ownerId || validUids.has(ownerId);
+    });
+    setJson('all_quiz_papers', cleanLocalPapers);
+  } else if (typeof localPapers === 'object') {
+    const cleanLocalPapers = {};
+    Object.entries(localPapers).forEach(([k, p]) => {
+      if (!p) return;
+      const ownerId = p.userId || p.ownerId;
+      if (!ownerId || validUids.has(ownerId)) {
+        cleanLocalPapers[k] = p;
+      }
+    });
+    setJson('all_quiz_papers', cleanLocalPapers);
+  }
+
+  const localQuizPapers = getJson('quiz_papers', {});
+  if (typeof localQuizPapers === 'object' && localQuizPapers !== null) {
+    const cleanQp = {};
+    Object.entries(localQuizPapers).forEach(([k, p]) => {
+      if (!p) return;
+      const ownerId = p.userId || p.ownerId;
+      if (!ownerId || validUids.has(ownerId)) {
+        cleanQp[k] = p;
+      }
+    });
+    setJson('quiz_papers', cleanQp);
+  }
+
+  // 5. 寫入審計日誌
+  logAuditEvent({
+    operatorId: operatorUser?.id || 'admin',
+    operatorName: operatorUser?.displayName || operatorUser?.name || '管理員',
+    operatorRole: operatorUser?.role || 'admin',
+    actionType: 'PURGE_ORPHANED_PAPERS',
+    details: `管理員執行孤兒試卷瘦身清理，成功移除 ${removedCount} 份無主孤兒試卷，試卷庫維持健康。`,
+    targetId: 'ORPHANED_PAPERS'
+  });
+
+  return { success: true, removedCount, remainingCount };
 }
 
 // --- 17. 全功能智能深度健康自檢引擎 (System Smart Health Diagnostic Engine - 20 大維度全覆蓋) ---
@@ -4012,6 +4174,8 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
       id: 'orphaned_papers',
       title: '孤兒試卷與無效從屬關聯檢測 (Orphaned Papers Check)',
       status: orphanedPapers > 0 ? 'WARNING' : 'PASS',
+      orphanedCount: orphanedPapers,
+      totalPapers: totalPapers,
       details: orphanedPapers > 0
         ? `⚠️ 偵測到 ${orphanedPapers} 份孤兒試卷 (對應使用者已不存在)，建議進行試卷庫瘦身清理。`
         : `全站試卷從屬關聯完好，無任何孤兒試卷（共 ${totalPapers} 份），關聯資料庫參照完整！（已從雲端即時驗證）`

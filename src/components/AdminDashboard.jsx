@@ -33,6 +33,7 @@ import {
   getJson,
   setJson,
   deleteStudentAccount,
+  purgeOrphanedQuizPapers,
   runSystemHealthCheck,
   getHealthCheckReports,
   measureCloudPing,
@@ -197,6 +198,7 @@ function AdminDashboard() {
   const [editAnsIdx, setEditAnsIdx] = useState(0);
   const [editExpText, setEditExpText] = useState('');
   const [qActionMsg, setQActionMsg] = useState('');
+  const [isPurgingOrphans, setIsPurgingOrphans] = useState(false);
 
   const refreshAll = () => {
     setReports(getQuestionReports());
@@ -955,6 +957,26 @@ function AdminDashboard() {
     } finally {
       setIsHealthChecking(false);
       setTimeout(() => setHealthCheckMsg(''), 4500);
+    }
+  };
+
+  // 7.5 一鍵瘦身清理孤兒試卷 (Purge Orphaned Papers)
+  const handlePurgeOrphanedPapers = async () => {
+    setIsPurgingOrphans(true);
+    setHealthCheckMsg('正在執行試卷庫瘦身清理，比對雲端名冊與孤兒試卷...');
+    try {
+      const res = await purgeOrphanedQuizPapers(currentUser);
+      // 重新執行全系統健康自檢，即時更新報告
+      const rep = await runSystemHealthCheck(currentUser, false);
+      setLatestHealthReport(rep);
+      setHealthReports(getHealthCheckReports());
+      setAuditLogs(getAuditLogs(currentUser));
+      setHealthCheckMsg(`✅ 試卷庫瘦身清理完成！共移除 ${res.removedCount} 份孤兒試卷，目前在冊健全試卷共 ${res.remainingCount} 份。`);
+    } catch (err) {
+      setHealthCheckMsg(`❌ 試卷清理失敗：${err.message}`);
+    } finally {
+      setIsPurgingOrphans(false);
+      setTimeout(() => setHealthCheckMsg(''), 5000);
     }
   };
 
@@ -3134,6 +3156,32 @@ function AdminDashboard() {
                     <p style={{ margin: 0, fontSize: '0.84rem', color: '#4b5563', lineHeight: 1.6 }}>
                       {chk.details}
                     </p>
+                    {chk.id === 'orphaned_papers' && (
+                      <div style={{ marginTop: '6px' }}>
+                        <button
+                          onClick={handlePurgeOrphanedPapers}
+                          disabled={isPurgingOrphans}
+                          style={{
+                            padding: '6px 14px',
+                            fontSize: '0.78rem',
+                            fontWeight: 800,
+                            borderRadius: '8px',
+                            border: '1.5px solid var(--theme-border, #17324d)',
+                            background: isWarn ? '#ef4444' : '#0284c7',
+                            color: '#fff',
+                            cursor: isPurgingOrphans ? 'not-allowed' : 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: '2px 2px 0 var(--theme-border, #17324d)',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <Trash2 size={13} className={isPurgingOrphans ? 'animate-spin' : ''} />
+                          {isPurgingOrphans ? '正在清理中...' : (isWarn ? '🧹 一鍵瘦身清理孤兒試卷' : '🧹 試卷庫深度檢測與瘦身')}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -3371,6 +3419,26 @@ function AdminDashboard() {
               >
                 <RefreshCw size={16} className={isRecalibrating ? 'animate-spin' : ''} />
                 {isRecalibrating ? '正在比對校準全服數據...' : '⚖️ 一鍵校準全服學生點數與進度'}
+              </button>
+            </div>
+
+            {/* 工具：孤兒試卷瘦身與庫存清理器 */}
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <Trash2 size={22} color="#f97316" />
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900 }}>孤兒試卷瘦身與庫存清理器</h3>
+              </div>
+              <p style={{ color: '#5b6772', fontSize: '0.86rem', lineHeight: 1.6, marginBottom: '16px' }}>
+                自動比對全服學生名冊，安全剔除已被註銷學生殘留之歷史試卷與無效從屬考卷，釋放雲端存儲容量並確保參照健全。
+              </p>
+              <button
+                onClick={handlePurgeOrphanedPapers}
+                disabled={isPurgingOrphans}
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '12px', fontWeight: 900, background: '#f97316', borderColor: '#ea580c', color: '#fff' }}
+              >
+                <Trash2 size={16} className={isPurgingOrphans ? 'animate-spin' : ''} />
+                {isPurgingOrphans ? '正在進行試卷庫瘦身清理...' : '🧹 一鍵瘦身清理孤兒試卷'}
               </button>
             </div>
 

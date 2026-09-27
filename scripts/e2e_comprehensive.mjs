@@ -65,11 +65,11 @@ async function runE2E() {
     console.log(`✅ 頁面標題: ${title}`);
 
     // 若出現隱私權政策同意視窗，先勾選 checkbox 再點擊同意按鈕
-    const consentCheckbox = page.locator('input[type="checkbox"]').first();
+    const consentLabel = page.locator('label:has-text("我已詳細閱讀")').first();
     const consentBtn = page.locator('button:has-text("同意條款")').first();
-    if (await consentCheckbox.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await consentLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
       console.log('檢測到隱私條款彈窗，進行勾選與同意...');
-      await consentCheckbox.check();
+      await consentLabel.click();
       await page.waitForTimeout(300);
       await consentBtn.click();
       await page.waitForTimeout(1000);
