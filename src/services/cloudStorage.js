@@ -275,6 +275,8 @@ export function initFirebaseRealtimeSync() {
               }
             });
           }
+          // 🛡️ 強制轉型：若此 key 應為陣列（但 Firebase 傳來物件），自動轉回陣列
+          cleanVal = coerceToExpectedType(key, cleanVal);
           const remoteValStr = JSON.stringify(cleanVal);
           const localValStr = localStorage.getItem(STORAGE_PREFIX + key);
           if (remoteValStr !== localValStr) {
@@ -643,7 +645,7 @@ const ARRAY_KEYS = new Set([
   'recent_practice_stream',
   'all_quiz_papers',
   'quiz_papers',
-  'note_reports',
+  'notes_reports',
   'admin_notifications',
   'redemption_codes',
 ]);

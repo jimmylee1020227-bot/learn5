@@ -98,7 +98,18 @@ function MainAppContent() {
   // 啟動自選題庫測驗
   const handleStartQuiz = (config) => {
     setLastQuizConfig(config);
-    const generated = generateQuizSet(config);
+    let generated = generateQuizSet(config);
+    // 防呆：若題目生成失敗或回傳空陣列，用預設組合 fallback
+    if (!generated || generated.length === 0) {
+      generated = generateQuizSet({
+        subjectId: config.subjectId || 'math',
+        gradeId: config.gradeId || 'g8',
+        unitId: null,
+        count: config.count || 10,
+        difficulty: config.difficulty || 'medium'
+      });
+    }
+    if (!generated || generated.length === 0) return; // 真的生不出來就不進入
     setCurrentQuestions(generated);
     setQuizState('in_quiz');
     window.scrollTo({ top: 0, behavior: 'smooth' });

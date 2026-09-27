@@ -492,7 +492,17 @@ export default function QuizPlayer({ questions, onComplete, onExit }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
             <span className="badge badge-coral" style={{ fontSize: '0.74rem' }}>
-              {currentQ.gradeId === 'g7' ? '國一' : currentQ.gradeId === 'g8' ? '國二' : '國三'} 108 課綱
+              {(() => {
+                const g = currentQ.gradeId;
+                const GRADE_MAP = {
+                  'g7': '國一', 'g8': '國二', 'g9': '國三',
+                  'junior-all': '國中全年段',
+                  'h1': '高一', 'h2': '高二', 'h3': '高三',
+                  'gsat': '學測', 'mock-exam': '模擬考', 'olympiad': '競賽',
+                  'senior-all': '高中全年段',
+                };
+                return (GRADE_MAP[g] || g || '未知年級') + ' 108課綱';
+              })()}
             </span>
             <span className="badge badge-indigo" style={{ fontSize: '0.74rem' }}>
               {currentQ.unitName}
