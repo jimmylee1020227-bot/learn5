@@ -74,6 +74,17 @@
 </head>
 
 <body>
+  <script>
+    // 智慧化路由：如果是在 GitHub Pages 上，且網址未包含 /docs/，自動跳轉至正確的打包版路徑
+    if (
+      window.location.hostname !== 'localhost' && 
+      window.location.hostname !== '127.0.0.1' && 
+      !window.location.hostname.startsWith('192.168.') &&
+      !window.location.pathname.includes('/docs')
+    ) {
+      window.location.replace('./docs/index.html' + window.location.search + window.location.hash);
+    }
+  </script>
   <div id="root"></div>
 </body>
 
