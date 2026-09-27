@@ -34,6 +34,25 @@ function shuffleWithRand(array, rand) {
   return arr;
 }
 
+// 建立全局課綱單元快速反查表，保證 100% 精準年級與科目對齊
+const UNIT_LOOKUP = new Map();
+for (const [sId, grades] of Object.entries(CURRICULUM_UNITS)) {
+  for (const [gId, units] of Object.entries(grades)) {
+    if (Array.isArray(units)) {
+      for (const u of units) {
+        if (u && u.id) {
+          UNIT_LOOKUP.set(u.id, { subjectId: sId, gradeId: gId, unit: u });
+        }
+      }
+    }
+  }
+}
+
+export function findUnitMeta(unitId) {
+  if (!unitId) return null;
+  return UNIT_LOOKUP.get(unitId) || null;
+}
+
 export function generateQuestion(subjectId, gradeId, unitId, index, difficulty = 'medium') {
   const seedKey = `${subjectId}-${gradeId}-${unitId}-idx${index}`;
   const seed = hashStringToSeed(seedKey);
@@ -41,18 +60,36 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
 
   let effectiveGradeId = gradeId;
   let effectiveUnitId = unitId;
-  
-  if (gradeId === 'junior-all') {
-    const juniorGrades = ['g7', 'g8', 'g9'];
-    effectiveGradeId = juniorGrades[Math.floor(rand() * juniorGrades.length)];
-    const possibleUnits = CURRICULUM_UNITS[subjectId]?.[effectiveGradeId] || [];
-    if (possibleUnits.length > 0) {
-      effectiveUnitId = possibleUnits[Math.floor(rand() * possibleUnits.length)].id;
+  let effectiveSubjectId = subjectId;
+
+  // 1. 如果傳入的 unitId 在課綱中有明確歸屬，優先尊重該單元的實際年級與科目
+  const unitMeta = findUnitMeta(effectiveUnitId);
+  if (unitMeta) {
+    effectiveGradeId = unitMeta.gradeId;
+    if (!effectiveSubjectId || effectiveSubjectId === 'all' || effectiveSubjectId === 'all-subjects') {
+      effectiveSubjectId = unitMeta.subjectId;
+    }
+  } else if (!effectiveUnitId) {
+    // 2. 只有在「完全未指定單元」時，總複習年級才隨機挑選單元
+    if (gradeId === 'junior-all') {
+      const juniorGrades = ['g7', 'g8', 'g9'];
+      effectiveGradeId = juniorGrades[Math.floor(rand() * juniorGrades.length)];
+      const possibleUnits = CURRICULUM_UNITS[effectiveSubjectId]?.[effectiveGradeId] || [];
+      if (possibleUnits.length > 0) {
+        effectiveUnitId = possibleUnits[Math.floor(rand() * possibleUnits.length)].id;
+      }
+    } else if (gradeId === 'senior-all') {
+      const seniorGrades = ['h1', 'h2', 'h3'];
+      effectiveGradeId = seniorGrades[Math.floor(rand() * seniorGrades.length)];
+      const possibleUnits = CURRICULUM_UNITS[effectiveSubjectId]?.[effectiveGradeId] || [];
+      if (possibleUnits.length > 0) {
+        effectiveUnitId = possibleUnits[Math.floor(rand() * possibleUnits.length)].id;
+      }
     }
   }
 
-  const unitList = CURRICULUM_UNITS[subjectId]?.[effectiveGradeId] || [];
-  const currentUnit = unitList.find(u => u.id === effectiveUnitId) || unitList[0] || { id: effectiveUnitId || 'u1', name: '綜合複習單元', tags: ['核心觀念素養'] };
+  const unitList = CURRICULUM_UNITS[effectiveSubjectId]?.[effectiveGradeId] || [];
+  const currentUnit = unitList.find(u => u.id === effectiveUnitId) || unitMeta?.unit || unitList[0] || { id: effectiveUnitId || 'u1', name: '綜合複習單元', tags: ['核心觀念素養'] };
   const finalUnitId = currentUnit.id || (effectiveUnitId ? String(effectiveUnitId) : 'u1');
   const conceptTags = currentUnit.tags || ['108課綱核心素養'];
   const tagIdx = Math.floor(rand() * conceptTags.length);
@@ -62,9 +99,9 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
   try {
     const isSeniorHigh = ['h1', 'h2', 'h3', 'gsat', 'mock-exam', 'olympiad', 'senior-all'].includes(effectiveGradeId) || ['h1', 'h2', 'h3', 'gsat', 'mock-exam', 'olympiad', 'senior-all'].includes(gradeId);
     if (isSeniorHigh) {
-      qData = generateHighSchoolQuestion(subjectId, gradeId, finalUnitId, index, difficulty, rand, conceptTag);
+      qData = generateHighSchoolQuestion(effectiveSubjectId, effectiveGradeId, finalUnitId, index, difficulty, rand, conceptTag);
     } else {
-      switch (subjectId) {
+      switch (effectiveSubjectId) {
         case 'math':
           qData = generateMathQuestion(effectiveGradeId, finalUnitId, index, difficulty, rand, conceptTag);
           break;
@@ -132,13 +169,13 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
 
   const formattedIndex = String(index).padStart(4, '0');
   const unitSuffix = (finalUnitId.split('-').pop() || 'U1').toUpperCase();
-  const questionId = `Q-${(gradeId || 'G7').toUpperCase()}-${(subjectId ? subjectId.substring(0, 2) : 'MA').toUpperCase()}-${unitSuffix}-${formattedIndex}`;
+  const questionId = `Q-${(effectiveGradeId || gradeId || 'G7').toUpperCase()}-${(effectiveSubjectId ? effectiveSubjectId.substring(0, 2) : 'MA').toUpperCase()}-${unitSuffix}-${formattedIndex}`;
 
   return {
     id: questionId,
     index,
-    subjectId,
-    gradeId,
+    subjectId: effectiveSubjectId,
+    gradeId: effectiveGradeId || gradeId,
     unitId: finalUnitId,
     unitName: currentUnit.name,
     conceptTag,
@@ -454,10 +491,23 @@ export function generateQuizSet({ subjectId, gradeId, unitIds, unitId, difficult
     }
   }
 
-  // 整理抽題單位陣列
+  // 整理抽題單位陣列（透過反查表確保年級與單元 100% 精準匹配）
   const unitItems = normalizedUnits.map(item => {
     if (typeof item === 'string') {
-      return { unitId: item, subjectId: subjectId, gradeId: targetGrades[Math.floor(Math.random() * targetGrades.length)] };
+      const meta = findUnitMeta(item);
+      return { 
+        unitId: item, 
+        subjectId: meta?.subjectId || subjectId, 
+        gradeId: meta?.gradeId || (targetGrades[Math.floor(Math.random() * targetGrades.length)]) 
+      };
+    }
+    if (item && item.unitId) {
+      const meta = findUnitMeta(item.unitId);
+      return {
+        unitId: item.unitId,
+        subjectId: item.subjectId || meta?.subjectId || subjectId,
+        gradeId: meta?.gradeId || item.gradeId || gradeId
+      };
     }
     return item;
   }).filter(Boolean);

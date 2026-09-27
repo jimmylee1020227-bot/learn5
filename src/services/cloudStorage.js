@@ -650,9 +650,17 @@ const ARRAY_KEYS = new Set([
   'redemption_codes',
 ]);
 
+// 動態 key 前綴：凡是以這些字串開頭的 key，值都應強制為陣列
+const ARRAY_KEY_PREFIXES = [
+  'practice_history_',
+  'mistake_notebook_',
+  'user_history_',
+];
+
 function coerceToExpectedType(key, value) {
   if (value === null || value === undefined) return value;
-  if (ARRAY_KEYS.has(key)) {
+  const shouldBeArray = ARRAY_KEYS.has(key) || ARRAY_KEY_PREFIXES.some(p => key.startsWith(p));
+  if (shouldBeArray) {
     if (Array.isArray(value)) return value;
     if (typeof value === 'object') return Object.values(value).filter(Boolean);
   }
@@ -2155,10 +2163,17 @@ export async function checkNicknameAvailable(nickname, currentUserId = '') {
 // --- 4. 錯題本與「錯題加強模式」掌握狀態 ---
 export function getMistakeNotebook(userId) {
   const mistakeKey = userId ? `mistake_notebook_${userId}` : null;
-  const userList = (mistakeKey ? getJson(mistakeKey, null) : null) || getJson('mistake_notebook', {})[userId] || [];
+  let rawList = (mistakeKey ? getJson(mistakeKey, null) : null);
+  if (!rawList) {
+    const all = getJson('mistake_notebook', {});
+    rawList = all[userId];
+  }
+  // 防呆：Firebase 可能把陣列存成物件
+  if (!rawList) rawList = [];
+  else if (!Array.isArray(rawList)) rawList = Object.values(rawList).filter(Boolean);
   const overrides = getJson('question_overrides', {});
-  return userList
-    .filter(m => !overrides[m.questionId]?.isDeleted)
+  return rawList
+    .filter(m => m && !overrides[m.questionId]?.isDeleted)
     .map(hydrateQuestionDetails);
 }
 
