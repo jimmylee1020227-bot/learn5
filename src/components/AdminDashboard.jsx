@@ -5,7 +5,10 @@ import { useGame } from '../context/GameContext';
 import { 
   getQuestionReports, 
   fetchCloudQuestionReports, 
-  resolveQuestionReport, 
+  resolveQuestionReport,
+  getSiteReports,
+  fetchCloudSiteReports,
+  resolveSiteReport,
   modifyQuestion, 
   getQuestionOverrides,
   updateGlobalSettings,
@@ -82,7 +85,8 @@ import {
   Server,
   UserX,
   Wrench,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from 'lucide-react';
 
 function AdminDashboard() {
@@ -94,8 +98,9 @@ function AdminDashboard() {
 
 
 
-  const [activeSubTab, setActiveSubTab] = useState('reports'); // 'reports' | 'rewards' | 'codes' | 'broadcast' | 'students' | 'questions'
+  const [activeSubTab, setActiveSubTab] = useState('reports'); // 'reports' | 'sitereports' | 'rewards' | 'codes' | 'broadcast' | 'students' | 'questions'
   const [reports, setReports] = useState(getQuestionReports());
+  const [siteReports, setSiteReports] = useState(getSiteReports());
   const [players, setPlayers] = useState(getLeaderboard());
   const [allHistory, setAllHistory] = useState(getUserPracticeHistory());
   const [quizPapers, setQuizPapers] = useState(() => getJson('all_quiz_papers', []));
@@ -195,6 +200,7 @@ function AdminDashboard() {
 
   const refreshAll = () => {
     setReports(getQuestionReports());
+    setSiteReports(getSiteReports());
     setPlayers(getLeaderboard());
     setAllHistory(getUserPracticeHistory());
     setQuizPapers(getJson('all_quiz_papers', []));
@@ -276,6 +282,9 @@ function AdminDashboard() {
     });
     fetchCloudQuestionReports().then(reps => {
       if (reps && reps.length > 0) setReports(reps);
+    });
+    fetchCloudSiteReports().then(reps => {
+      if (reps && reps.length > 0) setSiteReports(reps);
     });
     fetchCloudUserRegistry().then(() => {
       setRegisteredStudents(getRegisteredStudents());
@@ -796,6 +805,11 @@ function AdminDashboard() {
     setReports(getQuestionReports());
   };
 
+  const handleResolveSiteReport = (reportId) => {
+    resolveSiteReport(reportId, currentUser, '管理員已審閱並處理完畢');
+    setSiteReports(getSiteReports());
+  };
+
   // 2. 發放點數
   const handleGrantPoints = () => {
     adminGrantPoints(targetPlayerId, Number(pointsToGrant), currentUser);
@@ -1247,7 +1261,14 @@ function AdminDashboard() {
             className={`btn ${activeSubTab === 'reports' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '8px 14px' }}
           >
-            <AlertTriangle size={15} /> 題目回報 ({reports.filter(r => r.status === 'pending').length})
+            <AlertTriangle size={15} /> 題目報錯 ({reports.filter(r => r.status === 'pending').length})
+          </button>
+          <button
+            onClick={() => setActiveSubTab('sitereports')}
+            className={`btn ${activeSubTab === 'sitereports' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '8px 14px' }}
+          >
+            <MessageSquare size={15} /> 網站回報 ({siteReports.filter(r => r.status === 'pending').length})
           </button>
           <button
             onClick={() => setActiveSubTab('rewards')}
@@ -1342,6 +1363,56 @@ function AdminDashboard() {
                       </button>
                     ) : (
                       <span className="badge badge-emerald">已由管理員處理</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 1b. 網站問題回報 */}
+      {activeSubTab === 'sitereports' && (
+        <div className="glass-panel" style={{ padding: '24px' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <MessageSquare size={18} color="#a78bfa" />
+            網站問題回報清單（由同學主動回報）
+          </h3>
+
+          {siteReports.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)' }}>
+              目前沒有學生回報網站問題！
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {siteReports.map(rep => (
+                <div key={rep.id} className="glass-panel" style={{ padding: '16px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', borderLeft: rep.status === 'pending' ? '4px solid #a78bfa' : '4px solid #10b981' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                      <span className="badge badge-fire" style={{ background: '#7c3aed' }}>{rep.category}</span>
+                      <span style={{ fontSize: '0.8rem', color: '#5b6772' }}>{rep.userName}</span>
+                      {rep.contact && <span style={{ fontSize: '0.78rem', color: '#78818a' }}>聯絡：{rep.contact}</span>}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                      {rep.description}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#78818a', marginTop: '4px' }}>
+                      時間：{new Date(rep.timestamp).toLocaleString()}
+                      {rep.status === 'resolved' && rep.resolvedBy && ` ・ 已由「${rep.resolvedBy}」處理`}
+                    </div>
+                  </div>
+                  <div style={{ flexShrink: 0 }}>
+                    {rep.status === 'pending' ? (
+                      <button
+                        onClick={() => handleResolveSiteReport(rep.id)}
+                        className="btn btn-primary"
+                        style={{ fontSize: '0.82rem', padding: '6px 14px' }}
+                      >
+                        <CheckCircle2 size={15} /> 標記已處理
+                      </button>
+                    ) : (
+                      <span className="badge badge-emerald">已處理</span>
                     )}
                   </div>
                 </div>

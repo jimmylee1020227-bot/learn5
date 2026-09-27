@@ -2272,25 +2272,74 @@ export function resolveQuestionReport(reportId, operatorUser, resolutionNote) {
 
 // 網站綜合問題回報 (Site Issue Reports)
 export function submitSiteReport({ category, contact, description, userId, userName }) {
-  const reports = getJson('site_issue_reports', []);
+  let reports = getJson('site_issue_reports', []);
+  if (!Array.isArray(reports)) reports = Object.values(reports || {});
   const reportItem = {
     id: 'site_rep_' + Date.now(),
     category: category || '其他',
     contact: contact || '',
-    description,
+    description: (description || '').trim().slice(0, 500).replace(/[<>'"/\\`]/g, ''),
     userId: userId || 'guest',
-    userName: userName || '同學',
+    userName: (userName || '同學').trim().slice(0, 20).replace(/[<>'"/\\`]/g, ''),
     status: 'pending',
     timestamp: new Date().toISOString()
   };
   reports.unshift(reportItem);
   setJson('site_issue_reports', reports);
   updateServerSync('site_issue_reports', reports);
+
+  // 立即發送 Email 通知總管理員
+  sendAdminEmailNotification({
+    title: `【網站問題回報】類別：${reportItem.category}`,
+    message: `同學「${reportItem.userName}」回報了網站問題！\n分類：${reportItem.category}\n聯絡方式：${reportItem.contact}\n詳細說明：${reportItem.description}`,
+    details: { ...reportItem, reporterName: reportItem.userName, reporterEmail: reportItem.contact, reason: reportItem.category }
+  });
+
   return reportItem;
 }
 
 export function getSiteReports() {
   return getJson('site_issue_reports', []);
+}
+
+// 主動向 Firebase 雲端即時拉取最新網站回報
+export async function fetchCloudSiteReports() {
+  if (!db) return getSiteReports();
+  try {
+    const snap = await Promise.race([
+      get(ref(db, 'studyhub/site_issue_reports')),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 10000))
+    ]);
+    const val = snap.val();
+    if (val) {
+      const arr = Array.isArray(val) ? val : Object.values(val);
+      setJson('site_issue_reports', arr);
+      return arr;
+    }
+  } catch (e) {}
+  return getSiteReports();
+}
+
+export function resolveSiteReport(reportId, operatorUser, resolutionNote) {
+  assertAdminPermission(operatorUser, '處理網站回報');
+  const reports = getSiteReports();
+  const target = reports.find(r => r.id === reportId);
+  if (target) {
+    target.status = 'resolved';
+    target.resolvedBy = operatorUser.displayName || '管理員';
+    target.resolvedAt = new Date().toISOString();
+    target.resolutionNote = (resolutionNote || '已完成修正').trim().slice(0, 200);
+    setJson('site_issue_reports', reports);
+    updateServerSync('site_issue_reports', reports);
+
+    logAuditEvent({
+      operatorId: operatorUser.id,
+      operatorName: operatorUser.displayName,
+      operatorRole: operatorUser.role,
+      actionType: 'RESOLVE_SITE_REPORT',
+      details: `處理網站回報 #${reportId} (${target.category})：${resolutionNote || '已完成修正'}`
+    });
+  }
 }
 
 // --- 6. 題庫自訂與管理員增刪改 ---
