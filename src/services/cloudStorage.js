@@ -35,20 +35,26 @@ export async function sendAdminEmailNotification({ title, message, details = {} 
 
   try {
     if (typeof window !== 'undefined' && window.fetch) {
-      const formData = new FormData();
-      formData.append('access_key', 'e22e5a78-b118-4790-84cf-240166297316');
-      formData.append('subject', `【學習網即時提醒】${title}`);
-      formData.append('from_name', '學習網 AI 智慧回報中心');
-      formData.append('replyto', targetEmail);
-      formData.append('message', `==== 學習網系統即時通知 ====\n標題：${title}\n內容：${message}\n時間：${payload.timestamp}\n詳細資訊：\n${JSON.stringify(details, null, 2)}`);
-
       fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        body: formData,
-        mode: 'cors'
-      }).then(res => res.json()).then(data => {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          access_key: 'e22e5a78-b118-4790-84cf-240166297316',
+          subject: `【學習網即時提醒】${title}`,
+          from_name: '學習網 AI 智慧回報中心',
+          email: 'noreply@studyhub-system.com',
+          replyto: 'noreply@studyhub-system.com',
+          message: `==== 學習網系統即時通知 ====\n標題：${title}\n內容：${message}\n時間：${payload.timestamp}\n詳細資訊：\n${JSON.stringify(details, null, 2)}`
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
         console.log('[Email Notify] 發信結果:', data);
-      }).catch(err => {
+      })
+      .catch(err => {
         console.warn('[Email Notify] 外部 API 靜默備援:', err);
       });
     }
