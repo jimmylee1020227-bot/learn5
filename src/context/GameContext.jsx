@@ -321,8 +321,6 @@ export function GameProvider({ children }) {
         setGlobalSettings,
         effectiveMultiplier,
         isGlobal2x,
-        isPersonal2x,
-        multiplierRemainingSec,
         awardQuizCorrectPoints,
         grantDirectPoints,
         activateUserMultiplier,

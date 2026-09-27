@@ -50,7 +50,7 @@ export default function Navbar({
   } = useAuth();
 
   const { isMobile, isTablet, isDesktop } = useDevice();
-  const { gameState, effectiveMultiplier, multiplierRemainingSec, setIsLuckyDrawOpen } = useGame();
+  const { gameState, effectiveMultiplier, setIsLuckyDrawOpen } = useGame();
   const { currentTheme, setCurrentTheme, THEMES } = useTheme();
   
   const [countdown, setCountdown] = useState(getNextMondayCountdown());
