@@ -207,16 +207,9 @@ export function GameProvider({ children }) {
     return () => clearInterval(timer);
   }, [gameState.multiplierExpiresAt, gameState.personalMultiplier]);
 
-  // 計算目前真實生效倍率
+  // 計算目前真實生效倍率 (簡化版：只有全場 2 倍開關)
   const isGlobal2x = !!globalSettings.global2xActive;
-  const isPersonal2x = gameState.personalMultiplier >= 2 && gameState.multiplierExpiresAt > getRealTime();
-
-  let effectiveMultiplier = 1;
-  if (isGlobal2x && isPersonal2x) {
-    effectiveMultiplier = 4; // 4 倍暴擊！
-  } else if (isGlobal2x || isPersonal2x) {
-    effectiveMultiplier = 2; // 2 倍
-  }
+  const effectiveMultiplier = isGlobal2x ? 2 : 1;
 
   // 答對題目結算加分 (受測驗暴擊倍率影響)
   const awardQuizCorrectPoints = (correctCount = 1) => {
@@ -238,16 +231,8 @@ export function GameProvider({ children }) {
     confetti({ particleCount: 80, spread: 80, origin: { y: 0.5 } });
   };
 
-  // 啟用個人限時倍率 Buff (用於幸運抽獎、兌換碼獎勵)
-  const activateUserMultiplier = (durationSec = 900) => {
-    const safeDuration = Math.min(Math.max(60, durationSec), 86400); // 1分鐘至24小時
-    const expires = getRealTime() + (safeDuration * 1000);
-    setGameState(prev => ({
-      ...prev,
-      personalMultiplier: 2,
-      multiplierExpiresAt: expires
-    }));
-  };
+  // 個人倍率已簡化移除，保留空函式避免呼叫端報錯
+  const activateUserMultiplier = () => {};
 
   // 幸運抽獎執行函式 (具備 50 抽保底機制與硬核低機率)
   const executeLuckyDraw = () => {

@@ -446,12 +446,7 @@ export default function Navbar({
               style={{ padding: '6px 12px', fontSize: '0.82rem', fontWeight: 800 }}
             >
               <Flame size={15} />
-              <span>{effectiveMultiplier} 倍積分</span>
-              {multiplierRemainingSec > 0 && (
-                <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.9 }}>
-                  ({Math.floor(multiplierRemainingSec / 60)}:{(multiplierRemainingSec % 60).toString().padStart(2, '0')})
-                </span>
-              )}
+              <span>🔥 全場 {effectiveMultiplier} 倍積分</span>
             </div>
           ) : (
             <div className="badge badge-coral" style={{ padding: '6px 10px', fontSize: '0.78rem' }}>

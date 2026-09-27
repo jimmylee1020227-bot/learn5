@@ -4285,9 +4285,7 @@ export async function fetchCloudCustomNotes() {
 // --- 20. 創新功能：全站測驗 Buff 活動管理系統 (Global Quiz Buff Mode) ---
 export const BUFF_MODES = {
   NORMAL: { id: 'NORMAL', label: '標準常態', desc: '標準點數累積模式', multiplier: 1, badge: '⚡ 常態' },
-  DOUBLE_EXP: { id: 'DOUBLE_EXP', label: '🔥 會考雙倍衝刺', desc: '全服做題答對獲得 2 倍每週點數加成！', multiplier: 2, badge: '🔥 雙倍積分' },
-  CRITICAL_STRIKE: { id: 'CRITICAL_STRIKE', label: '⚡ 答題暴擊加成', desc: '答對有 30% 機率觸發 3 倍暴擊點數！', multiplier: 1, criticalChance: 0.3, badge: '⚡ 30%暴擊' },
-  MISTAKE_BOOST: { id: 'MISTAKE_BOOST', label: '🎯 錯題強化特訓', desc: '做錯題本答對加碼 +2 額外點數', multiplier: 1, mistakeBonus: 2, badge: '🎯 錯題加倍' }
+  DOUBLE_EXP: { id: 'DOUBLE_EXP', label: '🔥 會考雙倍衝刺', desc: '全服做題答對獲得 2 倍每週點數加成！', multiplier: 2, badge: '🔥 雙倍積分' }
 };
 
 export function getGlobalSystemBuff() {

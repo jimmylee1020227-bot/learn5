@@ -50,6 +50,13 @@ export function AuthProvider({ children }) {
           // 安全防禦：若標記為管理員角色，必須具備合法的 Google 官方憑證 (authProof) 或管理金鑰簽章 (adminSessionProof)
           // 杜絕透過瀏覽器 Console / LocalStorage 偽造 Email 進行未授權提權
           if (targetRole === 'super_admin' || targetRole === 'admin') {
+            // 注意：authProof 登入後被移至 sessionStorage，重新整理頁面時需從 sessionStorage 補回
+            if (!parsed.authProof && !parsed.adminSessionProof) {
+              try {
+                const sensitive = JSON.parse(sessionStorage.getItem('__sh_sensitive__') || '{}');
+                if (sensitive.authProof) parsed.authProof = sensitive.authProof;
+              } catch (_) {}
+            }
             const hasValidProof = !!(parsed.authProof || parsed.adminSessionProof);
             if (!hasValidProof) {
               parsed.role = 'student';
