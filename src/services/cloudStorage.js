@@ -2283,7 +2283,7 @@ export async function fetchCloudQuestionReports() {
     ]);
     const val = snap.val();
     if (val) {
-      const arr = Array.isArray(val) ? val : Object.values(val);
+      const arr = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
       setJson('question_reports', arr);
       return arr;
     }
@@ -2355,7 +2355,7 @@ export async function fetchCloudSiteReports() {
     ]);
     const val = snap.val();
     if (val) {
-      const arr = Array.isArray(val) ? val : Object.values(val);
+      const arr = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
       setJson('site_issue_reports', arr);
       return arr;
     }

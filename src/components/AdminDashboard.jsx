@@ -176,7 +176,7 @@ function AdminDashboard() {
   const [scannerResult, setScannerResult] = useState(null);
   const [isScanningBank, setIsScanningBank] = useState(false);
   const [recalibrateNotice, setRecalibrateNotice] = useState('');
-  const [isRecalibrating, setIsRecalibrating] = useState(false);
+
 
   // 全站測驗 Buff 狀態
   const [currentBuff, setCurrentBuff] = useState(() => getGlobalSystemBuff());
@@ -1018,61 +1018,6 @@ function AdminDashboard() {
     }, 400);
   };
 
-  // 9. 學生帳號積分與進度校準修復器 (Account Points & Progress Recalibrator)
-  const handleRecalibrateAllPoints = async () => {
-    setIsRecalibrating(true);
-    try {
-      // 1. 先主動向 Firebase 重新拉取乾淨的全服做題日誌（自動清除非法幽靈資料）
-      let cleanLogs = allHistory;
-      try {
-        const freshLogs = await fetchAllCloudPracticeLogs();
-        if (freshLogs && freshLogs.length > 0) {
-          cleanLogs = freshLogs;
-          setAllHistory(freshLogs);
-        }
-      } catch (err) {}
-
-      const currentBoard = getLeaderboard();
-      let adjustedCount = 0;
-
-      const correctStats = {};
-      cleanLogs.forEach(log => {
-        if (!log || !log.userId) return;
-        if (!correctStats[log.userId]) correctStats[log.userId] = 0;
-        if (log.isCorrect) correctStats[log.userId]++;
-      });
-
-      currentBoard.forEach(p => {
-        if (!p || !p.userId) return;
-        const historyCorrect = correctStats[p.userId] || 0;
-        // 🔒 安全保護：只補償因網路中斷或失步而「少算」的做題保底點數
-        // 學生若透過管理員發放點數、幸運抽獎、兌換碼或暴擊倍率獲得點數（weeklyPoints >= historyCorrect），100% 完整保留，絕不向下抹除！
-        if (historyCorrect > (p.weeklyPoints || 0)) {
-          p.weeklyPoints = historyCorrect;
-          if (historyCorrect > (p.totalPoints || 0)) {
-            p.totalPoints = historyCorrect;
-          }
-          adjustedCount++;
-        }
-      });
-
-      const playerObj = {};
-      currentBoard.forEach(p => {
-        if (!p || !p.userId) return;
-        playerObj[p.userId] = p;
-        pushPlayerLeaderboardSync(p.userId, p);
-      });
-      setJson('leaderboard_players', playerObj);
-      setJson('studyhub_weekly_leaderboard', currentBoard);
-      setPlayers([...currentBoard]);
-      setRecalibrateNotice(`✅ 校準完成！已為 ${adjustedCount} 位做題失步學生補足保底點數，並完整保留所有管理員發放、抽獎與兌換碼獎勵！`);
-      setTimeout(() => setRecalibrateNotice(''), 4000);
-    } catch (e) {
-      setRecalibrateNotice(`❌ 校準失敗：${e.message}`);
-    } finally {
-      setIsRecalibrating(false);
-    }
-  };
 
   // 10. 註銷學生帳號
   const handleOpenDeleteModal = (student) => {
@@ -3402,25 +3347,6 @@ function AdminDashboard() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
             
-            {/* 工具 1：學生成績與積分校準器 (Account Progress & Points Recalibrator) */}
-            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <Activity size={22} color="#10b981" />
-                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900 }}>學生積分與進度校準修復器</h3>
-              </div>
-              <p style={{ color: '#5b6772', fontSize: '0.86rem', lineHeight: 1.6, marginBottom: '16px' }}>
-                當學生因網路延遲或跨裝置切換時，點數偶發失步。此工具可自動遍歷學生雲端所有作答歷史紀錄，一鍵自動校準對齊全服排行榜週點數！
-              </p>
-              <button
-                onClick={handleRecalibrateAllPoints}
-                disabled={isRecalibrating}
-                className="btn btn-primary"
-                style={{ width: '100%', padding: '12px', fontWeight: 900, background: '#10b981', borderColor: '#059669', color: '#fff' }}
-              >
-                <RefreshCw size={16} className={isRecalibrating ? 'animate-spin' : ''} />
-                {isRecalibrating ? '正在比對校準全服數據...' : '⚖️ 一鍵校準全服學生點數與進度'}
-              </button>
-            </div>
 
             {/* 工具：孤兒試卷瘦身與庫存清理器 */}
             <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
