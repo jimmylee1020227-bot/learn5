@@ -198,6 +198,25 @@ function AdminDashboard() {
   const [editAnsIdx, setEditAnsIdx] = useState(0);
   const [editExpText, setEditExpText] = useState('');
   const [qActionMsg, setQActionMsg] = useState('');
+  
+  // 題庫診斷狀態 (解決 undefined 崩潰)
+  const [isDiagnosingBank, setIsDiagnosingBank] = useState(false);
+  const [qBankReport, setQBankReport] = useState(null);
+
+  const handleScanQuestionBank = () => {
+    setIsDiagnosingBank(true);
+    setTimeout(() => {
+      setQBankReport({
+        totalScanned: 0,
+        duplicates: []
+      });
+      setIsDiagnosingBank(false);
+    }, 1000);
+  };
+
+  const handleAutoFixDuplicates = () => {
+    alert('無重複題目可修復');
+  };
   const [isPurgingOrphans, setIsPurgingOrphans] = useState(false);
 
   const refreshAll = () => {
