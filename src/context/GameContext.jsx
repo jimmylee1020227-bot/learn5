@@ -53,6 +53,8 @@ export function GameProvider({ children }) {
   const [multiplierRemainingSec, setMultiplierRemainingSec] = useState(0);
 
   // 跨裝置同步狀態鎖：初次載入未自雲端讀取前，禁止以本地預設空值覆蓋雲端！
+  // 使用 useState 而非 useRef，確保水合完成後觸發 re-render 讓每日發券 effect 重跑
+  const [isHydrated, setIsHydrated] = useState(false);
   const isHydratedRef = React.useRef(false);
   const isRemoteSyncingRef = React.useRef(false);
 
@@ -89,6 +91,7 @@ export function GameProvider({ children }) {
           });
         }
         isHydratedRef.current = true;
+        setIsHydrated(true);
         setTimeout(() => { isRemoteSyncingRef.current = false; }, 50);
       }
     });
@@ -98,6 +101,7 @@ export function GameProvider({ children }) {
   // 當 userId 改變 (例如登入後或跨裝置切換)，主動自 Firebase 雲端讀取最新狀態
   useEffect(() => {
     isHydratedRef.current = false;
+    setIsHydrated(false);
     const todayStr = getTaiwanDateStr();
     const claimKey = getDailyClaimKey(userId, todayStr);
     const alreadyClaimed = typeof window !== 'undefined' && window.localStorage.getItem(claimKey) === 'claimed';
@@ -141,17 +145,20 @@ export function GameProvider({ children }) {
           });
         }
         isHydratedRef.current = true;
+        setIsHydrated(true);
       }).catch(() => {
         isHydratedRef.current = true;
+        setIsHydrated(true);
       });
     } else {
       isHydratedRef.current = true;
+      setIsHydrated(true);
     }
   }, [userId]);
 
   // 每日贈送一張抽獎券邏輯 (已水合後才觸發，嚴格採用台北 UTC+8 時區防誤判，杜絕跨端重覆領取)
   useEffect(() => {
-    if (!isHydratedRef.current) return;
+    if (!isHydrated) return;
     if (!userId || userId === 'guest_student') {
       // 訪客不給予每日累積抽獎券，需正式登入才能享有每日簽到領券
       return;
@@ -188,7 +195,7 @@ export function GameProvider({ children }) {
         return nextState;
       });
     }
-  }, [gameState.lastDailyClaimDate, userId]);
+  }, [gameState.lastDailyClaimDate, userId, isHydrated]);
 
   // 倍率倒數計時器
   useEffect(() => {
