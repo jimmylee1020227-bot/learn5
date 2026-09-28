@@ -405,7 +405,7 @@ export async function fetchCloudLeaderboardRaw() {
     const snap = await get(ref(db, 'studyhub/leaderboard_players'));
     const val = snap.val();
     if (val && typeof val === 'object') {
-      const arr = Array.isArray(val) ? val : Object.values(val);
+      const arr = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
       const pMap = new Map();
       arr.forEach(p => {
         if (!p || !p.userId) return;
@@ -862,7 +862,7 @@ export async function fetchCloudAdminsList() {
     ]);
     const val = snap.val();
     if (val) {
-      let list = Array.isArray(val) ? val : Object.values(val);
+      let list = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
       list = list.filter(a => a && typeof a === 'object' && a.email);
       if (!list.some(a => a.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase())) {
         list.unshift(INITIAL_ADMINS[0]);
@@ -995,7 +995,7 @@ export async function fetchCloudAuditLogs(currentUser) {
     const snap = await get(ref(db, 'studyhub/audit_logs'));
     const val = snap.val();
     if (val) {
-      const arr = Array.isArray(val) ? val : Object.values(val).filter(Boolean);
+      const arr = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
       safeSetLocalStorage(STORAGE_PREFIX + 'audit_logs', JSON.stringify(arr));
       return arr;
     }
@@ -1281,13 +1281,13 @@ export async function fetchAllCloudQuizPapers(forceRefresh = false) {
 
       if (snapPapers && snapPapers.status === 'fulfilled' && snapPapers.value?.exists()) {
         const val = snapPapers.value.val();
-        const list = Array.isArray(val) ? val : Object.values(val || {});
+        const list = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
         list.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
       }
 
       if (snapAll && snapAll.status === 'fulfilled' && snapAll.value?.exists()) {
         const val = snapAll.value.val();
-        const list = Array.isArray(val) ? val : Object.values(val || {});
+        const list = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
         list.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
       }
     } catch (e) {
@@ -1392,7 +1392,7 @@ export async function fetchCloudUserQuizPapers(userId) {
       ]);
       const val = snap.val();
       if (val) {
-        const list = Array.isArray(val) ? val : Object.values(val);
+        const list = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
         list.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
       }
       // 4. 若依然為空，自雲端公共 quiz_papers 節點過濾尋找
@@ -2618,7 +2618,7 @@ export async function fetchCloudRedemptionCodes() {
     }
     const val = snap.val();
     if (val) {
-      let list = Array.isArray(val) ? val : Object.values(val);
+      let list = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
       list = list.filter(c => c && typeof c === 'object' && c.code);
       setJson('redemption_codes', list);
       return getRedemptionCodes();
@@ -2760,7 +2760,7 @@ export async function redeemCodeAsync(userId, inputCode, userName = '同學') {
       const snap = await get(ref(db, 'studyhub/redemption_codes'));
       const val = snap.val();
       if (val) {
-        const cloudCodes = Array.isArray(val) ? val : Object.values(val);
+        const cloudCodes = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
         setJson('redemption_codes', cloudCodes);
         codes = getRedemptionCodes();
         matched = codes.find(c => (c.code || '').toUpperCase() === codeTrimmed);
@@ -2896,7 +2896,7 @@ export async function fetchCloudAdminNotifications() {
     ]);
     const val = snap.val();
     if (val) {
-      let list = Array.isArray(val) ? val : Object.values(val);
+      let list = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
       list = list.filter(n => n && typeof n === 'object' && n.id);
       setJson('admin_notifications', list);
       return getAdminNotifications();
@@ -2972,7 +2972,7 @@ export async function fetchCloudCommunityPosts() {
     ]);
     const val = snap.val();
     if (val) {
-      const arr = Array.isArray(val) ? val : Object.values(val);
+      const arr = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
       setJson('community_posts', arr);
       return getCommunityPosts();
     }
@@ -4493,7 +4493,7 @@ export async function fetchCloudNoteReports() {
     ]);
     const val = snap.val();
     if (val) {
-      const arr = Array.isArray(val) ? val : Object.values(val);
+      const arr = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
       setJson('notes_reports', arr);
       return arr;
     }
