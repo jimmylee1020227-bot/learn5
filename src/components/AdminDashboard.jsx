@@ -3601,6 +3601,14 @@ class AdminErrorBoundary extends React.Component {
             <p style={{ color: '#5b6772', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '20px' }}>
               偵測到部分名冊或日誌資料格式異常，局部錯誤邊界已成功阻斷錯誤波及全局，學生端前台運作完全正常不受影響。
             </p>
+            <div style={{ background: '#fef2f2', padding: '12px', borderRadius: '8px', border: '1px solid #fca5a5', marginBottom: '20px', textAlign: 'left', overflowX: 'auto' }}>
+              <strong style={{ color: '#991b1b', fontSize: '0.85rem' }}>系統崩潰詳細資訊：</strong>
+              <div style={{ color: '#7f1d1d', fontSize: '0.8rem', marginTop: '6px', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontFamily: 'monospace' }}>
+                {this.state.error?.message || '未知錯誤'}
+                <br /><br />
+                {this.state.error?.stack || ''}
+              </div>
+            </div>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
