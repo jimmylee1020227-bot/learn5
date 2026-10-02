@@ -210,27 +210,37 @@ export function AuthProvider({ children }) {
     }
   }, [currentUser?.id]);
 
-  // 1.3 跨裝置個人資料完整水合（抽獎券、點數、試卷、做題歷史、錯題本、兌換碼與公告，保證換設備數據 100% 完全相同）
+  // 1.3 跨裝置個人資料與全服核心數據完整水合（點數排行榜、抽獎券、試卷、做題歷史、錯題本、兌換碼與公告）
   useEffect(() => {
-    if (currentUser?.id && currentUser.id !== 'guest_student') {
-      import('../services/cloudStorage').then(({ 
-        fetchCloudUserGameState, 
-        fetchCloudUserQuizPapers, 
-        fetchCloudUserPracticeHistory, 
-        fetchCloudUserMistakeNotebook,
-        fetchCloudUserRedeemedCodes,
-        fetchCloudRedemptionCodes,
-        fetchCloudAdminNotifications
-      }) => {
+    // 立即水合全服排行榜，保證進入首頁即可秒出點數與全服排名
+    import('../services/leaderboardService').then(({ fetchCloudLeaderboard }) => {
+      fetchCloudLeaderboard().catch(() => {});
+    });
+
+    import('../services/cloudStorage').then(({ 
+      fetchAllCloudQuizPapers,
+      fetchCloudUserRegistry,
+      fetchCloudUserGameState, 
+      fetchCloudUserQuizPapers, 
+      fetchCloudUserPracticeHistory, 
+      fetchCloudUserMistakeNotebook,
+      fetchCloudUserRedeemedCodes,
+      fetchCloudRedemptionCodes,
+      fetchCloudAdminNotifications
+    }) => {
+      fetchAllCloudQuizPapers().catch(() => {});
+      fetchCloudUserRegistry().catch(() => {});
+      fetchCloudRedemptionCodes().catch(() => {});
+      fetchCloudAdminNotifications().catch(() => {});
+
+      if (currentUser?.id && currentUser.id !== 'guest_student') {
         fetchCloudUserGameState(currentUser.id);
         fetchCloudUserQuizPapers(currentUser.id);
         fetchCloudUserPracticeHistory(currentUser.id);
         fetchCloudUserMistakeNotebook(currentUser.id);
         fetchCloudUserRedeemedCodes(currentUser.id);
-        fetchCloudRedemptionCodes();
-        fetchCloudAdminNotifications();
-      }).catch(() => {});
-    }
+      }
+    }).catch(() => {});
   }, [currentUser?.id]);
 
   // 1.5 自動自雲端同步最新管理員名冊並即時響應任命/撤銷

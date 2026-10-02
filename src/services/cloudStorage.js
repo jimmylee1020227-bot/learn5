@@ -305,6 +305,7 @@ export function initFirebaseRealtimeSync() {
             const playersArr = Array.from(pMap.values())
               .sort((a, b) => (b.weeklyPoints || 0) - (a.weeklyPoints || 0));
             const arrStr = JSON.stringify(playersArr);
+            memoryStore.set(STORAGE_PREFIX + 'studyhub_weekly_leaderboard', playersArr);
             safeSetLocalStorage(STORAGE_PREFIX + 'studyhub_weekly_leaderboard', arrStr);
             const boardPayload = { type: 'SYNC_UPDATE', key: 'studyhub_weekly_leaderboard', timestamp: Date.now(), fromRemote: true };
             localSyncListeners.forEach(cb => { try { cb(boardPayload); } catch (e) {} });
@@ -320,6 +321,7 @@ export function initFirebaseRealtimeSync() {
               .filter(p => p && p.id)
               .sort((a, b) => new Date(b.timestamp || b.completedAt || 0) - new Date(a.timestamp || a.completedAt || 0));
             const papersStr = JSON.stringify(papersArr);
+            memoryStore.set(STORAGE_PREFIX + 'all_quiz_papers', papersArr);
             safeSetLocalStorage(STORAGE_PREFIX + 'all_quiz_papers', papersStr);
             const paperPayload = { type: 'SYNC_UPDATE', key: 'all_quiz_papers', timestamp: Date.now(), fromRemote: true };
             localSyncListeners.forEach(cb => { try { cb(paperPayload); } catch (e) {} });
@@ -650,6 +652,8 @@ const ARRAY_KEYS = new Set([
   'notes_reports',
   'admin_notifications',
   'redemption_codes',
+  'studyhub_weekly_leaderboard',
+  'studyhub_hall_of_fame',
 ]);
 
 // 動態 key 前綴：凡是以這些字串開頭的 key，值都應強制為陣列
@@ -657,6 +661,7 @@ const ARRAY_KEY_PREFIXES = [
   'practice_history_',
   'mistake_notebook_',
   'user_history_',
+  'user_quiz_papers_',
 ];
 
 function coerceToExpectedType(key, value) {
@@ -1352,6 +1357,9 @@ export async function fetchAllCloudQuizPapers(forceRefresh = false) {
     lastQuizPapersFetchTime = Date.now();
     if (sortedPapers.length > 0) {
       safeSetLocalStorage(STORAGE_PREFIX + 'all_quiz_papers', JSON.stringify(sortedPapers));
+      memoryStore.set(STORAGE_PREFIX + 'all_quiz_papers', sortedPapers);
+      const paperPayload = { type: 'SYNC_UPDATE', key: 'all_quiz_papers', timestamp: Date.now(), fromRemote: true };
+      localSyncListeners.forEach(cb => { try { cb(paperPayload); } catch (e) {} });
     }
     return sortedPapers;
   } catch (err) {
@@ -1417,7 +1425,14 @@ export async function fetchCloudUserQuizPapers(userId) {
   }
 
   const sorted = Array.from(papersMap.values()).sort((a, b) => new Date(b.timestamp || b.completedAt || 0) - new Date(a.timestamp || a.completedAt || 0));
-  if (sorted.length > 0) safeSetLocalStorage(STORAGE_PREFIX + userPapersKey, JSON.stringify(sorted));
+  if (sorted.length > 0) {
+    safeSetLocalStorage(STORAGE_PREFIX + userPapersKey, JSON.stringify(sorted));
+    memoryStore.set(STORAGE_PREFIX + userPapersKey, sorted);
+    const payloadExact = { type: 'SYNC_UPDATE', key: userPapersKey, userId, timestamp: Date.now(), fromRemote: true };
+    localSyncListeners.forEach(cb => { try { cb(payloadExact); } catch (e) {} });
+    const payloadGen = { type: 'SYNC_UPDATE', key: 'user_quiz_papers', userId, timestamp: Date.now(), fromRemote: true };
+    localSyncListeners.forEach(cb => { try { cb(payloadGen); } catch (e) {} });
+  }
   return sorted;
 }
 
@@ -1491,6 +1506,11 @@ export async function fetchCloudUserPracticeHistory(userId) {
         const val = snap.val();
         if (Array.isArray(val)) {
           safeSetLocalStorage(STORAGE_PREFIX + userHistoryKey, JSON.stringify(val));
+          memoryStore.set(STORAGE_PREFIX + userHistoryKey, val);
+          const payloadExact = { type: 'SYNC_UPDATE', key: userHistoryKey, userId, timestamp: Date.now(), fromRemote: true };
+          localSyncListeners.forEach(cb => { try { cb(payloadExact); } catch (e) {} });
+          const payloadGen = { type: 'SYNC_UPDATE', key: 'practice_history', userId, timestamp: Date.now(), fromRemote: true };
+          localSyncListeners.forEach(cb => { try { cb(payloadGen); } catch (e) {} });
           return val.map(hydrateQuestionDetails);
         }
       }
@@ -1517,6 +1537,11 @@ export async function fetchCloudUserMistakeNotebook(userId) {
         const val = snap.val();
         if (Array.isArray(val)) {
           safeSetLocalStorage(STORAGE_PREFIX + mistakeKey, JSON.stringify(val));
+          memoryStore.set(STORAGE_PREFIX + mistakeKey, val);
+          const payloadExact = { type: 'SYNC_UPDATE', key: mistakeKey, userId, timestamp: Date.now(), fromRemote: true };
+          localSyncListeners.forEach(cb => { try { cb(payloadExact); } catch (e) {} });
+          const payloadGen = { type: 'SYNC_UPDATE', key: 'mistake_notebook', userId, timestamp: Date.now(), fromRemote: true };
+          localSyncListeners.forEach(cb => { try { cb(payloadGen); } catch (e) {} });
           return val.map(hydrateQuestionDetails);
         }
       }
@@ -1736,8 +1761,11 @@ export async function fetchCloudUserGameState(userId) {
         const val = snap.val();
         if (val) {
           const localVal = getJson(gameKey, null);
-          if (!localVal || (val.updatedAt || 0) > (localVal.updatedAt || 0)) {
+          if (!localVal || (val.updatedAt || 0) > (localVal.updatedAt || 0) || (val.tickets || 0) > (localVal.tickets || 0)) {
             safeSetLocalStorage(STORAGE_PREFIX + gameKey, JSON.stringify(val));
+            memoryStore.set(STORAGE_PREFIX + gameKey, val);
+            const payload = { type: 'SYNC_UPDATE', key: gameKey, userId, timestamp: Date.now(), fromRemote: true };
+            localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
           }
           return val;
         }
@@ -3258,101 +3286,8 @@ export function incrementDailyPracticeStats(userId = 'guest', countIncrement = 1
   return updated;
 }
 
-// --- 12. 多設備跨端雲端同步引擎 (Cross-Device Real-Time Sync Engine) ---
-if (typeof window !== 'undefined') {
-  let isSubscribed = false;
-  
-  const initFirebaseRealtimeSync = () => {
-    if (!db || isSubscribed) return;
-    isSubscribed = true;
+// --- 12. 多設備跨端雲端同步由 initFirebaseRealtimeSync 與 subscribeUserRealtimeSync 全權安全分軌處理 ---
 
-    try {
-      const globalRef = ref(db, 'studyhub');
-      onValue(globalRef, (snapshot) => {
-        if (!snapshot.exists()) return;
-        const data = snapshot.val();
-        
-        Object.entries(data).forEach(([k, v]) => {
-          if (v === null || v === undefined) return;
-          const currentRaw = localStorage.getItem(STORAGE_PREFIX + k);
-
-          if (!currentRaw) {
-            safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(v));
-            const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now(), fromRemote: true };
-            localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
-            return;
-          }
-
-          try {
-            const currentVal = JSON.parse(currentRaw);
-
-            // 遊戲狀態：僅當伺服器時間戳較新或票數大增時採納，嚴防本地保底遭覆蓋回退！
-            if (k.startsWith('studyhub_game_state_') && typeof v === 'object' && v !== null) {
-              const remoteTime = v.updatedAt || 0;
-              const localTime = currentVal?.updatedAt || 0;
-              if (remoteTime > localTime || (v.tickets || 0) > (currentVal?.tickets || 0)) {
-                safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(v));
-                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now(), fromRemote: true };
-                localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
-              }
-              return;
-            }
-
-            // 每日刷題目標：只增不減，取大者合併！
-            if (k.startsWith('daily_stats_') && typeof v === 'object' && v !== null) {
-              const merged = {
-                ...currentVal,
-                ...v,
-                count: Math.max(currentVal.count || 0, v.count || 0),
-                correctCount: Math.max(currentVal.correctCount || 0, v.correctCount || 0)
-              };
-              const mergedRaw = JSON.stringify(merged);
-              if (mergedRaw !== currentRaw) {
-                safeSetLocalStorage(STORAGE_PREFIX + k, mergedRaw);
-                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now(), fromRemote: true };
-                localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
-              }
-              return;
-            }
-
-            // 做題歷程：去重累加，防止換設備時被空陣列沖洗
-            if ((k === 'practice_history' || k.startsWith('practice_history_')) && Array.isArray(v)) {
-              const currentArr = Array.isArray(currentVal) ? currentVal : [];
-              const map = new Map();
-              currentArr.forEach(i => { if (i?.id) map.set(i.id, i); });
-              v.forEach(i => { if (i?.id) map.set(i.id, i); });
-              const merged = Array.from(map.values()).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
-              if (merged.length > currentArr.length) {
-                safeSetLocalStorage(STORAGE_PREFIX + k, JSON.stringify(merged));
-                const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now(), fromRemote: true };
-                localSyncListeners.forEach(cb => { try { cb(payload); } catch (e) {} });
-              }
-              return;
-            }
-          } catch (e) {}
-
-          const newRaw = JSON.stringify(v);
-          if (currentRaw !== newRaw) {
-            safeSetLocalStorage(STORAGE_PREFIX + k, newRaw);
-            const payload = { type: 'SYNC_UPDATE', key: k, timestamp: Date.now(), fromRemote: true };
-            localSyncListeners.forEach(cb => {
-              try { cb(payload); } catch (e) {}
-            });
-          }
-        });
-      }, (error) => {
-        console.warn('[Firebase Realtime Sync Error]', error);
-        isSubscribed = false;
-        setTimeout(initFirebaseRealtimeSync, 5000); // 斷線重連
-      });
-    } catch (err) {
-      isSubscribed = false;
-    }
-  };
-
-  // 延遲啟動以確保 db 已初始化
-  setTimeout(initFirebaseRealtimeSync, 1000);
-}
 
 // --- 13. 使用者服務條款與個人資料保護政策同意管理 (Privacy Consent Management) ---
 export function getPrivacyConsent(userId) {
