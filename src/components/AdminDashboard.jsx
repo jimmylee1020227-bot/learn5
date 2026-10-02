@@ -237,6 +237,7 @@ function AdminDashboard() {
 
   // 即時 Ping 監測
   const checkPing = async () => {
+    setCloudPing(prev => ({ ...prev, status: 'measuring', message: '測速中...' }));
     try {
       const res = await measureCloudPing();
       setCloudPing(res);
@@ -1154,8 +1155,8 @@ function AdminDashboard() {
                 background: cloudPing.status === 'excellent' ? '#10b981' : (cloudPing.status === 'good' ? '#f59e0b' : '#ef4444'),
                 boxShadow: cloudPing.status === 'excellent' ? '0 0 8px #10b981' : 'none'
               }} />
-              <span>Firebase 雲端: {cloudPing.pingMs !== null && cloudPing.pingMs >= 0 ? `${cloudPing.pingMs}ms` : (cloudPing.status === 'measuring' ? '測速中' : '良好')}</span>
-              <RefreshCw size={13} className={cloudPing.status === 'checking' ? 'animate-spin' : ''} />
+              <span>Firebase 雲端: {cloudPing.status === 'measuring' || cloudPing.status === 'checking' ? '測速中...' : (cloudPing.pingMs !== null && cloudPing.pingMs >= 0 ? `${cloudPing.pingMs}ms` : '連線良好')}</span>
+              <RefreshCw size={13} className={cloudPing.status === 'measuring' || cloudPing.status === 'checking' ? 'animate-spin' : ''} />
             </div>
 
             {/* 一鍵全功能智能巡檢 */}
@@ -3478,20 +3479,23 @@ function AdminDashboard() {
               <div style={{ padding: '14px', background: 'var(--theme-bg, #f8f3eb)', borderRadius: '12px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ fontSize: '0.78rem', color: '#78818a', fontWeight: 700 }}>當前延遲 (RTT)</div>
-                  <div style={{ fontSize: '1.8rem', fontWeight: 900, color: cloudPing.status === 'excellent' ? '#15803d' : '#d97706' }}>
-                    {cloudPing.pingMs !== null && cloudPing.pingMs >= 0 ? `${cloudPing.pingMs} ms` : (cloudPing.status === 'measuring' ? '測速中...' : '已連線')}
+                  <div style={{ fontSize: '1.8rem', fontWeight: 900, color: cloudPing.status === 'excellent' ? '#15803d' : (cloudPing.status === 'good' ? '#0284c7' : cloudPing.status === 'slow' ? '#d97706' : '#ef4444') }}>
+                    {cloudPing.status === 'measuring' || cloudPing.status === 'checking'
+                      ? '測速中...'
+                      : (cloudPing.pingMs !== null && cloudPing.pingMs >= 0 ? `${cloudPing.pingMs} ms` : '連線異常')}
                   </div>
                 </div>
-                <span className={`badge ${cloudPing.status === 'excellent' ? 'badge-emerald' : 'badge-gold'}`}>
+                <span className={`badge ${cloudPing.status === 'excellent' ? 'badge-emerald' : (cloudPing.status === 'good' ? 'badge-blue' : cloudPing.status === 'slow' ? 'badge-gold' : 'badge-rose')}`}>
                   {cloudPing.message}
                 </span>
               </div>
               <button
                 onClick={checkPing}
+                disabled={cloudPing.status === 'measuring' || cloudPing.status === 'checking'}
                 className="btn btn-secondary"
                 style={{ width: '100%', padding: '10px', fontWeight: 800 }}
               >
-                <RefreshCw size={14} /> 重新測試伺服器延遲
+                <RefreshCw size={14} className={cloudPing.status === 'measuring' || cloudPing.status === 'checking' ? 'animate-spin' : ''} /> 重新測試伺服器延遲
               </button>
             </div>
 
