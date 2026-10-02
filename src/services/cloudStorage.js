@@ -343,18 +343,20 @@ export function initFirebaseRealtimeSync() {
 
 // 原子化推送單一玩家排行榜資料至 Firebase (避免千萬人併發覆寫整份陣列)
 export function pushPlayerLeaderboardSync(userId, playerData) {
-  if (typeof window === 'undefined' || !db || !userId) return;
+  if (!db || !userId) return Promise.resolve();
   try {
     const cleanPayload = sanitizeForFirebase(playerData);
-    if (!cleanPayload) return;
+    if (!cleanPayload) return Promise.resolve();
     const r = ref(db, `studyhub/leaderboard_players/${userId}`);
-    set(r, cleanPayload).catch(err => {
+    return set(r, cleanPayload).catch(err => {
       console.error(`[Firebase Leaderboard Player Push Error: ${userId}]`, err);
     });
   } catch (e) {
     console.error(`[Firebase Leaderboard Player Exception: ${userId}]`, e);
+    return Promise.resolve();
   }
 }
+
 
 // 管理員安全發放抽獎券：從 Firebase 讀取該玩家既有資料並累加票券，100% 保留保底進度與簽到狀態，絕不覆蓋歸零
 export async function adminPushGameStateTickets(userId, ticketDelta) {
@@ -4441,6 +4443,22 @@ export async function runSystemHealthCheck(operatorUser = null, isScheduled = fa
 export function getHealthCheckReports() {
   return getJson('admin_health_check_reports', []);
 }
+
+// 每日保底自檢引擎：若當日尚未執行過夜間巡檢，自動於背景執行並持久化日誌
+export async function checkAndExecuteDailyHealthCheck(currentUser = null) {
+  const todayStr = getTaiwanDateStr();
+  const lastRunDate = getJson('last_midnight_health_check_date', null);
+  if (lastRunDate !== todayStr) {
+    setJson('last_midnight_health_check_date', todayStr);
+    try {
+      return await runSystemHealthCheck(currentUser, true);
+    } catch (e) {
+      console.warn('[Auto Daily Health Check]', e);
+    }
+  }
+  return null;
+}
+
 
 // --- 18. 全服資料庫核心備份與 JSON 匯出 (Full System Backup Export) ---
 export function exportFullSystemBackup(operatorUser) {

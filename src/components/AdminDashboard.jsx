@@ -36,6 +36,7 @@ import {
   purgeOrphanedQuizPapers,
   runSystemHealthCheck,
   getHealthCheckReports,
+  checkAndExecuteDailyHealthCheck,
   measureCloudPing,
   getAuditLogs,
   fetchCloudAuditLogs,
@@ -173,11 +174,9 @@ function AdminDashboard() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [accountActionNotice, setAccountActionNotice] = useState('');
 
-  // 實用工具專用狀態 (弱點雷達、題庫衝突掃描、積分校準、時段熱力)
+  // 實用工具專用狀態 (弱點雷達、題庫衝突掃描、時段熱力)
   const [scannerResult, setScannerResult] = useState(null);
   const [isScanningBank, setIsScanningBank] = useState(false);
-  const [recalibrateNotice, setRecalibrateNotice] = useState('');
-  const [isRecalibrating, setIsRecalibrating] = useState(false);
 
 
   // 全站測驗 Buff 狀態
@@ -252,8 +251,16 @@ function AdminDashboard() {
     return () => clearInterval(pingTimer);
   }, []);
 
-  // 每晚 12 點 (00:00:00 台北時間 UTC+8) 自動在背景執行全系統智能深度巡檢
+  // 每日保底自檢與每晚 12 點 (00:00:00 台北時間 UTC+8) 自動在背景執行全系統智能深度巡檢
   useEffect(() => {
+    checkAndExecuteDailyHealthCheck(currentUser).then(rep => {
+      if (rep) {
+        setLatestHealthReport(rep);
+        setHealthReports(getHealthCheckReports());
+        setAuditLogs(getAuditLogs(currentUser));
+      }
+    }).catch(() => {});
+
     let midnightTimer = null;
     const scheduleMidnightDiagnostic = () => {
       const now = new Date();
@@ -998,56 +1005,6 @@ function AdminDashboard() {
     } finally {
       setIsPurgingOrphans(false);
       setTimeout(() => setHealthCheckMsg(''), 5000);
-    }
-  };
-
-  // 7.6 學生帳號積分與進度校準修復器 (Account Points & Progress Recalibrator)
-  const handleRecalibrateAllPoints = async () => {
-    setIsRecalibrating(true);
-    setRecalibrateNotice('正在比對全服考卷與所有歷史做題日誌，深度校準學生點數...');
-    try {
-      const currentBoard = getLeaderboard();
-      const papers = await fetchAllCloudQuizPapers(true);
-      const logs = await fetchAllCloudPracticeLogs();
-
-      const paperStats = {};
-      (papers || []).forEach(p => {
-        if (!p || !p.userId) return;
-        paperStats[p.userId] = (paperStats[p.userId] || 0) + (p.correctCount || 0);
-      });
-
-      const logStats = {};
-      (logs || []).forEach(l => {
-        if (!l || !l.userId) return;
-        if (l.isCorrect) logStats[l.userId] = (logStats[l.userId] || 0) + 1;
-      });
-
-      let adjustedCount = 0;
-      const currentWeekId = getTaiwanWeekId();
-
-      currentBoard.forEach(p => {
-        if (!p || !p.userId) return;
-        const verifiedCorrect = Math.max(paperStats[p.userId] || 0, logStats[p.userId] || 0);
-        // 🔒 安全保護：只向上補足因網路延遲或失步而少算的保底點數，抽獎、加成與管理員發放之點數 100% 完整保留！
-        if (verifiedCorrect > (p.totalPoints || 0)) {
-          p.totalPoints = verifiedCorrect;
-          adjustedCount++;
-        }
-        if (verifiedCorrect > (p.weeklyPoints || 0) && (!p.weekId || p.weekId === currentWeekId)) {
-          p.weeklyPoints = verifiedCorrect;
-        }
-        pushPlayerLeaderboardSync(p.userId, p);
-      });
-
-      setJson('studyhub_weekly_leaderboard', currentBoard);
-      setPlayers([...currentBoard]);
-      setRecalibrateNotice(`✅ 校準完成！已為 ${adjustedCount} 位做題失步學生補足保底點數，所有抽獎與加成獎勵均完整保留！`);
-      setTimeout(() => setRecalibrateNotice(''), 5000);
-    } catch (e) {
-      setRecalibrateNotice(`❌ 校準失敗：${e.message}`);
-      setTimeout(() => setRecalibrateNotice(''), 5000);
-    } finally {
-      setIsRecalibrating(false);
     }
   };
 
@@ -3408,36 +3365,8 @@ function AdminDashboard() {
       {activeSubTab === 'tools' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
           
-          {/* 工具提示與操作回饋 */}
-          {recalibrateNotice && (
-            <div style={{ padding: '12px 18px', background: '#ecfdf5', border: '2px solid #10b981', borderRadius: '14px', color: '#065f46', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <CheckCircle2 size={18} color="#10b981" />
-              <span>{recalibrateNotice}</span>
-            </div>
-          )}
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
             
-            {/* 工具 1：學生成績與積分校準器 (Account Progress & Points Recalibrator) */}
-            <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <Activity size={22} color="#10b981" />
-                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900 }}>學生積分與進度校準修復器</h3>
-              </div>
-              <p style={{ color: '#5b6772', fontSize: '0.86rem', lineHeight: 1.6, marginBottom: '16px' }}>
-                當學生因網路延遲或跨裝置切換時，點數偶發失步。此工具可自動遍歷學生雲端所有 169+ 份考卷與歷史作答紀錄，一鍵自動校準對齊全服排行榜點數！
-              </p>
-              <button
-                onClick={handleRecalibrateAllPoints}
-                disabled={isRecalibrating}
-                className="btn btn-primary"
-                style={{ width: '100%', padding: '12px', fontWeight: 900, background: '#10b981', borderColor: '#059669', color: '#fff' }}
-              >
-                <RefreshCw size={16} className={isRecalibrating ? 'animate-spin' : ''} />
-                {isRecalibrating ? '正在比對校準全服數據...' : '⚖️ 一鍵校準全服學生點數與進度'}
-              </button>
-            </div>
-
             {/* 工具：孤兒試卷瘦身與庫存清理器 */}
             <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: 'var(--theme-card, #fffdf9)', border: '2.5px solid var(--theme-border, #17324d)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
