@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
 import { useDevice } from '../context/DeviceContext';
 import { getDailyPracticeStats, subscribeToCloudSync, submitSiteReport } from '../services/cloudStorage';
-import { getStudentWeeklyPoints } from '../services/leaderboardService';
+import { getStudentWeeklyPoints, getStudentTotalPoints } from '../services/leaderboardService';
 import { getRealTime } from '../services/timeService';
 import { 
   Flame, 
@@ -44,6 +44,7 @@ export default function HeroBanner({
   const [examCountdown, setExamCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [dailyStats, setDailyStats] = useState({ count: 0, target: 10, correctCount: 0 });
   const [userWeeklyPoints, setUserWeeklyPoints] = useState(() => getStudentWeeklyPoints(currentUser));
+  const [userTotalPoints, setUserTotalPoints] = useState(() => getStudentTotalPoints(currentUser));
 
   // 系統回報 Modal 狀態
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -55,6 +56,7 @@ export default function HeroBanner({
 
   useEffect(() => {
     setUserWeeklyPoints(getStudentWeeklyPoints(currentUser));
+    setUserTotalPoints(getStudentTotalPoints(currentUser));
   }, [currentUser]);
 
   useEffect(() => {
@@ -80,6 +82,7 @@ export default function HeroBanner({
     const uId = currentUser?.id || 'guest';
     setDailyStats(getDailyPracticeStats(uId));
     setUserWeeklyPoints(getStudentWeeklyPoints(currentUser));
+    setUserTotalPoints(getStudentTotalPoints(currentUser));
 
     // 監聽跨裝置雲端同步（手機做題後，電腦端即時接收推播更新今日目標與週排行榜累積點數）
     const unsub = subscribeToCloudSync((event) => {
@@ -93,6 +96,7 @@ export default function HeroBanner({
       ) {
         setDailyStats(getDailyPracticeStats(uId));
         setUserWeeklyPoints(getStudentWeeklyPoints(currentUser));
+        setUserTotalPoints(getStudentTotalPoints(currentUser));
       }
     });
     return unsub;
@@ -433,9 +437,11 @@ export default function HeroBanner({
                 />
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: 700, color: '#5b6772' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: 700, color: '#5b6772', flexWrap: 'wrap', gap: '6px' }}>
                 <span>答對一題即得 1 點週排行榜點數</span>
-                <span style={{ color: 'var(--theme-accent, var(--theme-accent, #ef8354))' }}>本週累積：{userWeeklyPoints} 點</span>
+                <span style={{ color: 'var(--theme-accent, var(--theme-accent, #ef8354))', fontWeight: 800 }}>
+                  本週累積：{userWeeklyPoints} 點{userTotalPoints > 0 ? ` (歷史累計：${userTotalPoints} 點)` : ''}
+                </span>
               </div>
             </div>
 

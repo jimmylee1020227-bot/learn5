@@ -432,3 +432,20 @@ export function getStudentWeeklyPoints(userOrId) {
   if (player.weekId && player.weekId !== currentWeekId) return 0;
   return player.weeklyPoints || 0;
 }
+
+// 取得指定學生的歷史累積總點數
+export function getStudentTotalPoints(userOrId) {
+  if (!userOrId) return 0;
+  const uid = typeof userOrId === 'string' ? userOrId : (userOrId.id || userOrId.userId);
+  const email = typeof userOrId === 'object' ? userOrId.email : null;
+  const cleanEmail = email ? email.trim().toLowerCase() : '';
+  const board = getLeaderboard();
+  
+  let player = board.find(x => x && (x.userId === uid || (cleanEmail && x.email && x.email.trim().toLowerCase() === cleanEmail)));
+  if (!player && uid) {
+    player = board.find(x => x && x.userId === uid);
+  }
+  if (!player) return 0;
+  return player.totalPoints || player.weeklyPoints || 0;
+}
+

@@ -3375,23 +3375,50 @@ export function savePrivacyConsent(userId, userInfo = {}) {
 
 // --- 14. 雲端延遲診斷與網路健康度測量 (Cloud Ping Latency Meter) ---
 export async function measureCloudPing() {
-  if (!db) {
-    return { pingMs: -1, status: 'offline', message: 'Firebase 未初始化或離線中' };
-  }
   const start = Date.now();
+  // 1. 優先使用 Firebase SDK 測量（設定 2 秒超時防阻塞卡死）
+  if (db) {
+    try {
+      const pingRef = ref(db, 'studyhub/system_ping');
+      const pingPromise = get(pingRef);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Firebase SDK 連線逾時')), 2000)
+      );
+      await Promise.race([pingPromise, timeoutPromise]);
+      const pingMs = Math.max(1, Date.now() - start);
+      return {
+        pingMs,
+        status: pingMs < 350 ? 'excellent' : pingMs < 800 ? 'good' : 'slow',
+        message: pingMs < 350 ? '極速連線 (雲端秒級同步)' : pingMs < 800 ? '連線穩定良好' : '連線稍有延遲'
+      };
+    } catch (_) {}
+  }
+
+  // 2. 降級保護：若 SDK 握手延遲，改以輕量級 REST HTTP 直接測量伺服器往返延遲
   try {
-    const pingRef = ref(db, 'studyhub/system_ping');
-    await get(pingRef);
-    const pingMs = Date.now() - start;
+    const httpStart = Date.now();
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 2500) : null;
+    await fetch('https://learn-9e08c-default-rtdb.asia-southeast1.firebasedatabase.app/studyhub/global_system_buff.json', {
+      signal: controller?.signal,
+      cache: 'no-store'
+    });
+    if (timeoutId) clearTimeout(timeoutId);
+    const pingMs = Math.max(1, Date.now() - httpStart);
     return {
       pingMs,
-      status: pingMs < 300 ? 'excellent' : pingMs < 800 ? 'good' : 'slow',
-      message: pingMs < 300 ? '極速連線 (雲端秒級同步)' : pingMs < 800 ? '連線穩定良好' : '連線稍有延遲'
+      status: pingMs < 350 ? 'excellent' : pingMs < 800 ? 'good' : 'slow',
+      message: pingMs < 350 ? '極速連線 (HTTP 備援)' : pingMs < 800 ? '連線穩定 (HTTP 備援)' : '連線稍慢 (HTTP 備援)'
     };
-  } catch (err) {
-    return { pingMs: -1, status: 'error', message: err.message || '連線超時' };
+  } catch (httpErr) {
+    return { 
+      pingMs: -1, 
+      status: 'error', 
+      message: '連線異常，請檢查網路' 
+    };
   }
 }
+
 
 // --- 15. 後台學生帳號註銷引擎 (Account Deletion & Data Purge) ---
 export async function deleteStudentAccount(targetUserId, operatorUser) {
