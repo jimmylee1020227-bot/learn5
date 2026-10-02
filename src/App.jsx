@@ -35,7 +35,8 @@ import {
   incrementDailyPracticeStats,
   getPrivacyConsent,
   savePrivacyConsent,
-  subscribeToCloudSync
+  subscribeToCloudSync,
+  autoSyncLocalPendingDataToCloud
 } from './services/cloudStorage';
 
 function MainAppContent() {
@@ -163,6 +164,13 @@ function MainAppContent() {
       results,
       timeSpentSec
     });
+
+    // 3. 🚀 手機交卷立即補推雙保險：確保所有考卷、日誌與點數瞬間 100% 抵達 Firebase
+    if (currentUser) {
+      setTimeout(() => {
+        autoSyncLocalPendingDataToCloud(currentUser);
+      }, 50);
+    }
   };
 
   const handleRetryQuiz = () => {

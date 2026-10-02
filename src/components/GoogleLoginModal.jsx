@@ -36,7 +36,8 @@ export default function GoogleLoginModal() {
   };
 
   const handleLoginAsSuperAdmin = () => {
-    directLoginWithEmail(SUPER_ADMIN_EMAIL, '總管理員 Jimmy');
+    const adminKey = import.meta.env.VITE_ADMIN_KEY || '';
+    directLoginWithEmail(SUPER_ADMIN_EMAIL, '總管理員 Jimmy', adminKey);
     setIsGoogleConfigModalOpen(false);
   };
 

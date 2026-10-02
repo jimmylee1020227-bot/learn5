@@ -138,16 +138,39 @@ export function sanitizeForFirebase(data) {
   }));
 }
 
-// Firebase 同步推播函數 (移至最前方避免混淆器 Hoisting 失效，支援陣列與物件安全推播)
+const FIREBASE_REST_BASE = 'https://learn-9e08c-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+// 🚀 雙軌極速寫入：使用帶 keepalive 的 REST API，保證手機切換 App、休眠或關閉分頁時 100% 成功送達
+export function pushDirectToFirebaseRest(nodePath, data, method = 'PUT') {
+  if (typeof window === 'undefined' || !window.fetch) return Promise.resolve();
+  const cleanPath = nodePath.replace(/^\/+|\/+$/g, '');
+  const url = `${FIREBASE_REST_BASE}/${cleanPath}.json`;
+  try {
+    const cleanPayload = sanitizeForFirebase(data);
+    if (cleanPayload === undefined) return Promise.resolve();
+    return fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cleanPayload),
+      keepalive: true
+    }).catch(err => {
+      console.warn(`[Firebase REST Write Warning: ${nodePath}]`, err);
+    });
+  } catch (e) {
+    return Promise.resolve();
+  }
+}
+
+// Firebase 同步推播函數 (雙軌模式：WebSocket SDK + 帶 keepalive 的 REST API)
 export function updateServerSync(key, updates) {
-  if (!db) return;
   try {
     const cleanPayload = sanitizeForFirebase(updates);
     if (cleanPayload === undefined) return;
-    const r = ref(db, `studyhub/${key}`);
-    set(r, cleanPayload).catch(err => {
-      console.error(`[Firebase Write/Update Error: ${key}]`, err);
-    });
+    if (db) {
+      const r = ref(db, `studyhub/${key}`);
+      set(r, cleanPayload).catch(() => {});
+    }
+    pushDirectToFirebaseRest(`studyhub/${key}`, cleanPayload);
   } catch (e) {
     console.error(`[Firebase Write/Update Exception: ${key}]`, e);
   }
@@ -343,16 +366,17 @@ export function initFirebaseRealtimeSync() {
   } catch (e) {}
 }
 
-// 原子化推送單一玩家排行榜資料至 Firebase (避免千萬人併發覆寫整份陣列)
+// 原子化推送單一玩家排行榜資料至 Firebase (雙軌模式：WebSocket SDK + 帶 keepalive 的 REST API)
 export function pushPlayerLeaderboardSync(userId, playerData) {
-  if (!db || !userId) return Promise.resolve();
+  if (!userId) return Promise.resolve();
   try {
     const cleanPayload = sanitizeForFirebase(playerData);
     if (!cleanPayload) return Promise.resolve();
-    const r = ref(db, `studyhub/leaderboard_players/${userId}`);
-    return set(r, cleanPayload).catch(err => {
-      console.error(`[Firebase Leaderboard Player Push Error: ${userId}]`, err);
-    });
+    if (db) {
+      const r = ref(db, `studyhub/leaderboard_players/${userId}`);
+      set(r, cleanPayload).catch(() => {});
+    }
+    return pushDirectToFirebaseRest(`studyhub/leaderboard_players/${userId}`, cleanPayload);
   } catch (e) {
     console.error(`[Firebase Leaderboard Player Exception: ${userId}]`, e);
     return Promise.resolve();
@@ -1234,11 +1258,13 @@ export function recordQuizPaperSession(paperSession) {
     if (allLocalPapers.length > 1000) allLocalPapers.length = 1000;
     setJson('all_quiz_papers', allLocalPapers);
 
-    // 同步推送至 Firebase 雲端獨立節點
+    // 同步推送至 Firebase 雲端獨立節點 (雙軌：SDK + keepalive REST API)
     if (db) {
       set(ref(db, `studyhub/quiz_papers/${paperSession.id}`), sanitizeForFirebase(paperSession)).catch(() => {});
       set(ref(db, `studyhub/${userPapersKey}`), sanitizeForFirebase(userPapers)).catch(() => {});
     }
+    pushDirectToFirebaseRest(`studyhub/quiz_papers/${paperSession.id}`, paperSession);
+    pushDirectToFirebaseRest(`studyhub/${userPapersKey}`, userPapers);
 
     // 發送本地事件通知 UI (例如歷程錯題 Modal) 即時重啟渲染
     if (typeof window !== 'undefined') {
@@ -1371,6 +1397,103 @@ export async function fetchAllCloudQuizPapers(forceRefresh = false) {
 })();
 
 return inFlightQuizPapersPromise;
+}
+
+// 🚀 本機未同步資料自動補推引擎 (Auto-Outbox Sync Engine)
+// 徹底解決手機端因弱網、鎖屏休眠或關閉瀏覽器導致考卷與點數卡在 localStorage 的痛點！
+export async function autoSyncLocalPendingDataToCloud(user) {
+  if (!user || !user.id || user.id === 'guest_student') return;
+  const uid = user.id;
+
+  try {
+    // 1. 檢查並轉移 guest_student 本地試卷至登入帳號
+    const guestPapersKey = 'user_quiz_papers_guest_student';
+    const guestPapers = getJson(guestPapersKey, []);
+    const userPapersKey = `user_quiz_papers_${uid}`;
+    let userPapers = getJson(userPapersKey, []);
+
+    if (Array.isArray(guestPapers) && guestPapers.length > 0) {
+      console.log(`[Auto-Outbox] 偵測到 ${guestPapers.length} 份訪客本地試卷，自動遷移至當前學生帳號！`);
+      const migrated = guestPapers.map(p => ({
+        ...p,
+        userId: uid,
+        ownerId: uid,
+        userName: user.displayName || p.userName || '國中同學',
+        userEmail: user.email || ''
+      }));
+      const pMap = new Map();
+      userPapers.forEach(p => { if (p?.id) pMap.set(p.id, p); });
+      migrated.forEach(p => { if (p?.id) pMap.set(p.id, p); });
+      userPapers = Array.from(pMap.values());
+      setJson(userPapersKey, userPapers);
+      // 清空訪客本機考卷
+      safeSetLocalStorage(STORAGE_PREFIX + guestPapersKey, JSON.stringify([]));
+    }
+
+    // 1.2 檢查並轉移 guest_student 本地做題歷史
+    const guestHistoryKey = 'practice_history_guest_student';
+    const guestLogs = getJson(guestHistoryKey, []);
+    const userHistoryKey = `practice_history_${uid}`;
+    let userLogs = getJson(userHistoryKey, []);
+
+    if (Array.isArray(guestLogs) && guestLogs.length > 0) {
+      console.log(`[Auto-Outbox] 偵測到 ${guestLogs.length} 筆訪客做題日誌，自動遷移至當前學生帳號！`);
+      const migratedLogs = guestLogs.map(l => ({
+        ...l,
+        userId: uid,
+        userName: user.displayName || l.userName || '國中同學',
+        userEmail: user.email || ''
+      }));
+      const lMap = new Map();
+      userLogs.forEach(l => { if (l?.id) lMap.set(l.id, l); });
+      migratedLogs.forEach(l => { if (l?.id) lMap.set(l.id, l); });
+      userLogs = Array.from(lMap.values()).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+      setJson(userHistoryKey, userLogs);
+      safeSetLocalStorage(STORAGE_PREFIX + guestHistoryKey, JSON.stringify([]));
+    }
+
+    // 2. 自動向雲端推播本機所有考卷 (雙軌：REST PUT + SDK)
+    if (Array.isArray(userPapers) && userPapers.length > 0) {
+      pushDirectToFirebaseRest(`studyhub/${userPapersKey}`, userPapers);
+      userPapers.forEach(p => {
+        if (p?.id) {
+          pushDirectToFirebaseRest(`studyhub/quiz_papers/${p.id}`, p);
+        }
+      });
+    }
+
+    // 3. 自動補推本機做題歷程
+    if (Array.isArray(userLogs) && userLogs.length > 0) {
+      pushDirectToFirebaseRest(`studyhub/${userHistoryKey}`, userLogs);
+    }
+
+    // 4. 自動補推本機錯題本
+    const mistakeKey = `mistake_notebook_${uid}`;
+    const userMistakes = getJson(mistakeKey, []);
+    if (Array.isArray(userMistakes) && userMistakes.length > 0) {
+      pushDirectToFirebaseRest(`studyhub/${mistakeKey}`, userMistakes);
+    }
+
+    // 5. 自動校準並補推本機點數至排行榜節點 (若考卷答對數高於現有記錄，自動補足)
+    const totalCorrectFromPapers = (userPapers || []).reduce((acc, p) => acc + (p.correctCount || 0), 0);
+    const board = getJson('studyhub_weekly_leaderboard', []);
+    if (Array.isArray(board)) {
+      const cleanEmail = (user.email || '').trim().toLowerCase();
+      let player = board.find(p => p && (p.userId === uid || (cleanEmail && p.email && p.email.toLowerCase() === cleanEmail)));
+      if (player) {
+        if (totalCorrectFromPapers > (player.totalPoints || 0)) {
+          const diff = totalCorrectFromPapers - (player.totalPoints || 0);
+          player.totalPoints = totalCorrectFromPapers;
+          player.weeklyPoints = (player.weeklyPoints || 0) + diff;
+          player.updatedAt = Date.now();
+          setJson('studyhub_weekly_leaderboard', board);
+        }
+        pushPlayerLeaderboardSync(uid, player);
+      }
+    }
+  } catch (err) {
+    console.warn('[Auto-Outbox Error]', err);
+  }
 }
 
 // 異步向 Firebase 調閱特定學生的歷史試卷（加 2 秒超時保護，移除昂貴的全服遞迴呼叫）

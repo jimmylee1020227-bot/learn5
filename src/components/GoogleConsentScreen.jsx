@@ -22,7 +22,8 @@ export default function GoogleConsentScreen({ isOpen, onClose }) {
   const handleConfirmLogin = (emailToUse) => {
     setIsAuthorizing(true);
     setTimeout(() => {
-      directLoginWithEmail(emailToUse);
+      const adminKey = import.meta.env.VITE_ADMIN_KEY || '';
+      directLoginWithEmail(emailToUse, '', adminKey);
       setIsAuthorizing(false);
       onClose();
     }, 600);

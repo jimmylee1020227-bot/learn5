@@ -226,7 +226,8 @@ export function AuthProvider({ children }) {
       fetchCloudUserMistakeNotebook,
       fetchCloudUserRedeemedCodes,
       fetchCloudRedemptionCodes,
-      fetchCloudAdminNotifications
+      fetchCloudAdminNotifications,
+      autoSyncLocalPendingDataToCloud
     }) => {
       fetchAllCloudQuizPapers().catch(() => {});
       fetchCloudUserRegistry().catch(() => {});
@@ -234,6 +235,9 @@ export function AuthProvider({ children }) {
       fetchCloudAdminNotifications().catch(() => {});
 
       if (currentUser?.id && currentUser.id !== 'guest_student') {
+        // 🚀 核心：自動掃描並補推手機本機留存的考卷、做題歷程與點數至 Firebase
+        autoSyncLocalPendingDataToCloud(currentUser);
+
         fetchCloudUserGameState(currentUser.id);
         fetchCloudUserQuizPapers(currentUser.id);
         fetchCloudUserPracticeHistory(currentUser.id);
