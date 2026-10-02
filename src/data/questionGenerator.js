@@ -69,22 +69,28 @@ export function generateQuestion(subjectId, gradeId, unitId, index, difficulty =
     if (!effectiveSubjectId || effectiveSubjectId === 'all' || effectiveSubjectId === 'all-subjects') {
       effectiveSubjectId = unitMeta.subjectId;
     }
+  }
+
+  // 2. 針對「總複習」年級 (不論有沒有指定單元，或者指定的是總複習專屬單元)，我們必須將其對應到實際的年級單元來產題
+  if (effectiveGradeId === 'junior-all') {
+    const juniorGrades = ['g7', 'g8', 'g9'];
+    effectiveGradeId = juniorGrades[Math.floor(rand() * juniorGrades.length)];
+    const possibleUnits = CURRICULUM_UNITS[effectiveSubjectId]?.[effectiveGradeId] || [];
+    if (possibleUnits.length > 0) {
+      effectiveUnitId = possibleUnits[Math.floor(rand() * possibleUnits.length)].id;
+    }
+  } else if (effectiveGradeId === 'senior-all') {
+    const seniorGrades = ['h1', 'h2', 'h3'];
+    effectiveGradeId = seniorGrades[Math.floor(rand() * seniorGrades.length)];
+    const possibleUnits = CURRICULUM_UNITS[effectiveSubjectId]?.[effectiveGradeId] || [];
+    if (possibleUnits.length > 0) {
+      effectiveUnitId = possibleUnits[Math.floor(rand() * possibleUnits.length)].id;
+    }
   } else if (!effectiveUnitId) {
-    // 2. 只有在「完全未指定單元」時，總複習年級才隨機挑選單元
-    if (gradeId === 'junior-all') {
-      const juniorGrades = ['g7', 'g8', 'g9'];
-      effectiveGradeId = juniorGrades[Math.floor(rand() * juniorGrades.length)];
-      const possibleUnits = CURRICULUM_UNITS[effectiveSubjectId]?.[effectiveGradeId] || [];
-      if (possibleUnits.length > 0) {
-        effectiveUnitId = possibleUnits[Math.floor(rand() * possibleUnits.length)].id;
-      }
-    } else if (gradeId === 'senior-all') {
-      const seniorGrades = ['h1', 'h2', 'h3'];
-      effectiveGradeId = seniorGrades[Math.floor(rand() * seniorGrades.length)];
-      const possibleUnits = CURRICULUM_UNITS[effectiveSubjectId]?.[effectiveGradeId] || [];
-      if (possibleUnits.length > 0) {
-        effectiveUnitId = possibleUnits[Math.floor(rand() * possibleUnits.length)].id;
-      }
+    // 3. 如果仍未指定單元，從該年級中隨機挑選
+    const possibleUnits = CURRICULUM_UNITS[effectiveSubjectId]?.[effectiveGradeId] || [];
+    if (possibleUnits.length > 0) {
+      effectiveUnitId = possibleUnits[Math.floor(rand() * possibleUnits.length)].id;
     }
   }
 
