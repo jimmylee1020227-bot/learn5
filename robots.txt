@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://jimmylee1020227-bot.github.io/learn5/sitemap.xml
+Sitemap: https://goodlearn5.github.io/learn5/sitemap.xml
