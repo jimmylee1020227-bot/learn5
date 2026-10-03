@@ -62,9 +62,47 @@
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <!-- 禁用麥克風、相機等不必要權限 -->
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()" />
-  <!-- ══════ /Security Headers ══════ -->
-  <!-- Google Fonts: Plus Jakarta Sans & Noto Sans TC (Manus Exam Community Style) -->
+  <!-- ══════ SEO & 社群分享標籤 (Open Graph / Twitter Card) ══════ -->
+  <link rel="canonical" href="https://jimmylee1020227-bot.github.io/learn5/" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <meta name="keywords" content="學習網, 國中會考, 108課綱, 國中題庫, 國中模擬考, 會考複習, 國文題庫, 英文題庫, 數學題庫, 自然題庫, 社會題庫, 線上測驗, 歷屆試題, 錯題本, 學習進度" />
+  <meta name="author" content="學習網 StudyHub 團隊" />
 
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://jimmylee1020227-bot.github.io/learn5/" />
+  <meta property="og:title" content="學習網 | 國中108課綱全科題庫・會考複習與智慧錯題系統" />
+  <meta property="og:description" content="專為國中108課綱設計的全科測驗複習學習網。國一至國三國文、英語、數學、自然、社會全科目，破千題題庫、即時解析、每週排行榜與智慧錯題強化。" />
+  <meta property="og:image" content="https://jimmylee1020227-bot.github.io/learn5/logo.jpg" />
+  <meta property="og:site_name" content="學習網 StudyHub" />
+  <meta property="og:locale" content="zh_TW" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="學習網 | 國中108課綱全科題庫・會考複習系統" />
+  <meta name="twitter:description" content="國中108課綱國英數自社全科題庫，全方位支援國中會考模擬與錯題複習。" />
+  <meta name="twitter:image" content="https://jimmylee1020227-bot.github.io/learn5/logo.jpg" />
+
+  <!-- ══════ Schema.org 結構化資料 (加速 Google Rich Snippets 索引) ══════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "學習網 - 108課綱國中全科題庫與會考複習系統",
+    "url": "https://jimmylee1020227-bot.github.io/learn5/",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "TWD"
+    },
+    "description": "專為國中108課綱設計之全科線上題庫與會考診斷系統，提供國一至國三國文、英語、數學、自然、社會全科題目、錯題本、單元重點筆記與全台排行榜。",
+    "inLanguage": "zh-TW"
+  }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Noto Sans TC (Manus Exam Community Style) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -75,7 +113,15 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- 搜尋引擎爬蟲初次抓取語義化支援 (React 載入時將自動接管) -->
+    <noscript>
+      <header>
+        <h1>學習網 - 國中108課綱全科線上題庫與會考複習系統</h1>
+        <p>提供國中七年級、八年級、九年級國文、英語、數學、自然、社會全科海量題庫，包含即時詳解、智慧錯題本與重點筆記。</p>
+      </header>
+    </noscript>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 
