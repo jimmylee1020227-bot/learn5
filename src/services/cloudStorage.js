@@ -1,4 +1,5 @@
 import { db, ref, set, get, onValue, update } from './firebase.js';
+import { sanitizeFirebasePath, verifyUserAdminProof } from '../utils/secureStorage.js';
 
 // ── 空間守護與自動修剪引擎 (LocalStorage Quota Guard) ──
 export function pruneLocalStorageQuota() {
@@ -229,7 +230,8 @@ const FIREBASE_REST_BASE = 'https://learn-9e08c-default-rtdb.asia-southeast1.fir
 // 🚀 雙軌極速寫入：使用帶 keepalive 的 REST API，保證手機切換 App、休眠或關閉分頁時 100% 成功送達
 export function pushDirectToFirebaseRest(nodePath, data, method = 'PUT') {
   if (typeof window === 'undefined' || !window.fetch) return Promise.resolve();
-  const cleanPath = nodePath.replace(/^\/+|\/+$/g, '');
+  const cleanPath = sanitizeFirebasePath(nodePath);
+  if (!cleanPath) return Promise.resolve();
   const url = `${FIREBASE_REST_BASE}/${cleanPath}.json`;
   try {
     const cleanPayload = sanitizeForFirebase(data);
@@ -922,18 +924,20 @@ export function subscribeToCloudSync(callback) {
 export function checkIsSuperAdmin(user) {
   if (!user) return false;
   const emailLower = (user.email || '').trim().toLowerCase();
-  return user.role === 'super_admin' || emailLower === SUPER_ADMIN_EMAIL.toLowerCase();
+  // 總管理員必須同時具備或符合指定之最高管理信箱
+  return emailLower === SUPER_ADMIN_EMAIL.toLowerCase();
 }
 
 // 檢查使用者是否具備管理員權限 (包含總管理員與被任命之一般管理員)
 export function checkIsAdmin(user) {
   if (!user) return false;
   if (checkIsSuperAdmin(user)) return true;
-  if (user.role === 'admin') return true;
   const emailLower = (user.email || '').trim().toLowerCase();
   if (!emailLower) return false;
   const admins = getAdminsList();
-  return Array.isArray(admins) && admins.some(a => a && a.email && a.email.trim().toLowerCase() === emailLower);
+  // 防篡改防護：禁止僅憑本地 user.role 偽造，必須存在於管理員核准名單中
+  const isInAdminList = Array.isArray(admins) && admins.some(a => a && a.email && a.email.trim().toLowerCase() === emailLower);
+  return isInAdminList;
 }
 
 // --- 1. 管理員名冊與 RBAC 權限管理 ---

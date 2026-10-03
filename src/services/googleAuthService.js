@@ -76,6 +76,7 @@ export async function parseGoogleAuthCallback() {
       const cleanEmail = mockEmail.trim().toLowerCase();
       const unifiedId = generateDeterministicUserId(cleanEmail);
       
+      // 🔒 安全防護：模擬跳轉永遠只授予 student 身分，杜絕任何藉由 URL 參數提權的可能！
       return {
         googleId: unifiedId,
         id: unifiedId, // 統一所有登入 ID 格式
@@ -83,7 +84,7 @@ export async function parseGoogleAuthCallback() {
         displayName: cleanEmail.split('@')[0],
         avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
         isGoogleBound: true,
-        role: cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase() ? 'super_admin' : 'student'
+        role: 'student'
       };
     }
   }
@@ -198,6 +199,49 @@ export async function resolveUserRoleAsync(email) {
     return 'admin';
   }
   return 'student';
+}
+
+// 嚴格校驗使用者是否具備合法的管理員簽章（杜絕 DevTools/LocalStorage 竄改提權）
+export function verifyUserAdminProof(user) {
+  if (!user || !user.email) return false;
+  const cleanEmail = (user.email || '').trim().toLowerCase();
+  
+  // 檢查該 Email 是否在管理員允許清單內
+  const isJimmy = cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase();
+  const admins = getAdminsList();
+  const isAdminEmail = isJimmy || (Array.isArray(admins) && admins.some(a => a?.email?.trim().toLowerCase() === cleanEmail));
+  if (!isAdminEmail) return false;
+
+  let authProof = user.authProof;
+  let adminSessionProof = user.adminSessionProof;
+  let sub = user.sub;
+  let accessToken = user.accessToken;
+
+  // 若 user 物件未直接攜帶（例如存入 localStorage 前被安全剝離），自 sessionStorage 補齊驗證
+  if ((!authProof && !adminSessionProof) && typeof window !== 'undefined' && window.sessionStorage) {
+    try {
+      const sensitive = JSON.parse(sessionStorage.getItem('__sh_sensitive__') || '{}');
+      if (sensitive.authProof) authProof = sensitive.authProof;
+      if (sensitive.adminSessionProof) adminSessionProof = sensitive.adminSessionProof;
+      if (sensitive.sub) sub = sensitive.sub;
+      if (sensitive.accessToken) accessToken = sensitive.accessToken;
+    } catch (_) {}
+  }
+
+  // 1. Google OAuth 2.0 官方憑證驗證
+  if (authProof && (sub || user.sub) && (accessToken || user.accessToken)) {
+    const expected = generateAuthProof(cleanEmail, sub || user.sub, accessToken || user.accessToken);
+    if (authProof === expected) return true;
+  }
+
+  // 2. 專屬安全密鑰 Session 驗證 (VITE_ADMIN_KEY)
+  const envAdminKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ADMIN_KEY) || '';
+  if (adminSessionProof) {
+    const expectedEnv = generateAuthProof(cleanEmail, 'admin_session', envAdminKey);
+    if (adminSessionProof === expectedEnv) return true;
+  }
+
+  return false;
 }
 
 
