@@ -1,13 +1,99 @@
 import { db, ref, set, get, onValue, update } from './firebase.js';
 
-// 安全寫入 LocalStorage (防 QuotaExceededError 造成後續雲端同步中斷)
+// ── 空間守護與自動修剪引擎 (LocalStorage Quota Guard) ──
+export function pruneLocalStorageQuota() {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    // 1. 裁剪審計日誌 (保留最近 30 筆)
+    const auditKey = 'studyhub_cloud_audit_logs';
+    const audit = localStorage.getItem(auditKey);
+    if (audit) {
+      try {
+        const arr = JSON.parse(audit);
+        if (Array.isArray(arr) && arr.length > 30) {
+          localStorage.setItem(auditKey, JSON.stringify(arr.slice(0, 30)));
+        }
+      } catch (_) { localStorage.removeItem(auditKey); }
+    }
+
+    // 2. 裁剪做題歷史 (本地只留最新 80 筆，雲端完整保留)
+    const histKey = 'studyhub_cloud_practice_history';
+    const hist = localStorage.getItem(histKey);
+    if (hist) {
+      try {
+        const arr = JSON.parse(hist);
+        if (Array.isArray(arr) && arr.length > 80) {
+          localStorage.setItem(histKey, JSON.stringify(arr.slice(0, 80)));
+        }
+      } catch (_) { localStorage.removeItem(histKey); }
+    }
+
+    // 3. 裁剪全服試卷快取 (本地只留最新 25 份，雲端永久保留所有考卷)
+    const papersKey = 'studyhub_cloud_all_quiz_papers';
+    const papers = localStorage.getItem(papersKey);
+    if (papers) {
+      try {
+        const arr = JSON.parse(papers);
+        if (Array.isArray(arr) && arr.length > 25) {
+          localStorage.setItem(papersKey, JSON.stringify(arr.slice(0, 25)));
+        }
+      } catch (_) { localStorage.removeItem(papersKey); }
+    }
+
+    // 4. 清理並修剪所有個別學生過大之作答卷與作答紀錄
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith('studyhub_cloud_practice_history_') || k.startsWith('studyhub_cloud_user_quiz_papers_'))) {
+        const val = localStorage.getItem(k);
+        if (val && val.length > 100000) {
+          try {
+            const arr = JSON.parse(val);
+            if (Array.isArray(arr) && arr.length > 20) {
+              localStorage.setItem(k, JSON.stringify(arr.slice(0, 20)));
+            }
+          } catch (_) {
+            localStorage.removeItem(k);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Quota Guard] 空間自動修剪過程捕獲例外:', err);
+  }
+}
+
+// 模組載入時立即自檢一次，避免舊快取殘留塞爆 LocalStorage
+if (typeof window !== 'undefined') {
+  try { pruneLocalStorageQuota(); } catch (_) {}
+}
+
+// 安全寫入 LocalStorage (防 QuotaExceededError 造成後續流程中斷)
 export function safeSetLocalStorage(key, valueStr) {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem(key, valueStr);
     }
   } catch (e) {
-    console.warn(`[LocalStorage Warning] 無法儲存 ${key} (可能已滿 5MB限制)，但不影響雲端存檔。`, e);
+    const isQuota = e && (
+      e.name === 'QuotaExceededError' || 
+      e.code === 22 || 
+      e.code === 1014 || 
+      (typeof e.message === 'string' && e.message.toLowerCase().includes('quota'))
+    );
+    if (isQuota) {
+      console.warn(`[LocalStorage QuotaExceeded] 容量達到上限，正在自動清理舊快取以釋放空間... 鍵名: ${key}`);
+      pruneLocalStorageQuota();
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem(key, valueStr);
+          return;
+        }
+      } catch (retryErr) {
+        console.warn(`[LocalStorage Warning] 修剪後仍無法儲存 ${key}，已保底在記憶體儲存，不影響雲端同步。`);
+      }
+    } else {
+      console.warn(`[LocalStorage Warning] 無法儲存 ${key}:`, e);
+    }
   }
 }
 
@@ -1294,14 +1380,14 @@ export function recordQuizPaperSession(paperSession) {
     const rawUserPapers = getJson(userPapersKey, []);
     const userPapers = Array.isArray(rawUserPapers) ? rawUserPapers : (rawUserPapers && typeof rawUserPapers === 'object' ? Object.values(rawUserPapers) : []);
     userPapers.unshift(paperSession);
-    if (userPapers.length > 500) userPapers.length = 500;
+    if (userPapers.length > 20) userPapers.length = 20;
     setJson(userPapersKey, userPapers);
 
-    // 全服快取同步推播
+    // 全服快取同步推播 (本地只快取最新 25 份，雲端永久保留全量)
     const rawAllPapers = getJson('all_quiz_papers', []);
     const allLocalPapers = Array.isArray(rawAllPapers) ? rawAllPapers : (rawAllPapers && typeof rawAllPapers === 'object' ? Object.values(rawAllPapers) : []);
     allLocalPapers.unshift(paperSession);
-    if (allLocalPapers.length > 1000) allLocalPapers.length = 1000;
+    if (allLocalPapers.length > 25) allLocalPapers.length = 25;
     setJson('all_quiz_papers', allLocalPapers);
 
     // 同步推送至 Firebase 雲端獨立節點 (雙軌：SDK + keepalive REST API)

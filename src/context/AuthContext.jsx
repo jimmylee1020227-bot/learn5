@@ -14,7 +14,9 @@ import {
   checkNicknameAvailable,
   saveUserAvatarToCloud,
   fetchCloudUserProfile,
-  subscribeToUserProfile
+  subscribeToUserProfile,
+  safeSetLocalStorage,
+  pruneLocalStorageQuota
 } from '../services/cloudStorage';
 import { generateInitialsAvatar } from '../utils/avatarHelper.jsx';
 import siteLogo from '../assets/logo.jpg';
@@ -33,6 +35,18 @@ import {
 const AuthContext = createContext();
 
 const STORAGE_USER_KEY = 'studyhub_current_user';
+
+// 安全寫入使用者狀態至 LocalStorage，防禦 QuotaExceededError
+function safeSaveUserToStorage(userObj) {
+  if (!userObj) return;
+  try {
+    const jsonStr = JSON.stringify(userObj);
+    safeSetLocalStorage(STORAGE_USER_KEY, jsonStr);
+    safeSetLocalStorage('studyhub_auth_user', jsonStr);
+  } catch (err) {
+    console.warn('[safeSaveUserToStorage] 保底攔截 Quota 異常:', err);
+  }
+}
 
 export function AuthProvider({ children }) {
   // 強制正式登入制：未登入時 currentUser 為 null，禁止訪客直接進入
@@ -169,8 +183,7 @@ export function AuthProvider({ children }) {
           const safeUser = { ...newUser };
           delete safeUser.accessToken;
           delete safeUser.authProof;
-          localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
-          localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
+          safeSaveUserToStorage(safeUser);
           registerCloudUser(newUser);
         }
       } catch (err) {
@@ -199,9 +212,8 @@ export function AuthProvider({ children }) {
               const safeUser = { ...updated };
               delete safeUser.accessToken;
               delete safeUser.authProof;
-              localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
-              localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
-              localStorage.setItem(`studyhub_custom_name_${updated.email.trim().toLowerCase()}`, cloudProfile.name);
+              safeSaveUserToStorage(safeUser);
+              safeSetLocalStorage(`studyhub_custom_name_${updated.email.trim().toLowerCase()}`, cloudProfile.name);
               return updated;
             });
           }
@@ -260,8 +272,7 @@ export function AuthProvider({ children }) {
           setCurrentUser(updatedUser);
           const safeUpdated = { ...updatedUser };
           delete safeUpdated.accessToken; delete safeUpdated.authProof;
-          localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUpdated));
-          localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUpdated));
+          safeSaveUserToStorage(safeUpdated);
         }
       }
     };
@@ -302,8 +313,7 @@ export function AuthProvider({ children }) {
               const next = { ...prev, displayName: updatedName, avatar: updatedAvatar, photoURL: updatedAvatar };
               const safe = { ...next };
               delete safe.accessToken; delete safe.authProof; delete safe.adminSessionProof;
-              localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safe));
-              localStorage.setItem('studyhub_auth_user', JSON.stringify(safe));
+              safeSaveUserToStorage(safe);
               return next;
             });
           }
@@ -319,8 +329,7 @@ export function AuthProvider({ children }) {
     if (currentUser && currentUser.isGoogleBound) {
       const safeUser = { ...currentUser };
       delete safeUser.accessToken; delete safeUser.authProof;
-      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
-      localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
+      safeSaveUserToStorage(safeUser);
       registerCloudUser(currentUser);
     }
     if (currentUser?.id) {
@@ -334,10 +343,9 @@ export function AuthProvider({ children }) {
             const next = { ...prev, avatar: profile.avatar, photoURL: profile.avatar, customAvatar: profile.avatar };
             const safe = { ...next };
             delete safe.accessToken; delete safe.authProof; delete safe.adminSessionProof;
-            localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safe));
-            localStorage.setItem('studyhub_auth_user', JSON.stringify(safe));
+            safeSaveUserToStorage(safe);
             if (prev.email) {
-              localStorage.setItem(`studyhub_custom_avatar_${prev.email.toLowerCase()}`, profile.avatar);
+              safeSetLocalStorage(`studyhub_custom_avatar_${prev.email.toLowerCase()}`, profile.avatar);
             }
             return next;
           });
@@ -357,7 +365,7 @@ export function AuthProvider({ children }) {
     // 先把自訂暱稱備份到獨立 key，下次登入時仍可讀回
     if (currentUser?.email && currentUser?.customDisplayName) {
       const nameKey = `studyhub_custom_name_${currentUser.email.trim().toLowerCase()}`;
-      localStorage.setItem(nameKey, currentUser.customDisplayName);
+      safeSetLocalStorage(nameKey, currentUser.customDisplayName);
     }
     setCurrentUser(null);
     localStorage.removeItem(STORAGE_USER_KEY);
@@ -413,7 +421,7 @@ export function AuthProvider({ children }) {
     // 即時寫入獨立備份 key（不隨 logout 清除，確保跨登入持久）
     if (currentUser?.email) {
       const nameKey = `studyhub_custom_name_${currentUser.email.trim().toLowerCase()}`;
-      localStorage.setItem(nameKey, trimmed);
+      safeSetLocalStorage(nameKey, trimmed);
     }
     updatePlayerDisplayName(currentUser?.id || 'guest_student', trimmed);
     return trimmed;
@@ -437,14 +445,13 @@ export function AuthProvider({ children }) {
       delete safeUser.accessToken;
       delete safeUser.authProof;
       delete safeUser.adminSessionProof;
-      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
-      localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
+      safeSaveUserToStorage(safeUser);
       return updated;
     });
 
     // 2. 存入獨立自訂頭像 Key (跨次登入永久持久化)
     if (cleanEmail) {
-      localStorage.setItem(`studyhub_custom_avatar_${cleanEmail}`, newAvatarUrl);
+      safeSetLocalStorage(`studyhub_custom_avatar_${cleanEmail}`, newAvatarUrl);
     }
 
     // 3. 呼叫雲端儲存與推播模組 (同步 Firebase user_registry 與 leaderboard_players)
@@ -509,8 +516,7 @@ export function AuthProvider({ children }) {
     // ── 安全：adminSessionProof 不落地 localStorage ──
     const safeUser = { ...user };
     delete safeUser.adminSessionProof; delete safeUser.accessToken; delete safeUser.authProof;
-    localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(safeUser));
-    localStorage.setItem('studyhub_auth_user', JSON.stringify(safeUser));
+    safeSaveUserToStorage(safeUser);
     registerCloudUser(user);
 
     // 異步向雲端拉取最新自訂個資 (跨裝置漫遊自訂頭像秒級更新)
@@ -520,9 +526,8 @@ export function AuthProvider({ children }) {
         setCurrentUser(prev => {
           if (!prev || prev.id !== deterministicId) return prev;
           const next = { ...prev, avatar: profile.avatar, photoURL: profile.avatar, customAvatar: profile.avatar };
-          localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(next));
-          localStorage.setItem('studyhub_auth_user', JSON.stringify(next));
-          localStorage.setItem(`studyhub_custom_avatar_${cleanEmail.toLowerCase()}`, profile.avatar);
+          safeSaveUserToStorage(next);
+          safeSetLocalStorage(`studyhub_custom_avatar_${cleanEmail.toLowerCase()}`, profile.avatar);
           return next;
         });
       }
@@ -549,7 +554,7 @@ export function AuthProvider({ children }) {
         createdAt: new Date().toISOString()
       };
       setCurrentUser(superAdmin);
-      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(superAdmin));
+      safeSaveUserToStorage(superAdmin);
     } else if (role === 'admin') {
       const admins = getAdminsList();
       const targetAdmin = (specificId ? admins.find(a => a.id === specificId) : null) || admins.find(a => a.role === 'admin') || {
@@ -566,7 +571,7 @@ export function AuthProvider({ children }) {
         adminSessionProof: generateAuthProof(targetAdmin.email, 'admin_session', envAdminKey)
       };
       setCurrentUser(adminWithProof);
-      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(adminWithProof));
+      safeSaveUserToStorage(adminWithProof);
     } else {
       const studentUser = {
         id: 'user_lin',
@@ -578,7 +583,7 @@ export function AuthProvider({ children }) {
         createdAt: new Date().toISOString()
       };
       setCurrentUser(studentUser);
-      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(studentUser));
+      safeSaveUserToStorage(studentUser);
     }
   };
 

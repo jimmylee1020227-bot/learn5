@@ -45,7 +45,8 @@ import {
   getPrivacyConsent,
   savePrivacyConsent,
   subscribeToCloudSync,
-  autoSyncLocalPendingDataToCloud
+  autoSyncLocalPendingDataToCloud,
+  pruneLocalStorageQuota
 } from './services/cloudStorage';
 
 function MainAppContent() {
@@ -528,6 +529,7 @@ class AppErrorBoundary extends React.Component {
   handleResetAndHome = () => {
     try {
       window.sessionStorage.clear();
+      try { pruneLocalStorageQuota(); } catch (_) {}
       // 自動清理格式異常的非陣列快取（不影響使用者登入帳號）
       ['studyhub_teachers_list', 'studyhub_teacher_applications', 'studyhub_classes'].forEach(k => {
         const val = window.localStorage.getItem(k);
@@ -538,10 +540,24 @@ class AppErrorBoundary extends React.Component {
     } catch (e) {}
     window.location.href = window.location.pathname;
   };
+
+  handlePruneAndReload = () => {
+    try {
+      pruneLocalStorageQuota();
+      // 強力釋放非核心大快取
+      ['studyhub_cloud_all_quiz_papers', 'studyhub_all_quiz_papers', 'studyhub_cloud_audit_logs'].forEach(k => {
+        window.localStorage.removeItem(k);
+      });
+    } catch (e) {}
+    window.location.reload();
+  };
+
   render() {
     if (this.state.hasError) {
       const errorMsg = this.state.error?.message || String(this.state.error || '未知執行異常');
       const errorStack = this.state.error?.stack || this.state.errorInfo?.componentStack || '';
+      const isQuotaError = typeof errorMsg === 'string' && (errorMsg.includes('quota') || errorMsg.includes('QuotaExceeded'));
+
       return (
         <div style={{
           minHeight: '100vh',
@@ -552,7 +568,7 @@ class AppErrorBoundary extends React.Component {
           padding: '24px'
         }}>
           <div style={{
-            maxWidth: '520px',
+            maxWidth: '540px',
             width: '100%',
             background: '#fffdf9',
             border: '3px solid #17324d',
@@ -561,31 +577,53 @@ class AppErrorBoundary extends React.Component {
             padding: '32px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>{isQuotaError ? '💾' : '⚠️'}</div>
             <h2 style={{ color: '#17324d', fontWeight: 900, marginBottom: '12px' }}>
-              頁面載入異常
+              {isQuotaError ? '本機快取空間已滿' : '頁面載入異常'}
             </h2>
             <p style={{ color: '#5b6772', fontSize: '0.9rem', marginBottom: '20px', lineHeight: 1.6 }}>
-              系統遇到未預期的錯誤，可能是快取暫存問題或弱網狀態。請點擊下方按鈕重新載入或重設回到首頁。
+              {isQuotaError 
+                ? '瀏覽器儲存空間（5MB）已達到上限，導致暫時無法寫入做題資料。請點擊下方「釋放空間」即可自動清理舊試卷並恢復！'
+                : '系統遇到未預期的錯誤，可能是快取暫存問題或弱網狀態。請點擊下方按鈕重新載入或重設回到首頁。'
+              }
             </p>
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }}>
-              <button
-                onClick={() => window.location.reload()}
-                style={{
-                  padding: '10px 24px',
-                  background: '#ef8354',
-                  color: '#fff',
-                  fontWeight: 800,
-                  fontSize: '0.95rem',
-                  border: '2px solid #17324d',
-                  borderRadius: '12px',
-                  boxShadow: '3px 3px 0px #17324d',
-                  cursor: 'pointer'
-                }}
-              >
-                🔄 重新載入
-              </button>
+              {isQuotaError ? (
+                <button
+                  onClick={this.handlePruneAndReload}
+                  style={{
+                    padding: '10px 24px',
+                    background: '#10b981',
+                    color: '#fff',
+                    fontWeight: 800,
+                    fontSize: '0.95rem',
+                    border: '2px solid #17324d',
+                    borderRadius: '12px',
+                    boxShadow: '3px 3px 0px #17324d',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🧹 立即釋放空間並恢復
+                </button>
+              ) : (
+                <button
+                  onClick={() => window.location.reload()}
+                  style={{
+                    padding: '10px 24px',
+                    background: '#ef8354',
+                    color: '#fff',
+                    fontWeight: 800,
+                    fontSize: '0.95rem',
+                    border: '2px solid #17324d',
+                    borderRadius: '12px',
+                    boxShadow: '3px 3px 0px #17324d',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔄 重新載入
+                </button>
+              )}
               <button
                 onClick={this.handleResetAndHome}
                 style={{
