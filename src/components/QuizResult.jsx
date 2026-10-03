@@ -54,12 +54,13 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
     }
   };
 
-  const totalCount = results.length;
-  const correctCount = results.filter(r => r.isCorrect).length;
+  const safeResults = Array.isArray(results) ? results : [];
+  const totalCount = safeResults.length;
+  const correctCount = safeResults.filter(r => r && r.isCorrect).length;
   const wrongCount = totalCount - correctCount;
   const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
   const earnedPoints = correctCount * effectiveMultiplier;
-  const avgSecPerQ = totalCount > 0 ? Math.round(timeSpentSec / totalCount) : 0;
+  const avgSecPerQ = totalCount > 0 ? Math.round((timeSpentSec || 0) / totalCount) : 0;
 
   // 會考等第評估
   const capInfo = useMemo(() => {
@@ -75,7 +76,8 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
   // 單元學力掌握度診斷
   const unitDiagnostics = useMemo(() => {
     const map = {};
-    results.forEach(r => {
+    safeResults.forEach(r => {
+      if (!r) return;
       const u = r.unitName || '綜合複習單元';
       if (!map[u]) {
         map[u] = { unit: u, total: 0, correct: 0, concepts: new Set() };
@@ -86,10 +88,10 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
     });
     return Object.values(map).map(item => ({
       ...item,
-      accuracy: Math.round((item.correct / item.total) * 100),
+      accuracy: item.total > 0 ? Math.round((item.correct / item.total) * 100) : 0,
       concepts: Array.from(item.concepts)
     }));
-  }, [results]);
+  }, [safeResults]);
 
   useEffect(() => {
     if (accuracy >= 60) {
@@ -99,18 +101,18 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
 
   // 篩選題目
   const filteredList = useMemo(() => {
-    return results.map((q, idx) => ({ ...q, originalIndex: idx })).filter(q => {
+    return safeResults.map((q, idx) => ({ ...(q || {}), originalIndex: idx })).filter(q => {
       if (filterMode === 'wrong') return !q.isCorrect;
       if (filterMode === 'correct') return q.isCorrect;
       return true;
     });
-  }, [results, filterMode]);
+  }, [safeResults, filterMode]);
 
   // 點擊答題卡跳轉至該題
   const handleJumpToQuestion = (origIdx) => {
-    if (filterMode === 'wrong' && results[origIdx].isCorrect) {
+    if (filterMode === 'wrong' && safeResults[origIdx]?.isCorrect) {
       setFilterMode('all');
-    } else if (filterMode === 'correct' && !results[origIdx].isCorrect) {
+    } else if (filterMode === 'correct' && !safeResults[origIdx]?.isCorrect) {
       setFilterMode('all');
     }
 
@@ -714,7 +716,7 @@ export default function QuizResult({ results, timeSpentSec, onRetry, onGoReinfor
 
               {/* 選項列表對照排版 (A, B, C, D) */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {q.options.map((opt, optIdx) => {
+                {(Array.isArray(q.options) ? q.options : []).map((opt, optIdx) => {
                   const letter = String.fromCharCode(65 + optIdx);
                   const isUserPick = q.userChoice === optIdx;
                   const isRightAns = q.answer === optIdx;

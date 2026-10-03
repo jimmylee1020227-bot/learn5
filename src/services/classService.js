@@ -53,7 +53,7 @@ export function checkIsTeacher(user) {
 // 取得所有教師申請清單
 export function getTeacherApplications() {
   const list = getJson(TEACHER_APPS_KEY, []);
-  return Array.isArray(list) ? list : Object.values(list);
+  return Array.isArray(list) ? list : (list && typeof list === 'object' ? Object.values(list) : []);
 }
 
 // 提交教師帳號申請
@@ -165,7 +165,7 @@ export const CLASSES_KEY = 'studyhub_classes';
 
 export function getAllClasses() {
   const classes = getJson(CLASSES_KEY, []);
-  return Array.isArray(classes) ? classes : Object.values(classes);
+  return Array.isArray(classes) ? classes : (classes && typeof classes === 'object' ? Object.values(classes) : []);
 }
 
 // 取得某位老師所開設的所有班級
@@ -420,37 +420,44 @@ export function getClassLeaderboard(classId) {
 export function recordPointsForClassAndGlobal(user, pointsEarned, includeGlobal = false) {
   if (!user || !user.id || typeof pointsEarned !== 'number' || pointsEarned <= 0) return;
 
-  // 1. 若呼叫端未另外發放全服點數，才在此同步累加全服總榜，嚴防雙重給分
-  if (includeGlobal) {
-    addStudentPoints(user, pointsEarned);
-  }
-
-  // 2. 同步累加該生加入的所有班級的內部競賽積分
-  const allClasses = getAllClasses();
-  const cleanEmail = (user.email || '').trim().toLowerCase();
-  let hasClassUpdated = false;
-
-  allClasses.forEach(cls => {
-    if (!cls || !Array.isArray(cls.students)) return;
-    const student = cls.students.find(s => 
-      s.id === user.id || 
-      (cleanEmail && s.email && s.email.trim().toLowerCase() === cleanEmail)
-    );
-    if (student) {
-      student.classPoints = (student.classPoints || 0) + pointsEarned;
-      student.lastActive = new Date().toISOString();
-      hasClassUpdated = true;
-
-      // 雲端單點推播
-      if (db) {
-        update(ref(db, `studyhub/classes/${cls.id}/students`), sanitizeForFirebase(cls.students)).catch(() => {});
+  try {
+    // 1. 若呼叫端未另外發放全服點數，才在此同步累加全服總榜，嚴防雙重給分
+    if (includeGlobal) {
+      try {
+        addStudentPoints(user, pointsEarned);
+      } catch (err) {
+        console.warn('[ClassService] addStudentPoints error in recordPointsForClassAndGlobal:', err);
       }
-      pushDirectToFirebaseRest(`studyhub/classes/${cls.id}/students`, cls.students);
     }
-  });
 
-  if (hasClassUpdated) {
-    setJson(CLASSES_KEY, allClasses);
+    // 2. 同步累加該生加入的所有班級的內部競賽積分
+    const allClasses = getAllClasses();
+    const cleanEmail = (user.email || '').trim().toLowerCase();
+    let hasClassUpdated = false;
+
+    allClasses.forEach(cls => {
+      if (!cls || !Array.isArray(cls.students)) return;
+      const student = cls.students.find(s => 
+        s && (s.id === user.id || (cleanEmail && s.email && s.email.trim().toLowerCase() === cleanEmail))
+      );
+      if (student) {
+        student.classPoints = (student.classPoints || 0) + pointsEarned;
+        student.lastActive = new Date().toISOString();
+        hasClassUpdated = true;
+
+        // 雲端單點推播
+        if (db) {
+          update(ref(db, `studyhub/classes/${cls.id}/students`), sanitizeForFirebase(cls.students)).catch(() => {});
+        }
+        pushDirectToFirebaseRest(`studyhub/classes/${cls.id}/students`, cls.students);
+      }
+    });
+
+    if (hasClassUpdated) {
+      setJson(CLASSES_KEY, allClasses);
+    }
+  } catch (globalErr) {
+    console.warn('[ClassService] recordPointsForClassAndGlobal warning:', globalErr);
   }
 }
 
@@ -587,7 +594,7 @@ export const ASSIGNMENTS_KEY = 'studyhub_assignments';
 
 export function getAllAssignments() {
   const list = getJson(ASSIGNMENTS_KEY, []);
-  return Array.isArray(list) ? list : Object.values(list);
+  return Array.isArray(list) ? list : (list && typeof list === 'object' ? Object.values(list) : []);
 }
 
 // 取得某班級的所有作業
@@ -725,7 +732,7 @@ export async function fetchAssignmentDiagnosticReport(assignmentId, classId) {
       const snap = await get(ref(db, `studyhub/assignment_submissions/${assignmentId}`));
       const val = snap.val();
       if (val) {
-        submissions = Array.isArray(val) ? val : Object.values(val);
+        submissions = Array.isArray(val) ? val : (val && typeof val === 'object' ? Object.values(val) : []);
       }
     } catch (e) {
       console.warn('Failed to fetch cloud assignment submissions', e);

@@ -161,61 +161,87 @@ function MainAppContent() {
 
   // 測驗完成交卷
   const handleCompleteQuiz = (results, timeSpentSec) => {
-    setLastResults(results);
-    setLastTimeSpent(timeSpentSec);
-    setQuizState('result');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      const safeResults = Array.isArray(results) ? results : [];
+      const safeTimeSpent = typeof timeSpentSec === 'number' ? timeSpentSec : 15;
+      const correctCount = safeResults.filter(r => r && r.isCorrect).length;
 
-    const correctCount = results.filter(r => r.isCorrect).length;
+      const activeUserId = currentUser?.id || 'guest_student';
+      const activeUserName = currentUser?.displayName || '國中同學';
+      const activeUserSchool = currentUser?.role === 'super_admin' ? '系統總管理員' : '會考戰友';
 
-    const activeUserId = currentUser?.id || 'guest_student';
-    const activeUserName = currentUser?.displayName || '國中同學';
-    const activeUserSchool = currentUser?.role === 'super_admin' ? '系統總管理員' : '會考戰友';
-
-    // 1. 計算並發放點數（每對 1 題 1 點，支援 2x / 4x 暴擊）
-    if (currentUser) {
-      awardQuizCorrectPoints(correctCount);
+      // 1. 最高優先級：計算並發放點數（每對 1 題 1 點，支援 2x / 4x 暴擊）
+      if (currentUser && correctCount > 0) {
+        try {
+          awardQuizCorrectPoints(correctCount);
+        } catch (err) {
+          console.error('[Quiz Complete] Failed to award quiz correct points:', err);
+        }
+      }
 
       // 每日練習目標統計累積
-      incrementDailyPracticeStats(currentUser.id, results.length, correctCount);
-    }
-
-    // 2. 記錄所有做過的題目與錯題至雲端 (原子化批次同步，杜絕多併發丟失，試卷 100% 封存)
-    recordPracticeBatch({
-      userId: activeUserId,
-      userName: activeUserName,
-      userSchool: activeUserSchool,
-      userEmail: currentUser?.email || '',
-      results,
-      timeSpentSec,
-      customTitle: activeAssignment ? `【班級作業】${activeAssignment.title}` : undefined
-    });
-
-    // 3. 🚀 手機交卷立即補推雙保險：確保所有考卷、日誌與點數瞬間 100% 抵達 Firebase
-    if (currentUser) {
-      setTimeout(() => {
-        autoSyncLocalPendingDataToCloud(currentUser);
-      }, 50);
-    }
-
-    // 4. 若當前測驗為班級作業，提交作答紀錄至作業模組
-    if (activeAssignment && currentUser) {
-      submitAssignment({
-        assignmentId: activeAssignment.id,
-        studentUser: currentUser,
-        results,
-        timeSpentSec
-      }).catch(err => console.error('Failed to submit assignment', err));
-      setActiveAssignment(null);
-    }
-
-    // 5. 正確答題點數同時同步累計至所屬班級內部競賽排行榜
-    if (currentUser && correctCount > 0) {
-      try {
-        recordPointsForClassAndGlobal(currentUser, correctCount, false);
-      } catch (err) {
-        console.error('Failed to sync points for class', err);
+      if (currentUser) {
+        try {
+          incrementDailyPracticeStats(currentUser.id, safeResults.length, correctCount);
+        } catch (err) {
+          console.warn('[Quiz Complete] Failed to increment daily stats:', err);
+        }
       }
+
+      // 2. 記錄所有做過的題目與錯題至雲端 (原子化批次同步，杜絕多併發丟失，試卷 100% 封存)
+      try {
+        recordPracticeBatch({
+          userId: activeUserId,
+          userName: activeUserName,
+          userSchool: activeUserSchool,
+          userEmail: currentUser?.email || '',
+          results: safeResults,
+          timeSpentSec: safeTimeSpent,
+          customTitle: activeAssignment ? `【班級作業】${activeAssignment.title}` : undefined
+        });
+      } catch (err) {
+        console.warn('[Quiz Complete] Failed to record practice batch:', err);
+      }
+
+      // 3. 🚀 手機交卷立即補推雙保險：確保所有考卷、日誌與點數瞬間 100% 抵達 Firebase
+      if (currentUser) {
+        setTimeout(() => {
+          try {
+            autoSyncLocalPendingDataToCloud(currentUser);
+          } catch (e) {}
+        }, 50);
+      }
+
+      // 4. 若當前測驗為班級作業，提交作答紀錄至作業模組
+      if (activeAssignment && currentUser) {
+        submitAssignment({
+          assignmentId: activeAssignment.id,
+          studentUser: currentUser,
+          results: safeResults,
+          timeSpentSec: safeTimeSpent
+        }).catch(err => console.error('Failed to submit assignment', err));
+        setActiveAssignment(null);
+      }
+
+      // 5. 正確答題點數同時同步累計至所屬班級內部競賽排行榜
+      if (currentUser && correctCount > 0) {
+        try {
+          recordPointsForClassAndGlobal(currentUser, correctCount, false);
+        } catch (err) {
+          console.error('Failed to sync points for class', err);
+        }
+      }
+
+      // 6. 安全切換至成績結果頁
+      setLastResults(safeResults);
+      setLastTimeSpent(safeTimeSpent);
+      setQuizState('result');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (criticalErr) {
+      console.error('[Quiz Complete Critical Fallback]', criticalErr);
+      setLastResults(Array.isArray(results) ? results : []);
+      setLastTimeSpent(timeSpentSec || 15);
+      setQuizState('result');
     }
   };
 
@@ -490,16 +516,25 @@ function MainAppContent() {
 class AppErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
   }
   componentDidCatch(error, errorInfo) {
     console.error('[AppErrorBoundary]', error, errorInfo);
+    this.setState({ errorInfo });
   }
+  handleResetAndHome = () => {
+    try {
+      window.sessionStorage.clear();
+    } catch (e) {}
+    window.location.href = window.location.pathname;
+  };
   render() {
     if (this.state.hasError) {
+      const errorMsg = this.state.error?.message || String(this.state.error || '未知執行異常');
+      const errorStack = this.state.error?.stack || this.state.errorInfo?.componentStack || '';
       return (
         <div style={{
           minHeight: '100vh',
@@ -510,7 +545,8 @@ class AppErrorBoundary extends React.Component {
           padding: '24px'
         }}>
           <div style={{
-            maxWidth: '440px',
+            maxWidth: '520px',
+            width: '100%',
             background: '#fffdf9',
             border: '3px solid #17324d',
             borderRadius: '24px',
@@ -522,25 +558,59 @@ class AppErrorBoundary extends React.Component {
             <h2 style={{ color: '#17324d', fontWeight: 900, marginBottom: '12px' }}>
               頁面載入異常
             </h2>
-            <p style={{ color: '#5b6772', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.6 }}>
-              系統遇到未預期的錯誤，可能是網路連線問題或暫時性異常。請嘗試重新載入頁面。
+            <p style={{ color: '#5b6772', fontSize: '0.9rem', marginBottom: '20px', lineHeight: 1.6 }}>
+              系統遇到未預期的錯誤，可能是快取暫存問題或弱網狀態。請點擊下方按鈕重新載入或重設回到首頁。
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                padding: '12px 32px',
-                background: '#ef8354',
-                color: '#fff',
-                fontWeight: 800,
-                fontSize: '1rem',
-                border: '2.5px solid #17324d',
-                borderRadius: '14px',
-                boxShadow: '4px 4px 0px #17324d',
-                cursor: 'pointer'
-              }}
-            >
-              🔄 重新載入
-            </button>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }}>
+              <button
+                onClick={() => window.location.reload()}
+                style={{
+                  padding: '10px 24px',
+                  background: '#ef8354',
+                  color: '#fff',
+                  fontWeight: 800,
+                  fontSize: '0.95rem',
+                  border: '2px solid #17324d',
+                  borderRadius: '12px',
+                  boxShadow: '3px 3px 0px #17324d',
+                  cursor: 'pointer'
+                }}
+              >
+                🔄 重新載入
+              </button>
+              <button
+                onClick={this.handleResetAndHome}
+                style={{
+                  padding: '10px 24px',
+                  background: '#ffffff',
+                  color: '#17324d',
+                  fontWeight: 800,
+                  fontSize: '0.95rem',
+                  border: '2px solid #17324d',
+                  borderRadius: '12px',
+                  boxShadow: '3px 3px 0px #17324d',
+                  cursor: 'pointer'
+                }}
+              >
+                🏠 返回首頁
+              </button>
+            </div>
+
+            {/* 可折疊錯誤詳細訊息 */}
+            <details style={{ textAlign: 'left', background: '#f1eee7', border: '1px solid #ded3c5', borderRadius: '10px', padding: '10px 14px', fontSize: '0.78rem', color: '#64748b' }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#17324d' }}>
+                🔍 查看詳細診斷資訊 (給開發者排查)
+              </summary>
+              <div style={{ marginTop: '8px', wordBreak: 'break-all', fontFamily: 'monospace', color: '#b91c1c', maxHeight: '160px', overflowY: 'auto' }}>
+                <strong>錯誤：</strong> {errorMsg}
+                {errorStack && (
+                  <pre style={{ marginTop: '6px', fontSize: '0.72rem', whiteSpace: 'pre-wrap', color: '#475569' }}>
+                    {errorStack}
+                  </pre>
+                )}
+              </div>
+            </details>
           </div>
         </div>
       );

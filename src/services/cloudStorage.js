@@ -1045,212 +1045,239 @@ const INITIAL_PRACTICE_HISTORY = [];
 
 // 批次記錄整份測驗結果 (包含試卷封存、錯題本、做題記錄與即時雲端同步)
 export function recordPracticeBatch({ userId, userName, userSchool, userEmail, results, timeSpentSec, customTitle }) {
-  if (!results || results.length === 0) return [];
+  if (!results || !Array.isArray(results) || results.length === 0) return [];
 
-  const finalUserId = userId || 'guest_student';
-  const finalUserName = userName || '匿名同學';
-  const finalUserSchool = userSchool || '會考戰友';
-  const finalUserEmail = (userEmail || '').trim().toLowerCase();
-  const perQTime = Math.max(1, Math.round((timeSpentSec || 15) / results.length));
-  const nowIso = new Date().toISOString();
-  const correctCount = results.filter(r => r.isCorrect).length;
-
-  // 1. 整理完整做題歷史記錄 (包含題幹、選項與詳解，確保日後複習 100% 完整還原)
-  const userHistoryKey = `practice_history_${finalUserId}`;
-  const existingLogs = getJson(userHistoryKey, null) || (getJson('practice_history', []).filter(l => l.userId === finalUserId));
-
-  const newLogEntries = results.map(item => ({
-    id: 'hist_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
-    userId: finalUserId,
-    userName: finalUserName,
-    userSchool: finalUserSchool,
-    userEmail: finalUserEmail,
-    questionId: item.id,
-    subjectId: item.subjectId,
-    gradeId: item.gradeId,
-    unitId: item.unitId,
-    unitName: item.unitName,
-    conceptTag: item.conceptTag,
-    difficulty: item.difficulty || 'medium',
-    index: item.index || 1,
-    question: item.question,
-    options: item.options,
-    explanation: item.explanation,
-    hint: item.hint || '',
-    isCorrect: item.isCorrect,
-    userChoice: item.userChoice !== undefined ? item.userChoice : null,
-    answer: item.answer !== undefined ? item.answer : 0,
-    timeSpentSec: perQTime,
-    timestamp: nowIso
-  }));
-
-  const combinedLogs = [...newLogEntries, ...existingLogs];
-  if (combinedLogs.length > 500) combinedLogs.length = 500; // 安全保存最新 500 筆做題歷史
-  setJson(userHistoryKey, combinedLogs);
-  if (finalUserId !== 'guest_student') {
-    updateServerSync(userHistoryKey, combinedLogs);
-  }
-
-  // 3. 即時全服作答串流推播 (供管理員中台秒級即時監控做題狀況)
   try {
-    const streamItem = {
-      id: 'stream_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    const finalUserId = userId || 'guest_student';
+    const finalUserName = userName || '匿名同學';
+    const finalUserSchool = userSchool || '會考戰友';
+    const finalUserEmail = (userEmail || '').trim().toLowerCase();
+    const perQTime = Math.max(1, Math.round((timeSpentSec || 15) / results.length));
+    const nowIso = new Date().toISOString();
+    const correctCount = results.filter(r => r && r.isCorrect).length;
+
+    // 1. 整理完整做題歷史記錄 (包含題幹、選項與詳解，確保日後複習 100% 完整還原)
+    const userHistoryKey = `practice_history_${finalUserId}`;
+    const rawExistingLogs = getJson(userHistoryKey, null);
+    const existingLogs = Array.isArray(rawExistingLogs)
+      ? rawExistingLogs
+      : (rawExistingLogs && typeof rawExistingLogs === 'object'
+          ? Object.values(rawExistingLogs)
+          : (getJson('practice_history', []).filter(l => l && l.userId === finalUserId)));
+    const safeExistingLogs = Array.isArray(existingLogs) ? existingLogs : [];
+
+    const newLogEntries = results.map(item => ({
+      id: 'hist_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
       userId: finalUserId,
       userName: finalUserName,
       userSchool: finalUserSchool,
       userEmail: finalUserEmail,
-      subjectId: results[0]?.subjectId || 'math',
-      gradeId: results[0]?.gradeId || 'g9',
-      unitName: results[0]?.unitName || '全科綜合測驗',
-      totalQuestions: results.length,
-      correctCount: correctCount,
-      accuracy: Math.round((correctCount / results.length) * 100),
-      timeSpentSec: timeSpentSec || 15,
+      questionId: item?.id,
+      subjectId: item?.subjectId,
+      gradeId: item?.gradeId,
+      unitId: item?.unitId,
+      unitName: item?.unitName,
+      conceptTag: item?.conceptTag,
+      difficulty: item?.difficulty || 'medium',
+      index: item?.index || 1,
+      question: item?.question,
+      options: item?.options,
+      explanation: item?.explanation,
+      hint: item?.hint || '',
+      isCorrect: !!item?.isCorrect,
+      userChoice: item?.userChoice !== undefined ? item.userChoice : null,
+      answer: item?.answer !== undefined ? item.answer : 0,
+      timeSpentSec: perQTime,
       timestamp: nowIso
-    };
-    const stream = getJson('recent_practice_stream', []);
-    stream.unshift(streamItem);
-    if (stream.length > 1000) stream.length = 1000;
-    setJson('recent_practice_stream', stream);
-    updateServerSync('recent_practice_stream', stream);
+    }));
 
-    // 4. 同步更新在線學生註冊名冊統計
-    const registry = getJson('user_registry', {});
-    const existingU = registry[finalUserId] || {
-      id: finalUserId,
-      name: finalUserName,
-      school: finalUserSchool,
-      email: finalUserEmail,
-      totalQuizzes: 0,
-      totalQuestions: 0,
-      totalCorrect: 0
-    };
-    existingU.name = finalUserName;
-    existingU.school = finalUserSchool;
-    if (finalUserEmail && !existingU.email) existingU.email = finalUserEmail;
-    existingU.lastActive = nowIso;
-    existingU.totalQuizzes = (existingU.totalQuizzes || 0) + 1;
-    existingU.totalQuestions = (existingU.totalQuestions || 0) + results.length;
-    existingU.totalCorrect = (existingU.totalCorrect || 0) + correctCount;
-    registry[finalUserId] = existingU;
-    setJson('user_registry', registry);
-    updateServerSync('user_registry', registry);
-  } catch (err) {
-    console.error('Failed to update practice stream / user registry', err);
-  }
-
-  // 2. 集中處理個人錯題本更新 (完整儲存題目、四個選項、學生選錯的答案與推導詳解)
-  const mistakeKey = `mistake_notebook_${finalUserId}`;
-  const allMistakes = getJson('mistake_notebook', {});
-  const userList = getJson(mistakeKey, null) || allMistakes[finalUserId] || [];
-
-  results.forEach(item => {
-    const existingIdx = userList.findIndex(m => m.questionId === item.id);
-    if (existingIdx >= 0) {
-      const m = userList[existingIdx];
-      m.lastAttemptAt = nowIso;
-      m.question = item.question || m.question;
-      m.options = item.options || m.options;
-      m.explanation = item.explanation || m.explanation;
-      m.hint = item.hint || m.hint;
-      m.userChoice = item.userChoice !== undefined ? item.userChoice : m.userChoice;
-      m.answer = item.answer !== undefined ? item.answer : m.answer;
-      if (item.isCorrect) {
-        m.consecutiveCorrect = (m.consecutiveCorrect || 0) + 1;
-        if (m.consecutiveCorrect >= 3) {
-          m.status = 'mastered';
-        }
-      } else {
-        m.wrongCount = (m.wrongCount || 1) + 1;
-        m.consecutiveCorrect = 0;
-        m.status = 'unresolved';
-      }
-    } else if (!item.isCorrect) {
-      userList.unshift({
-        questionId: item.id,
-        subjectId: item.subjectId,
-        gradeId: item.gradeId,
-        unitId: item.unitId,
-        unitName: item.unitName,
-        conceptTag: item.conceptTag,
-        difficulty: item.difficulty || 'medium',
-        index: item.index || 1,
-        question: item.question,
-        options: item.options,
-        userChoice: item.userChoice !== undefined ? item.userChoice : null,
-        answer: item.answer !== undefined ? item.answer : 0,
-        explanation: item.explanation,
-        hint: item.hint || '',
-        wrongCount: 1,
-        consecutiveCorrect: 0,
-        status: 'unresolved',
-        addedAt: nowIso,
-        lastAttemptAt: nowIso
-      });
+    const combinedLogs = [...newLogEntries, ...safeExistingLogs];
+    if (combinedLogs.length > 500) combinedLogs.length = 500; // 安全保存最新 500 筆做題歷史
+    setJson(userHistoryKey, combinedLogs);
+    if (finalUserId !== 'guest_student') {
+      updateServerSync(userHistoryKey, combinedLogs);
     }
-  });
 
-  if (userList.length > 500) userList.length = 500; // 安全保存最新 500 筆錯題
-  setJson(mistakeKey, userList);
-  if (finalUserId !== 'guest_student') {
-    updateServerSync(mistakeKey, userList);
+    // 3. 即時全服作答串流推播 (供管理員中台秒級即時監控做題狀況)
+    try {
+      const streamItem = {
+        id: 'stream_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        userId: finalUserId,
+        userName: finalUserName,
+        userSchool: finalUserSchool,
+        userEmail: finalUserEmail,
+        subjectId: results[0]?.subjectId || 'math',
+        gradeId: results[0]?.gradeId || 'g9',
+        unitName: results[0]?.unitName || '全科綜合測驗',
+        totalQuestions: results.length,
+        correctCount: correctCount,
+        accuracy: Math.round((correctCount / results.length) * 100),
+        timeSpentSec: timeSpentSec || 15,
+        timestamp: nowIso
+      };
+      const rawStream = getJson('recent_practice_stream', []);
+      const stream = Array.isArray(rawStream) ? rawStream : (rawStream && typeof rawStream === 'object' ? Object.values(rawStream) : []);
+      stream.unshift(streamItem);
+      if (stream.length > 1000) stream.length = 1000;
+      setJson('recent_practice_stream', stream);
+      updateServerSync('recent_practice_stream', stream);
+
+      // 4. 同步更新在線學生註冊名冊統計
+      const rawRegistry = getJson('user_registry', {});
+      const registry = (rawRegistry && typeof rawRegistry === 'object') ? rawRegistry : {};
+      const existingU = registry[finalUserId] || {
+        id: finalUserId,
+        name: finalUserName,
+        school: finalUserSchool,
+        email: finalUserEmail,
+        totalQuizzes: 0,
+        totalQuestions: 0,
+        totalCorrect: 0
+      };
+      existingU.name = finalUserName;
+      existingU.school = finalUserSchool;
+      if (finalUserEmail && !existingU.email) existingU.email = finalUserEmail;
+      existingU.lastActive = nowIso;
+      existingU.totalQuizzes = (existingU.totalQuizzes || 0) + 1;
+      existingU.totalQuestions = (existingU.totalQuestions || 0) + results.length;
+      existingU.totalCorrect = (existingU.totalCorrect || 0) + correctCount;
+      registry[finalUserId] = existingU;
+      setJson('user_registry', registry);
+      updateServerSync('user_registry', registry);
+    } catch (err) {
+      console.warn('Failed to update practice stream / user registry', err);
+    }
+
+    // 2. 集中處理個人錯題本更新 (完整儲存題目、四個選項、學生選錯的答案與推導詳解)
+    try {
+      const mistakeKey = `mistake_notebook_${finalUserId}`;
+      const rawAllMistakes = getJson('mistake_notebook', {});
+      const allMistakes = (rawAllMistakes && typeof rawAllMistakes === 'object') ? rawAllMistakes : {};
+      const rawUserMistakes = getJson(mistakeKey, null);
+      let userList = Array.isArray(rawUserMistakes)
+        ? rawUserMistakes
+        : (rawUserMistakes && typeof rawUserMistakes === 'object'
+            ? Object.values(rawUserMistakes)
+            : (allMistakes[finalUserId] || []));
+      if (!Array.isArray(userList)) {
+        userList = (userList && typeof userList === 'object') ? Object.values(userList) : [];
+      }
+
+      results.forEach(item => {
+        if (!item) return;
+        const existingIdx = userList.findIndex(m => m && m.questionId === item.id);
+        if (existingIdx >= 0) {
+          const m = userList[existingIdx];
+          m.lastAttemptAt = nowIso;
+          m.question = item.question || m.question;
+          m.options = item.options || m.options;
+          m.explanation = item.explanation || m.explanation;
+          m.hint = item.hint || m.hint;
+          m.userChoice = item.userChoice !== undefined ? item.userChoice : m.userChoice;
+          m.answer = item.answer !== undefined ? item.answer : m.answer;
+          if (item.isCorrect) {
+            m.consecutiveCorrect = (m.consecutiveCorrect || 0) + 1;
+            if (m.consecutiveCorrect >= 3) {
+              m.status = 'mastered';
+            }
+          } else {
+            m.wrongCount = (m.wrongCount || 1) + 1;
+            m.consecutiveCorrect = 0;
+            m.status = 'unresolved';
+          }
+        } else if (!item.isCorrect) {
+          userList.unshift({
+            questionId: item.id,
+            subjectId: item.subjectId,
+            gradeId: item.gradeId,
+            unitId: item.unitId,
+            unitName: item.unitName,
+            conceptTag: item.conceptTag,
+            difficulty: item.difficulty || 'medium',
+            index: item.index || 1,
+            question: item.question,
+            options: item.options,
+            userChoice: item.userChoice !== undefined ? item.userChoice : null,
+            answer: item.answer !== undefined ? item.answer : 0,
+            explanation: item.explanation,
+            hint: item.hint || '',
+            wrongCount: 1,
+            consecutiveCorrect: 0,
+            status: 'unresolved',
+            addedAt: nowIso,
+            lastAttemptAt: nowIso
+          });
+        }
+      });
+
+      if (userList.length > 500) userList.length = 500; // 安全保存最新 500 筆錯題
+      setJson(mistakeKey, userList);
+      if (finalUserId !== 'guest_student') {
+        updateServerSync(mistakeKey, userList);
+      }
+      allMistakes[finalUserId] = userList;
+      setJson('mistake_notebook', allMistakes);
+    } catch (err) {
+      console.warn('Failed to update mistake notebook', err);
+    }
+
+    // 5. 完整試卷封存記錄 (Quiz Paper Session) - 支援歷程錯題調閱整份試卷每一題與各選項作答
+    try {
+      const firstQ = results[0] || {};
+      const subjectNames = { math: '數學', science: '自然', english: '英語', chinese: '國文', social: '社會' };
+      const gradeNames = { g7: '國一', g8: '國二', g9: '國三' };
+      const subjName = subjectNames[firstQ.subjectId] || '全科';
+      const gradeName = gradeNames[firstQ.gradeId] || '國中';
+      const unitTitle = firstQ.unitName || '全科綜合測驗';
+
+      const paperId = 'paper_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+      const paperSession = {
+        id: paperId,
+        userId: finalUserId,
+        userName: finalUserName,
+        userSchool: finalUserSchool,
+        userEmail: finalUserEmail,
+        subjectId: firstQ.subjectId || 'math',
+        gradeId: firstQ.gradeId || 'g8',
+        unitId: firstQ.unitId || 'u1',
+        unitName: unitTitle,
+        paperTitle: customTitle || `${gradeName} ${subjName}【${unitTitle}】實戰評量卷`,
+        totalQuestions: results.length,
+        correctCount: correctCount,
+        wrongCount: results.length - correctCount,
+        score: Math.round((correctCount / results.length) * 100),
+        timeSpentSec: timeSpentSec || 15,
+        timestamp: nowIso,
+        completedAt: nowIso,
+        questions: results.map(item => ({
+          id: item?.id,
+          subjectId: item?.subjectId,
+          gradeId: item?.gradeId,
+          unitId: item?.unitId,
+          unitName: item?.unitName,
+          conceptTag: item?.conceptTag,
+          difficulty: item?.difficulty || 'medium',
+          index: item?.index || 1,
+          question: item?.question,
+          options: item?.options,
+          userChoice: item?.userChoice !== undefined ? item.userChoice : null,
+          answer: item?.answer !== undefined ? item.answer : 0,
+          isCorrect: !!item?.isCorrect,
+          explanation: item?.explanation,
+          hint: item?.hint
+        }))
+      };
+
+      recordQuizPaperSession(paperSession);
+    } catch (err) {
+      console.warn('Failed to archive quiz paper session', err);
+    }
+
+    return newLogEntries.map(hydrateQuestionDetails);
+  } catch (fatalErr) {
+    console.error('[recordPracticeBatch] Unexpected error prevented, safe fallback:', fatalErr);
+    return [];
   }
-  allMistakes[finalUserId] = userList;
-  setJson('mistake_notebook', allMistakes);
-
-  // 5. 完整試卷封存記錄 (Quiz Paper Session) - 支援歷程錯題調閱整份試卷每一題與各選項作答
-  try {
-    const firstQ = results[0] || {};
-    const subjectNames = { math: '數學', science: '自然', english: '英語', chinese: '國文', social: '社會' };
-    const gradeNames = { g7: '國一', g8: '國二', g9: '國三' };
-    const subjName = subjectNames[firstQ.subjectId] || '全科';
-    const gradeName = gradeNames[firstQ.gradeId] || '國中';
-    const unitTitle = firstQ.unitName || '全科綜合測驗';
-
-    const paperId = 'paper_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-    const paperSession = {
-      id: paperId,
-      userId: finalUserId,
-      userName: finalUserName,
-      userSchool: finalUserSchool,
-      userEmail: finalUserEmail,
-      subjectId: firstQ.subjectId || 'math',
-      gradeId: firstQ.gradeId || 'g8',
-      unitId: firstQ.unitId || 'u1',
-      unitName: unitTitle,
-      paperTitle: customTitle || `${gradeName} ${subjName}【${unitTitle}】實戰評量卷`,
-      totalQuestions: results.length,
-      correctCount: correctCount,
-      wrongCount: results.length - correctCount,
-      score: Math.round((correctCount / results.length) * 100),
-      timeSpentSec: timeSpentSec || 15,
-      timestamp: nowIso,
-      completedAt: nowIso,
-      questions: results.map(item => ({
-        id: item.id,
-        subjectId: item.subjectId,
-        gradeId: item.gradeId,
-        unitId: item.unitId,
-        unitName: item.unitName,
-        conceptTag: item.conceptTag,
-        difficulty: item.difficulty || 'medium',
-        index: item.index || 1,
-        question: item.question,
-        options: item.options,
-        userChoice: item.userChoice !== undefined ? item.userChoice : null,
-        answer: item.answer !== undefined ? item.answer : 0,
-        isCorrect: item.isCorrect,
-        explanation: item.explanation,
-        hint: item.hint
-      }))
-    };
-
-    recordQuizPaperSession(paperSession);
-  } catch (err) {
-    console.warn('Failed to archive quiz paper session', err);
-  }
-
-  return newLogEntries.map(hydrateQuestionDetails);
 }
 
 // 寫入並封存單份測驗試卷至本地快取與 Firebase 雲端 (支援千萬人高併發原子存儲)
@@ -1264,13 +1291,15 @@ export function recordQuizPaperSession(paperSession) {
       paperSession.completedAt = paperSession.timestamp;
     }
     const userPapersKey = `user_quiz_papers_${finalUserId}`;
-    const userPapers = getJson(userPapersKey, []);
+    const rawUserPapers = getJson(userPapersKey, []);
+    const userPapers = Array.isArray(rawUserPapers) ? rawUserPapers : (rawUserPapers && typeof rawUserPapers === 'object' ? Object.values(rawUserPapers) : []);
     userPapers.unshift(paperSession);
     if (userPapers.length > 500) userPapers.length = 500;
     setJson(userPapersKey, userPapers);
 
     // 全服快取同步推播
-    const allLocalPapers = getJson('all_quiz_papers', []);
+    const rawAllPapers = getJson('all_quiz_papers', []);
+    const allLocalPapers = Array.isArray(rawAllPapers) ? rawAllPapers : (rawAllPapers && typeof rawAllPapers === 'object' ? Object.values(rawAllPapers) : []);
     allLocalPapers.unshift(paperSession);
     if (allLocalPapers.length > 1000) allLocalPapers.length = 1000;
     setJson('all_quiz_papers', allLocalPapers);

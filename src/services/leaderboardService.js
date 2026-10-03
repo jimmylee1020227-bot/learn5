@@ -181,7 +181,7 @@ export function checkAndExecuteWeeklyReset() {
 export function getLeaderboard() {
   checkAndExecuteWeeklyReset();
   const list = getJson(LEADERBOARD_KEY, INITIAL_LEADERBOARD);
-  const rawArr = Array.isArray(list) ? list : Object.values(list);
+  const rawArr = Array.isArray(list) ? list : (list && typeof list === 'object' ? Object.values(list) : []);
   const pMap = new Map();
   rawArr.forEach(p => {
     if (!p || !p.userId) return;
