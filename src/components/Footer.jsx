@@ -165,7 +165,7 @@ export default function Footer({ onOpenLegalModal }) {
               <div><strong>維護團隊：</strong>學習網維護小組</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Mail size={13} color="var(--theme-accent, #ef8354)" />
-                <span><strong>問題回報與建議：</strong><a href="https://github.com/jimmylee1020227-bot/learn5/issues" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--theme-border, #17324d)', textDecoration: 'underline' }}>GitHub Issues</a></span>
+                <span><strong>問題回報與建議：</strong><a href="https://github.com/goodlearn5/learn5/issues" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--theme-border, #17324d)', textDecoration: 'underline' }}>GitHub Issues</a></span>
               </div>
               <div style={{ marginTop: '4px', fontSize: '0.8rem', color: '#64748b' }}>
                 💡 本站由教育熱心人士個人自主維護，無營利行為、不設收費項目，歡迎教師與學生交流指正。
