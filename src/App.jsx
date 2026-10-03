@@ -24,7 +24,16 @@ import PrivacyPolicyModal from './components/PrivacyPolicyModal';
 import Footer from './components/Footer';
 import LegalCenterModal from './components/LegalCenterModal';
 import CookieConsentBanner from './components/CookieConsentBanner';
+import ClassStudentView from './components/ClassStudentView';
+import TeacherDashboard from './components/TeacherDashboard';
+import LearningProgressModal from './components/LearningProgressModal';
+import TeacherApplyModal from './components/TeacherApplyModal';
 import { generateQuizSet } from './data/questionGenerator';
+import { 
+  checkIsTeacher, 
+  submitAssignment, 
+  recordPointsForClassAndGlobal 
+} from './services/classService';
 import { 
   recordPracticeBatch,
   recordPracticeLog, 
@@ -51,10 +60,16 @@ function MainAppContent() {
   const { awardQuizCorrectPoints, setIsLuckyDrawOpen } = useGame();
   const { isMobile, deviceType } = useDevice();
 
-  const [activeTab, setActiveTab] = useState('quiz'); // 'quiz' | 'reinforce' | 'leaderboard' | 'history' | 'admin' | 'super_admin'
+  const [activeTab, setActiveTab] = useState('quiz'); // 'quiz' | 'reinforce' | 'leaderboard' | 'history' | 'class' | 'teacher' | 'admin' | 'super_admin'
   const [isRedemptionOpen, setIsRedemptionOpen] = useState(false);
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
   const [legalModalTab, setLegalModalTab] = useState('privacy');
+
+  // 班級系統與課綱掌握度分析狀態
+  const [activeAssignment, setActiveAssignment] = useState(null);
+  const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
+  const [isTeacherApplyModalOpen, setIsTeacherApplyModalOpen] = useState(false);
+  const [progressTargetStudent, setProgressTargetStudent] = useState(null);
 
   const handleOpenLegalModal = (tab = 'privacy') => {
     setLegalModalTab(tab);
@@ -134,6 +149,16 @@ function MainAppContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // 啟動班級作業測驗
+  const handleStartAssignmentQuiz = (assignment) => {
+    if (!assignment || !assignment.questions || assignment.questions.length === 0) return;
+    setActiveAssignment(assignment);
+    setCurrentQuestions(assignment.questions);
+    setActiveTab('quiz');
+    setQuizState('in_quiz');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // 測驗完成交卷
   const handleCompleteQuiz = (results, timeSpentSec) => {
     setLastResults(results);
@@ -170,6 +195,26 @@ function MainAppContent() {
       setTimeout(() => {
         autoSyncLocalPendingDataToCloud(currentUser);
       }, 50);
+    }
+
+    // 4. 若當前測驗為班級作業，提交作答紀錄至作業模組
+    if (activeAssignment && currentUser) {
+      submitAssignment({
+        assignmentId: activeAssignment.id,
+        studentUser: currentUser,
+        results,
+        timeSpentSec
+      }).catch(err => console.error('Failed to submit assignment', err));
+      setActiveAssignment(null);
+    }
+
+    // 5. 正確答題點數同時同步上傳至班級內部排行榜與全服榜
+    if (currentUser && correctCount > 0) {
+      try {
+        recordPointsForClassAndGlobal(currentUser, correctCount);
+      } catch (err) {
+        console.error('Failed to sync points for class and global', err);
+      }
     }
   };
 
@@ -224,6 +269,11 @@ function MainAppContent() {
         }}
         onOpenRedemptionModal={() => setIsRedemptionOpen(true)}
         onOpenLegalModal={handleOpenLegalModal}
+        onOpenProgressModal={() => {
+          setProgressTargetStudent(currentUser);
+          setIsProgressModalOpen(true);
+        }}
+        onOpenTeacherApplyModal={() => setIsTeacherApplyModalOpen(true)}
       />
 
       {/* 主工作區塊 */}
@@ -255,7 +305,10 @@ function MainAppContent() {
               <QuizPlayer
                 questions={currentQuestions}
                 onComplete={handleCompleteQuiz}
-                onExit={() => setQuizState('idle')}
+                onExit={() => {
+                  setActiveAssignment(null);
+                  setQuizState('idle');
+                }}
               />
             )}
 
@@ -293,6 +346,42 @@ function MainAppContent() {
           />
         )}
 
+        {activeTab === 'class' && (
+          <ClassStudentView 
+            currentUser={currentUser}
+            onStartAssignmentQuiz={handleStartAssignmentQuiz}
+            onGoGlobalLeaderboard={() => setActiveTab('leaderboard')}
+            onOpenProgressModal={() => {
+              setProgressTargetStudent(currentUser);
+              setIsProgressModalOpen(true);
+            }}
+          />
+        )}
+
+        {activeTab === 'teacher' && (
+          checkIsTeacher(currentUser) ? (
+            <TeacherDashboard 
+              currentUser={currentUser}
+              onOpenProgressModal={(targetStudent) => {
+                setProgressTargetStudent(targetStudent);
+                setIsProgressModalOpen(true);
+              }}
+            />
+          ) : (
+            <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', maxWidth: '500px', margin: '40px auto' }}>
+              <h3 style={{ color: '#ef4444', fontWeight: 800 }}>403 拒絕存取</h3>
+              <p style={{ color: '#78818a', fontSize: '0.9rem', marginTop: '8px' }}>此區域僅限通過認證之任課教師存取。請點選下方按鈕申請或快速開通身分。</p>
+              <button 
+                onClick={() => setIsTeacherApplyModalOpen(true)}
+                className="btn btn-primary"
+                style={{ marginTop: '16px', padding: '10px 20px', fontSize: '0.9rem' }}
+              >
+                申請認證教師身分
+              </button>
+            </div>
+          )
+        )}
+
         {activeTab === 'notes' && (
           <UnitNotesView 
             onStartQuizForUnit={(subj, grade, uId) => {
@@ -310,7 +399,12 @@ function MainAppContent() {
 
         {activeTab === 'admin' && (
           checkIsAdmin(currentUser) ? (
-            <AdminDashboard />
+            <AdminDashboard 
+              onOpenProgressModal={(student) => {
+                setProgressTargetStudent(student);
+                setIsProgressModalOpen(true);
+              }}
+            />
           ) : (
             <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', maxWidth: '500px', margin: '40px auto' }}>
               <h3 style={{ color: '#ef4444', fontWeight: 800 }}>403 拒絕存取</h3>
@@ -360,6 +454,32 @@ function MainAppContent() {
       />
       <CookieConsentBanner 
         onOpenLegalModal={handleOpenLegalModal}
+      />
+
+      {/* 課綱單元掌握度表 (學習進度) 全域彈窗 */}
+      <LearningProgressModal 
+        isOpen={isProgressModalOpen}
+        onClose={() => setIsProgressModalOpen(false)}
+        studentUser={progressTargetStudent || currentUser}
+        onStartUnitQuiz={({ subjectId, gradeId, unitId, unitName }) => {
+          setIsProgressModalOpen(false);
+          setActiveTab('quiz');
+          handleStartQuiz({ 
+            subjectId: subjectId || 'math', 
+            gradeId: gradeId || 'g8', 
+            unitIds: [unitId], 
+            count: 10, 
+            difficulty: 'medium' 
+          });
+        }}
+      />
+
+      {/* 教師身分申請與快速開通彈窗 */}
+      <TeacherApplyModal 
+        isOpen={isTeacherApplyModalOpen}
+        onClose={() => setIsTeacherApplyModalOpen(false)}
+        currentUser={currentUser}
+        onTeacherStatusChanged={() => setActiveTab('teacher')}
       />
     </div>
   );

@@ -32,14 +32,18 @@ import {
   Scale,
   Menu,
   X,
-  Camera
+  Camera,
+  BarChart3
 } from 'lucide-react';
+import { checkIsTeacher } from '../services/classService';
 
 export default function Navbar({ 
   activeTab, 
   setActiveTab,
   onOpenRedemptionModal,
-  onOpenLegalModal
+  onOpenLegalModal,
+  onOpenProgressModal,
+  onOpenTeacherApplyModal
 }) {
   const { 
     currentUser, 
@@ -91,6 +95,7 @@ export default function Navbar({
 
   const isSuperAdmin = checkIsSuperAdmin(currentUser);
   const isAdmin = checkIsAdmin(currentUser);
+  const isTeacher = checkIsTeacher(currentUser);
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#e8ded0] bg-[var(--theme-bg, #f8f3eb)]/95 backdrop-blur-xl">
@@ -196,6 +201,27 @@ export default function Navbar({
             歷程錯題
           </button>
 
+          {/* 班級作業入口 */}
+          <button 
+            className={`btn ${activeTab === 'class' ? 'btn-primary' : 'btn-ghost'}`}
+            onClick={() => setActiveTab('class')}
+            style={{ fontSize: '0.86rem', padding: '7px 12px' }}
+          >
+            <Users size={15} />
+            班級作業
+          </button>
+
+          {/* 課綱單元掌握度與學習進度 */}
+          <button 
+            className="btn btn-ghost"
+            onClick={onOpenProgressModal}
+            style={{ fontSize: '0.86rem', padding: '7px 12px', color: '#c2410c' }}
+            title="查看各科課綱單元強弱掌握度與錯題統計"
+          >
+            <BarChart3 size={15} />
+            學習進度
+          </button>
+
           {/* 兌換碼捷徑 */}
           <button 
             className="btn btn-ghost"
@@ -259,6 +285,37 @@ export default function Navbar({
             聯絡管理員
           </a>
 
+          {/* 認證教師專屬後台 */}
+          {currentUser && isTeacher && (
+            <button 
+              className={`btn ${activeTab === 'teacher' ? 'btn-secondary' : 'btn-ghost'}`}
+              onClick={() => setActiveTab('teacher')}
+              style={{ 
+                fontSize: '0.86rem', 
+                padding: '7px 12px', 
+                background: activeTab === 'teacher' ? '#e0f2fe' : 'transparent', 
+                color: '#0369a1', 
+                border: '1.5px solid #38bdf8' 
+              }}
+              title="進入教師後台（班級管理、手動派題與成效診斷）"
+            >
+              <GraduationCap size={15} color="#0284c7" />
+              教師後台
+            </button>
+          )}
+
+          {/* 申請教師身分（未具備教師且非管理員） */}
+          {currentUser && !isTeacher && !isAdmin && (
+            <button 
+              className="btn btn-ghost"
+              onClick={onOpenTeacherApplyModal}
+              style={{ fontSize: '0.8rem', padding: '5px 10px', color: '#0369a1', border: '1px dashed #7dd3fc', borderRadius: '8px' }}
+              title="申請教師身分，解鎖班級管理、手動派題與錯題診斷"
+            >
+              <GraduationCap size={14} />
+              申請教師
+            </button>
+          )}
 
           {/* 一般管理員或總管理員後台 */}
           {currentUser && isAdmin && (
@@ -759,6 +816,26 @@ export default function Navbar({
               <Gift size={20} color="#f59e0b" />
               <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>天天抽獎 ({gameState.tickets || 0}張)</span>
             </button>
+
+            {/* 班級作業 */}
+            <button
+              className="btn btn-secondary"
+              onClick={() => { setActiveTab('class'); setIsMobileMenuOpen(false); }}
+              style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px', color: '#0284c7' }}
+            >
+              <Users size={20} color="#0284c7" />
+              <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>👥 班級作業</span>
+            </button>
+
+            {/* 課綱單元學習進度 */}
+            <button
+              className="btn btn-secondary"
+              onClick={() => { onOpenProgressModal?.(); setIsMobileMenuOpen(false); }}
+              style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '14px', color: '#c2410c' }}
+            >
+              <BarChart3 size={20} color="#ea580c" />
+              <span style={{ fontSize: '0.82rem', fontWeight: 800 }}>📊 學習進度</span>
+            </button>
           </div>
 
           {/* 3. 社群與客服連結 */}
@@ -843,6 +920,53 @@ export default function Navbar({
               ))}
             </div>
           </div>
+
+          {/* 教師專用後台入口 / 申請教師身分按鈕 */}
+          {currentUser && isTeacher && (
+            <button
+              onClick={() => { setActiveTab('teacher'); setIsMobileMenuOpen(false); }}
+              style={{ 
+                background: '#e0f2fe', 
+                border: '1.5px solid #38bdf8', 
+                color: '#0369a1', 
+                borderRadius: '12px', 
+                padding: '10px 14px', 
+                fontSize: '0.86rem', 
+                fontWeight: 800, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                cursor: 'pointer' 
+              }}
+            >
+              <GraduationCap size={16} />
+              <span>進入教師後台 (班級與派題)</span>
+            </button>
+          )}
+
+          {currentUser && !isTeacher && !isAdmin && (
+            <button
+              onClick={() => { onOpenTeacherApplyModal?.(); setIsMobileMenuOpen(false); }}
+              style={{ 
+                background: '#f0fdf4', 
+                border: '1.5px dashed #86efac', 
+                color: '#15803d', 
+                borderRadius: '12px', 
+                padding: '10px 14px', 
+                fontSize: '0.84rem', 
+                fontWeight: 800, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                cursor: 'pointer' 
+              }}
+            >
+              <GraduationCap size={16} />
+              <span>申請教師帳號 (可開班派題)</span>
+            </button>
+          )}
 
           {/* 5. 底部法規與管理員專屬通道 */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px dashed #ded3c5' }}>

@@ -273,7 +273,11 @@ const SHARED_CLOUD_KEYS = [
   'leaderboard_players',
   'quiz_papers',
   'notes_reports',
-  'custom_notes'
+  'custom_notes',
+  'studyhub_classes',
+  'studyhub_assignments',
+  'teacher_applications',
+  'teachers_list'
 ];
 
 export function initFirebaseRealtimeSync() {

@@ -166546,12 +166546,13 @@
     "updatedAt": 1790611135575
   },
   "studyhub_game_state_u_5o7iidntjs89": {
-    "lastDailyClaimDate": "2026-09-28",
+    "lastDailyClaimDate": "2026-10-03",
     "multiplierExpiresAt": 0,
     "personalMultiplier": 1,
-    "pityCount": 1,
-    "tickets": 2,
-    "updatedAt": 1790611151984
+    "pityCount": 0,
+    "tickets": 1,
+    "updatedAt": 1790989947531,
+    "unlockedBadges": []
   },
   "studyhub_game_state_u_5vfjjzo8mvkt": {
     "lastDailyClaimDate": "",
@@ -167318,14 +167319,14 @@
     },
     {
       "avatar": "https://jimmylee1020227-bot.github.io/learn5/assets/logo-BuHSCSMm.jpg",
-      "displayName": "總管理員",
+      "displayName": "總管理員1",
       "email": "jimmylee1020227@gmail.com",
       "tickets": 7072,
-      "totalPoints": 115,
-      "updatedAt": 1790950904662,
+      "totalPoints": 118,
+      "updatedAt": 1790953524091,
       "userId": "admin_super_jimmy",
       "weekId": "2026-W40",
-      "weeklyPoints": 2
+      "weeklyPoints": 5
     },
     {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKggCzcn4NCHHQhiQnbkseo1O6mzh8-vKkItpf8SIAeQ22LWe0=s96-c",
@@ -167337,6 +167338,36 @@
       "userId": "u_m5jdw8m0go8q",
       "weekId": "2026-W40",
       "weeklyPoints": 1
+    },
+    {
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=student_test_all_sync",
+      "displayName": "同步測試生",
+      "email": "",
+      "totalPoints": 1,
+      "updatedAt": 1790950904662,
+      "userId": "student_test_all_sync",
+      "weekId": "2026-W40",
+      "weeklyPoints": 0
+    },
+    {
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=test_student_fix_check",
+      "displayName": "測試同學",
+      "email": "",
+      "totalPoints": 1,
+      "updatedAt": 1790950904662,
+      "userId": "test_student_fix_check",
+      "weekId": "2026-W40",
+      "weeklyPoints": 0
+    },
+    {
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=test_student_synctest",
+      "displayName": "王小明",
+      "email": "",
+      "totalPoints": 1,
+      "updatedAt": 1790950904662,
+      "userId": "test_student_synctest",
+      "weekId": "2026-W40",
+      "weeklyPoints": 0
     },
     {
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=test_user_batch",
@@ -167640,6 +167671,16 @@
       "weeklyPoints": 0
     },
     {
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=u_btnvoclzbcu",
+      "displayName": "測試帳號",
+      "email": "",
+      "totalPoints": 0,
+      "updatedAt": 1790950904662,
+      "userId": "u_btnvoclzbcu",
+      "weekId": "2026-W40",
+      "weeklyPoints": 0
+    },
+    {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKpkRJ_PS77IdRLl5SSVWrR27MXaicvVDQ1_5U74aJ8yLWJ_9jT=s96-c",
       "displayName": "劉嘉棻",
       "email": "cing2199@gmail.com",
@@ -167783,6 +167824,16 @@
       "totalPoints": 75,
       "updatedAt": 1790950904662,
       "userId": "u_hqx969af5kfh",
+      "weekId": "2026-W40",
+      "weeklyPoints": 0
+    },
+    {
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=u_iad3vdk82wbs",
+      "displayName": "總管理員 1",
+      "email": "",
+      "totalPoints": 0,
+      "updatedAt": 1790950904662,
+      "userId": "u_iad3vdk82wbs",
       "weekId": "2026-W40",
       "weeklyPoints": 0
     },
@@ -168320,56 +168371,6 @@
       "userId": "u_z9bch3itsp1",
       "weekId": "2026-W40",
       "weeklyPoints": 0
-    },
-    {
-      "userId": "student_test_all_sync",
-      "displayName": "同步測試生",
-      "email": "",
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=student_test_all_sync",
-      "weeklyPoints": 0,
-      "totalPoints": 1,
-      "weekId": "2026-W40",
-      "updatedAt": 1790950904662
-    },
-    {
-      "userId": "test_student_synctest",
-      "displayName": "王小明",
-      "email": "",
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=test_student_synctest",
-      "weeklyPoints": 0,
-      "totalPoints": 1,
-      "weekId": "2026-W40",
-      "updatedAt": 1790950904662
-    },
-    {
-      "userId": "test_student_fix_check",
-      "displayName": "測試同學",
-      "email": "",
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=test_student_fix_check",
-      "weeklyPoints": 0,
-      "totalPoints": 1,
-      "weekId": "2026-W40",
-      "updatedAt": 1790950904662
-    },
-    {
-      "userId": "u_iad3vdk82wbs",
-      "displayName": "總管理員 1",
-      "email": "",
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=u_iad3vdk82wbs",
-      "weeklyPoints": 0,
-      "totalPoints": 0,
-      "weekId": "2026-W40",
-      "updatedAt": 1790950904662
-    },
-    {
-      "userId": "u_btnvoclzbcu",
-      "displayName": "測試帳號",
-      "email": "",
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=u_btnvoclzbcu",
-      "weeklyPoints": 0,
-      "totalPoints": 0,
-      "weekId": "2026-W40",
-      "updatedAt": 1790950904662
     }
   ],
   "test_key": {
@@ -232220,21 +232221,13 @@
       "avatar": "https://jimmylee1020227-bot.github.io/learn5/assets/logo-BuHSCSMm.jpg",
       "email": "jimmylee1020227@gmail.com",
       "id": "admin_super_jimmy",
-      "lastActive": "2026-10-02T13:59:29.203Z",
+      "lastActive": "2026-10-02T15:20:26.302Z",
       "name": "總管理員1",
       "photoURL": "https://jimmylee1020227-bot.github.io/learn5/assets/logo-BuHSCSMm.jpg",
       "role": "super_admin",
       "school": "系統總管理員",
-      "isLocked": false
-    },
-    "test_user_batch": {
-      "email": "test@example.com",
-      "id": "test_user_batch",
-      "lastActive": "2026-09-27T09:16:01.603Z",
-      "name": "測試學生",
-      "school": "測試學校",
-      "totalCorrect": 1,
-      "totalQuestions": 2,
+      "totalCorrect": 0,
+      "totalQuestions": 10,
       "totalQuizzes": 1
     },
     "u_1enhjs248o7e": {
@@ -232349,6 +232342,16 @@
       "totalCorrect": 0,
       "totalQuestions": 0
     },
+    "u_5o7iidntjs89": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJprNiTU7rAWk-ekkPob5OsIhHiTBWzuptHAwTitugYq7vmTQ=s96-c",
+      "email": "jimmyleegood3.0227@gmail.com",
+      "id": "u_5o7iidntjs89",
+      "lastActive": "2026-10-03T01:12:27.526Z",
+      "name": "李小寶",
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJprNiTU7rAWk-ekkPob5OsIhHiTBWzuptHAwTitugYq7vmTQ=s96-c",
+      "role": "student",
+      "school": "會考戰友"
+    },
     "u_5vfjjzo8mvkt": {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJiQg4uA9yqKh7hqkrDSAvogyZShe9o2FobNOZS7W9G-VnrHxBm=s96-c",
       "createdAt": "2026-09-25T17:36:24.440Z",
@@ -232371,16 +232374,6 @@
       "school": "會考戰友",
       "totalCorrect": 0,
       "totalQuestions": 0
-    },
-    "u_6zm7zprt6h1z": {
-      "email": "student_tester@example.com",
-      "id": "u_6zm7zprt6h1z",
-      "lastActive": "2026-09-27T10:23:40.860Z",
-      "name": "測試學生",
-      "school": "會考戰友",
-      "totalCorrect": 1,
-      "totalQuestions": 50,
-      "totalQuizzes": 5
     },
     "u_6zy6n3t6l85f": {
       "email": "alberthj19821109@gmail.com",
@@ -232721,9 +232714,8 @@
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
       "email": "happybrother0717@gmail.com",
       "id": "u_knbo67cox0xp",
-      "lastActive": "2026-09-27T09:48:53.138Z",
+      "lastActive": "2026-09-26T07:44:24.751Z",
       "name": "小編",
-      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocKtAYNYgwcJihygi26VrKSTVEHDu-agTjPD778TqORPfgDynw=s96-c",
       "role": "admin",
       "school": "會考戰友",
       "totalCorrect": 50,
@@ -232742,17 +232734,13 @@
       "totalQuestions": 53
     },
     "u_l1q9b8bj9tfe": {
-      "email": "pure6120502@gmail.com",
-      "grade": "國三",
-      "id": "u_l1q9b8bj9tfe",
-      "name": "Anita Li",
-      "registeredAt": "2026-09-22T06:22:14.299Z",
-      "school": "會考戰友",
-      "totalCorrect": 0,
-      "totalQuestions": 0,
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIrkq621DkonE8wCBiep0UUSZv69UHi_v-uI0x78N5y-fvy0g=s96-c",
-      "lastActive": "2026-10-02T07:19:56.290Z",
-      "role": "student"
+      "email": "pure6120502@gmail.com",
+      "id": "u_l1q9b8bj9tfe",
+      "lastActive": "2026-10-01T00:09:05.078Z",
+      "name": "Anita Li",
+      "role": "student",
+      "school": "會考戰友"
     },
     "u_l273emducboc": {
       "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLOdEYE79-bfkvLlKhH4v9ReB1lgusT5x8fOMWJO0MEj8g5CDYm=s96-c",
@@ -232904,14 +232892,14 @@
       "totalQuestions": 0
     },
     "u_qanjvjnkl26b": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIy-NDCUsgOBGvNOcLJtK0eU67DWItSw3zUTP6cPFpu42FhTk0=s96-c",
       "email": "good0621@apps.ntpc.edu.tw",
-      "grade": "國三",
       "id": "u_qanjvjnkl26b",
-      "name": "董于甄",
-      "registeredAt": "2026-09-22T23:05:57.898Z",
-      "school": "會考戰友",
-      "totalCorrect": 0,
-      "totalQuestions": 0
+      "lastActive": "2026-10-01T09:20:47.512Z",
+      "name": "新兵蛋子",
+      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocIy-NDCUsgOBGvNOcLJtK0eU67DWItSw3zUTP6cPFpu42FhTk0=s96-c",
+      "role": "student",
+      "school": "會考戰友"
     },
     "u_qoq01plky6n3": {
       "email": "kinenkiki@gmail.com",
@@ -233237,12 +233225,11 @@
       "totalQuestions": 28
     },
     "u_z6zfph78ipyf": {
-      "avatar": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%22120%22%20height%3D%22120%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2260%22%20r%3D%2258%22%20fill%3D%22%23feebc8%22%20%2F%3E%0A%20%20%20%20%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2266%22%20r%3D%2236%22%20fill%3D%22%23ed8936%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2232%2C32%2046%2C54%2026%2C52%22%20fill%3D%22%23c05621%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2288%2C32%2074%2C54%2094%2C52%22%20fill%3D%22%23c05621%22%20%2F%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2248%22%20cy%3D%2264%22%20rx%3D%224%22%20ry%3D%225.5%22%20fill%3D%22%232d3748%22%20%2F%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2272%22%20cy%3D%2264%22%20rx%3D%224%22%20ry%3D%225.5%22%20fill%3D%22%232d3748%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2260%2C70%2056%2C74%2064%2C74%22%20fill%3D%22%23f687b3%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpath%20d%3D%22M54%2C77%20Q60%2C82%2066%2C77%22%20stroke%3D%22%232d3748%22%20stroke-width%3D%222%22%20fill%3D%22none%22%20%2F%3E%0A%20%20%20%20%20%20%3Cline%20x1%3D%2228%22%20y1%3D%2267%22%20x2%3D%2242%22%20y2%3D%2269%22%20stroke%3D%22%23718096%22%20stroke-width%3D%222%22%20%2F%3E%0A%20%20%20%20%20%20%3Cline%20x1%3D%2292%22%20y1%3D%2267%22%20x2%3D%2278%22%20y2%3D%2269%22%20stroke%3D%22%23718096%22%20stroke-width%3D%222%22%20%2F%3E%0A%20%20%20%20%0A%20%20%3C%2Fsvg%3E",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIANgF2ETQ2llbHNhbv4E5e_72FcSlJ9fWf5jfBsUS-PcaIyQ=s96-c",
       "email": "fternoona50@gmail.com",
       "id": "u_z6zfph78ipyf",
-      "lastActive": "2026-09-27T10:04:58.994Z",
+      "lastActive": "2026-09-26T06:15:47.206Z",
       "name": "fternoon A",
-      "photoURL": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%22120%22%20height%3D%22120%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2260%22%20r%3D%2258%22%20fill%3D%22%23feebc8%22%20%2F%3E%0A%20%20%20%20%0A%20%20%20%20%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2266%22%20r%3D%2236%22%20fill%3D%22%23ed8936%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2232%2C32%2046%2C54%2026%2C52%22%20fill%3D%22%23c05621%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2288%2C32%2074%2C54%2094%2C52%22%20fill%3D%22%23c05621%22%20%2F%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2248%22%20cy%3D%2264%22%20rx%3D%224%22%20ry%3D%225.5%22%20fill%3D%22%232d3748%22%20%2F%3E%0A%20%20%20%20%20%20%3Cellipse%20cx%3D%2272%22%20cy%3D%2264%22%20rx%3D%224%22%20ry%3D%225.5%22%20fill%3D%22%232d3748%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpolygon%20points%3D%2260%2C70%2056%2C74%2064%2C74%22%20fill%3D%22%23f687b3%22%20%2F%3E%0A%20%20%20%20%20%20%3Cpath%20d%3D%22M54%2C77%20Q60%2C82%2066%2C77%22%20stroke%3D%22%232d3748%22%20stroke-width%3D%222%22%20fill%3D%22none%22%20%2F%3E%0A%20%20%20%20%20%20%3Cline%20x1%3D%2228%22%20y1%3D%2267%22%20x2%3D%2242%22%20y2%3D%2269%22%20stroke%3D%22%23718096%22%20stroke-width%3D%222%22%20%2F%3E%0A%20%20%20%20%20%20%3Cline%20x1%3D%2292%22%20y1%3D%2267%22%20x2%3D%2278%22%20y2%3D%2269%22%20stroke%3D%22%23718096%22%20stroke-width%3D%222%22%20%2F%3E%0A%20%20%20%20%0A%20%20%3C%2Fsvg%3E",
       "role": "student",
       "school": "會考戰友",
       "totalCorrect": 33,
@@ -233270,68 +233257,6 @@
       "school": "會考戰友",
       "totalCorrect": 19,
       "totalQuestions": 41
-    },
-    "u_kr4sqjhua63d": {
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKO0RUeOVg046TBiZThthcVTJA8K_VB7Li204vCcqRsXYnE_eI=s96-c",
-      "email": "miawu20111005@gmail.com",
-      "id": "u_kr4sqjhua63d",
-      "lastActive": "2026-10-02T11:15:42.275Z",
-      "name": "吳柔蓁",
-      "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocKO0RUeOVg046TBiZThthcVTJA8K_VB7Li204vCcqRsXYnE_eI=s96-c",
-      "role": "student",
-      "school": "會考戰友",
-      "totalCorrect": 12,
-      "totalQuestions": 15,
-      "totalQuizzes": 1
-    },
-    "u_5o7iidntjs89": {
-      "id": "u_5o7iidntjs89",
-      "name": "李小寶",
-      "school": "會考戰友",
-      "email": "jimmyleegood3.0227@gmail.com",
-      "role": "student"
-    },
-    "u_zg62h44xo78q": {
-      "id": "u_zg62h44xo78q",
-      "name": "chen奇異果",
-      "school": "會考戰友",
-      "email": "kiwichen167@gmail.com",
-      "role": "student"
-    },
-    "student_test_all_sync": {
-      "id": "student_test_all_sync",
-      "name": "同步測試生",
-      "school": "示範中學",
-      "email": "",
-      "role": "student"
-    },
-    "test_student_synctest": {
-      "id": "test_student_synctest",
-      "name": "王小明",
-      "school": "示範中學",
-      "email": "",
-      "role": "student"
-    },
-    "test_student_fix_check": {
-      "id": "test_student_fix_check",
-      "name": "測試同學",
-      "school": "會考實驗中學",
-      "email": "",
-      "role": "student"
-    },
-    "u_iad3vdk82wbs": {
-      "id": "u_iad3vdk82wbs",
-      "name": "總管理員 1",
-      "school": "會考戰友",
-      "email": "",
-      "role": "student"
-    },
-    "u_btnvoclzbcu": {
-      "id": "u_btnvoclzbcu",
-      "name": "測試帳號",
-      "school": "會考戰友",
-      "email": "",
-      "role": "student"
     }
   }
 }

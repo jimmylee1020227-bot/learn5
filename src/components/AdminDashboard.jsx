@@ -89,19 +89,27 @@ import {
   UserX,
   Wrench,
   Sparkles,
-  MessageSquare
+  MessageSquare,
+  GraduationCap,
+  BarChart3
 } from 'lucide-react';
+import { 
+  getTeacherApplications, 
+  approveTeacherApplication, 
+  getAllClasses 
+} from '../services/classService';
 
-function AdminDashboard() {
+function AdminDashboard({ onOpenProgressModal }) {
   const { currentUser } = useAuth();
   const { globalSettings } = useGame();
 
   const isAuthorized = checkIsAdmin(currentUser);
   const isAuthorizedSuperAdmin = currentUser?.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() || currentUser?.role === 'super_admin';
 
-
-
-  const [activeSubTab, setActiveSubTab] = useState('reports'); // 'reports' | 'sitereports' | 'rewards' | 'codes' | 'broadcast' | 'students' | 'questions'
+  const [activeSubTab, setActiveSubTab] = useState('reports'); // 'reports' | 'sitereports' | 'rewards' | 'codes' | 'broadcast' | 'students' | 'questions' | 'teachers_classes'
+  const [teacherApps, setTeacherApps] = useState(() => getTeacherApplications());
+  const [allPlatformClasses, setAllPlatformClasses] = useState(() => getAllClasses());
+  const [isApprovingTeacher, setIsApprovingTeacher] = useState(false);
   const [reports, setReports] = useState(getQuestionReports());
   const [siteReports, setSiteReports] = useState(getSiteReports());
   const [players, setPlayers] = useState(getLeaderboard());
@@ -1243,6 +1251,17 @@ function AdminDashboard() {
           >
             <Users size={15} /> 👥 學生名冊與學況調閱 ({registeredStudents.length})
           </button>
+          <button
+            onClick={() => {
+              setTeacherApps(getTeacherApplications());
+              setAllPlatformClasses(getAllClasses());
+              setActiveSubTab('teachers_classes');
+            }}
+            className={`btn ${activeSubTab === 'teachers_classes' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '8px 14px', background: activeSubTab === 'teachers_classes' ? '#0284c7' : undefined, color: activeSubTab === 'teachers_classes' ? '#fff' : undefined }}
+          >
+            <GraduationCap size={15} /> 🎓 教師審核與班級總覽 ({teacherApps.filter(a => a.status === 'pending').length > 0 ? `⚠️${teacherApps.filter(a => a.status === 'pending').length}待審` : `${allPlatformClasses.length}班`})
+          </button>
           {isAuthorizedSuperAdmin && (
             <button
               onClick={() => setActiveSubTab('audit')}
@@ -2166,6 +2185,22 @@ function AdminDashboard() {
                       style={{ padding: '5px 12px', fontSize: '0.76rem', fontWeight: 800 }}
                     >
                       {onlyMistakes ? '顯示全部題目' : '僅看錯題'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onOpenProgressModal?.({
+                          id: selectedStudentId !== 'ALL' ? selectedStudentId : 'guest_student',
+                          displayName: selectedStudent,
+                          email: selectedStudentEmail !== 'ALL' ? selectedStudentEmail : ''
+                        });
+                      }}
+                      className="btn btn-secondary"
+                      style={{ padding: '5px 12px', fontSize: '0.76rem', fontWeight: 800, background: '#ffedd5', color: '#c2410c', borderColor: '#fb923c', display: 'flex', alignItems: 'center', gap: '5px' }}
+                      title="調閱該位學生在 108 課綱各單元的強弱掌握度雷達分析與錯題狀況"
+                    >
+                      <BarChart3 size={13} />
+                      📊 調閱課綱掌握度表
                     </button>
                     <button
                       onClick={() => {
@@ -3360,6 +3395,188 @@ function AdminDashboard() {
           </div>
         </div>
         )
+      )}
+
+      {/* 8.5 教師審核與班級總覽 (Teachers & Classes Management) */}
+      {activeSubTab === 'teachers_classes' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {/* 總覽指標卡片 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+            <div className="glass-panel" style={{ padding: '16px 20px', borderRadius: '16px', border: '2px solid var(--theme-border, #17324d)', background: 'var(--theme-card, #fffdf9)' }}>
+              <div style={{ fontSize: '0.8rem', color: '#78818a', fontWeight: 800, marginBottom: '6px' }}>待審核教師申請</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: teacherApps.filter(a => a.status === 'pending').length > 0 ? '#ef4444' : '#10b981' }}>
+                {teacherApps.filter(a => a.status === 'pending').length} 筆
+              </div>
+            </div>
+
+            <div className="glass-panel" style={{ padding: '16px 20px', borderRadius: '16px', border: '2px solid var(--theme-border, #17324d)', background: 'var(--theme-card, #fffdf9)' }}>
+              <div style={{ fontSize: '0.8rem', color: '#78818a', fontWeight: 800, marginBottom: '6px' }}>已核准正式教師</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0369a1' }}>
+                {teacherApps.filter(a => a.status === 'approved').length} 位
+              </div>
+            </div>
+
+            <div className="glass-panel" style={{ padding: '16px 20px', borderRadius: '16px', border: '2px solid var(--theme-border, #17324d)', background: 'var(--theme-card, #fffdf9)' }}>
+              <div style={{ fontSize: '0.8rem', color: '#78818a', fontWeight: 800, marginBottom: '6px' }}>全站開設班級總數</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#7c3aed' }}>
+                {allPlatformClasses.length} 班
+              </div>
+            </div>
+
+            <div className="glass-panel" style={{ padding: '16px 20px', borderRadius: '16px', border: '2px solid var(--theme-border, #17324d)', background: 'var(--theme-card, #fffdf9)' }}>
+              <div style={{ fontSize: '0.8rem', color: '#78818a', fontWeight: 800, marginBottom: '6px' }}>班級在冊學生人次</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#c2410c' }}>
+                {allPlatformClasses.reduce((acc, c) => acc + (c.students?.length || 0), 0)} 人
+              </div>
+            </div>
+          </div>
+
+          {/* 待審核教師申請區塊 */}
+          <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', border: '2.5px solid var(--theme-border, #17324d)', background: 'var(--theme-card, #fffdf9)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <GraduationCap size={22} color="#0284c7" />
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900 }}>教師帳號審核中心</h3>
+              </div>
+              <button 
+                onClick={() => {
+                  setTeacherApps(getTeacherApplications());
+                  setAllPlatformClasses(getAllClasses());
+                }}
+                className="btn btn-secondary"
+                style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+              >
+                <RefreshCw size={13} /> 重新整理
+              </button>
+            </div>
+
+            {teacherApps.filter(a => a.status === 'pending').length === 0 ? (
+              <div style={{ padding: '24px', textAlign: 'center', color: '#10b981', background: '#ecfdf5', borderRadius: '14px', border: '1.5px dashed #a7f3d0', fontWeight: 800 }}>
+                ✅ 目前所有教師帳號申請皆已審核完成，暫無待處理項目！
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {teacherApps.filter(a => a.status === 'pending').map(app => (
+                  <div key={app.id} style={{ padding: '16px', borderRadius: '14px', background: '#f8fafc', border: '1.5px solid #cbd5e1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 900, fontSize: '0.98rem', color: '#1e293b' }}>{app.applicantName}</span>
+                        <span style={{ fontSize: '0.75rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>{app.schoolName}</span>
+                        <span style={{ fontSize: '0.75rem', background: '#fef3c7', color: '#b45309', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>{app.subjectTaught}</span>
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: '#64748b' }}>
+                        帳號 Email: <strong>{app.applicantEmail}</strong>・申請時間: {new Date(app.appliedAt).toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: '0.84rem', color: '#334155', marginTop: '6px', fontStyle: 'italic', background: '#ffffff', padding: '6px 10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        「{app.reason}」
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await approveTeacherApplication(app.id, currentUser);
+                            setTeacherApps(getTeacherApplications());
+                            alert(`已成功核准【${app.applicantName}】為認證教師！`);
+                          } catch (err) {
+                            alert(err.message || '核准失敗');
+                          }
+                        }}
+                        className="btn btn-primary"
+                        style={{ padding: '8px 16px', fontSize: '0.84rem', fontWeight: 800, background: '#0284c7', borderColor: '#0369a1' }}
+                      >
+                        <CheckCircle2 size={15} /> 核准開通教師身分
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 全站班級總覽與學況調閱 */}
+          <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', border: '2.5px solid var(--theme-border, #17324d)', background: 'var(--theme-card, #fffdf9)', boxShadow: '4px 4px 0 var(--theme-border, #17324d)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <Users size={22} color="#7c3aed" />
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900 }}>全站班級總覽與學生學況調閱</h3>
+            </div>
+
+            {allPlatformClasses.length === 0 ? (
+              <div style={{ padding: '30px', textAlign: 'center', color: '#78818a', background: 'var(--theme-bg, #f8f3eb)', borderRadius: '14px', border: '1.5px dashed #ded3c5' }}>
+                目前全站尚無建立任何班級。
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {allPlatformClasses.map(cls => (
+                  <div key={cls.id} style={{ padding: '18px', borderRadius: '16px', background: '#faf5ff', border: '2px solid #e9d5ff', boxShadow: '2px 2px 0 #c084fc' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#6b21a8' }}>{cls.className}</span>
+                        <span style={{ padding: '2px 8px', borderRadius: '8px', background: '#7c3aed', color: '#fff', fontSize: '0.8rem', fontWeight: 900, letterSpacing: '0.05em' }}>
+                          代碼: {cls.classCode}
+                        </span>
+                        <span style={{ fontSize: '0.8rem', color: '#7e22ce', fontWeight: 700 }}>
+                          導師: {cls.teacherName} ({cls.teacherEmail})
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: '#6b21a8', fontWeight: 700 }}>
+                        成員人數: {cls.students?.length || 0} 位學生
+                      </div>
+                    </div>
+
+                    {/* 學生名冊與單元掌握度表調閱按鈕 */}
+                    {cls.students && cls.students.length > 0 ? (
+                      <div style={{ overflowX: 'auto', marginTop: '10px' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', background: '#ffffff', borderRadius: '10px', overflow: 'hidden' }}>
+                          <thead>
+                            <tr style={{ background: '#f3e8ff', color: '#6b21a8', textAlign: 'left' }}>
+                              <th style={{ padding: '8px 12px' }}>學生姓名</th>
+                              <th style={{ padding: '8px 12px' }}>Email</th>
+                              <th style={{ padding: '8px 12px' }}>班級積分</th>
+                              <th style={{ padding: '8px 12px', textAlign: 'right' }}>學況調閱</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {cls.students.map((st, sIdx) => (
+                              <tr key={st.id || sIdx} style={{ borderTop: '1px solid #f1f5f9' }}>
+                                <td style={{ padding: '8px 12px', fontWeight: 800, color: '#1e293b' }}>{st.name}</td>
+                                <td style={{ padding: '8px 12px', color: '#64748b' }}>{st.email || '未綁定'}</td>
+                                <td style={{ padding: '8px 12px', fontWeight: 900, color: '#7c3aed' }}>{st.classPoints || 0} 點</td>
+                                <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                                  <button
+                                    onClick={() => {
+                                      onOpenProgressModal?.({
+                                        id: st.id,
+                                        displayName: st.name,
+                                        email: st.email
+                                      });
+                                    }}
+                                    className="btn btn-secondary"
+                                    style={{ padding: '4px 10px', fontSize: '0.74rem', background: '#ffedd5', color: '#c2410c', borderColor: '#fb923c', fontWeight: 800 }}
+                                    title="調閱此學生 108 課綱各科單元強弱掌握度表"
+                                  >
+                                    <BarChart3 size={12} /> 📊 調閱掌握度表
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '0.82rem', color: '#94a3b8', fontStyle: 'italic', padding: '6px 0' }}>
+                        此班級尚未有學生加入。學生可透過 6 碼代碼【{cls.classCode}】加入。
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
       )}
 
       {/* 9. 實用工具中台 (Tools - 5 大實用後台利器) */}
