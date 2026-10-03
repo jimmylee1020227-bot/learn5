@@ -1383,11 +1383,11 @@ export function recordQuizPaperSession(paperSession) {
     if (userPapers.length > 20) userPapers.length = 20;
     setJson(userPapersKey, userPapers);
 
-    // 全服快取同步推播 (本地只快取最新 25 份，雲端永久保留全量)
+    // 全服快取同步推播 (本地安全快取最新 200 份，雲端永久保留全量)
     const rawAllPapers = getJson('all_quiz_papers', []);
     const allLocalPapers = Array.isArray(rawAllPapers) ? rawAllPapers : (rawAllPapers && typeof rawAllPapers === 'object' ? Object.values(rawAllPapers) : []);
     allLocalPapers.unshift(paperSession);
-    if (allLocalPapers.length > 25) allLocalPapers.length = 25;
+    if (allLocalPapers.length > 200) allLocalPapers.length = 200;
     setJson('all_quiz_papers', allLocalPapers);
 
     // 同步推送至 Firebase 雲端獨立節點 (雙軌：SDK + keepalive REST API)
@@ -1412,10 +1412,10 @@ let quizPapersMemoryCache = null;
 let lastQuizPapersFetchTime = 0;
 let inFlightQuizPapersPromise = null;
 
-// 異步向 Firebase 雲端主動調閱所有已提交的試卷 (管理員全服試卷調閱核心，加入節流快取)
+// 異步向 Firebase 雲端主動調閱所有已提交的試卷 (管理員全服試卷調閱核心，加入節流快取與雙軌保險)
 export async function fetchAllCloudQuizPapers(forceRefresh = false) {
   const now = Date.now();
-  if (!forceRefresh && quizPapersMemoryCache && (now - lastQuizPapersFetchTime < 45000)) {
+  if (!forceRefresh && quizPapersMemoryCache && (now - lastQuizPapersFetchTime < 30000)) {
     return quizPapersMemoryCache;
   }
   if (inFlightQuizPapersPromise) {
@@ -1432,33 +1432,51 @@ export async function fetchAllCloudQuizPapers(forceRefresh = false) {
         localAll.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
       }
 
-  // 2. 向 Firebase 雲端直接讀取 quiz_papers 與 all_quiz_papers 節點 (增加 12 秒寬裕保護與雙節點聯集)
-  if (db) {
-    try {
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 12000));
-      const [snapPapers, snapAll] = await Promise.race([
-        Promise.allSettled([
-          get(ref(db, 'studyhub/quiz_papers')),
-          get(ref(db, 'studyhub/all_quiz_papers'))
-        ]),
-        timeoutPromise
-      ]);
+      // 2. 向 Firebase 雲端直接讀取 quiz_papers 與 all_quiz_papers 節點 (增加 12 秒寬裕保護與雙節點聯集)
+      if (db) {
+        try {
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 8000));
+          const [snapPapers, snapAll] = await Promise.race([
+            Promise.allSettled([
+              get(ref(db, 'studyhub/quiz_papers')),
+              get(ref(db, 'studyhub/all_quiz_papers'))
+            ]),
+            timeoutPromise
+          ]);
 
-      if (snapPapers && snapPapers.status === 'fulfilled' && snapPapers.value?.exists()) {
-        const val = snapPapers.value.val();
-        const list = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
-        list.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
+          if (snapPapers && snapPapers.status === 'fulfilled' && snapPapers.value?.exists()) {
+            const val = snapPapers.value.val();
+            const list = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
+            list.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
+          }
+
+          if (snapAll && snapAll.status === 'fulfilled' && snapAll.value?.exists()) {
+            const val = snapAll.value.val();
+            const list = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
+            list.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
+          }
+        } catch (e) {
+          console.warn('[Fetch Cloud Quiz Papers Error / Timeout]', e);
+        }
       }
 
-      if (snapAll && snapAll.status === 'fulfilled' && snapAll.value?.exists()) {
-        const val = snapAll.value.val();
-        const list = (Array.isArray(val) ? val : Object.values(val)).filter(Boolean);
-        list.forEach(p => { if (p && p.id) papersMap.set(p.id, p); });
+      // 2.1 鋼鐵保險：若雲端試卷未達預期，立即透過超高速 REST API 直連抓取，杜絕任何一筆考卷遺失
+      if (papersMap.size < 50 && typeof fetch !== 'undefined') {
+        try {
+          const restRes = await fetch('https://learn-9e08c-default-rtdb.asia-southeast1.firebasedatabase.app/studyhub/all_quiz_papers.json', { cache: 'no-store' });
+          if (restRes.ok) {
+            const restData = await restRes.json();
+            if (restData) {
+              const restList = Array.isArray(restData) ? restData : Object.values(restData);
+              restList.filter(Boolean).forEach(p => {
+                if (p && p.id) papersMap.set(p.id, p);
+              });
+            }
+          }
+        } catch (restErr) {
+          console.warn('[Fetch Cloud Quiz Papers REST Fallback Error]', restErr);
+        }
       }
-    } catch (e) {
-      console.warn('[Fetch Cloud Quiz Papers Error / Timeout]', e);
-    }
-  }
 
   // 3. 智能合成：若現有試卷庫數量較少，以本機/快取做題歷程動態秒級合成完整試卷（不重啟全服網路慢請求）
   try {
@@ -2212,19 +2230,35 @@ export function getRegisteredStudents() {
 
 // 主動調閱 Firebase 雲端最新全體學生註冊名冊
 export async function fetchCloudUserRegistry() {
-  if (!db) return getJson('user_registry', {});
   try {
-    const snap = await get(ref(db, 'studyhub/user_registry'));
-    const val = snap.val();
-    if (val && typeof val === 'object') {
-      const reg = Array.isArray(val) ? val.reduce((acc, u) => { if (u?.id) acc[u.id] = u; return acc; }, {}) : val;
-      safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(reg));
-      setJson('user_registry', reg);
-      return reg;
+    if (db) {
+      const snap = await get(ref(db, 'studyhub/user_registry'));
+      const val = snap.val();
+      if (val && typeof val === 'object') {
+        const reg = Array.isArray(val) ? val.reduce((acc, u) => { if (u?.id) acc[u.id] = u; return acc; }, {}) : val;
+        safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(reg));
+        setJson('user_registry', reg);
+        return reg;
+      }
     }
   } catch (e) {
-    console.warn('[Fetch Cloud User Registry Error]', e);
+    console.warn('[Fetch Cloud User Registry SDK Error]', e);
   }
+
+  // REST API 雙軌保險
+  try {
+    const res = await fetch('https://learn-9e08c-default-rtdb.asia-southeast1.firebasedatabase.app/studyhub/user_registry.json', { cache: 'no-store' });
+    if (res.ok) {
+      const val = await res.json();
+      if (val && typeof val === 'object') {
+        const reg = Array.isArray(val) ? val.reduce((acc, u) => { if (u?.id) acc[u.id] = u; return acc; }, {}) : val;
+        safeSetLocalStorage(STORAGE_PREFIX + 'user_registry', JSON.stringify(reg));
+        setJson('user_registry', reg);
+        return reg;
+      }
+    }
+  } catch (e) {}
+
   return getJson('user_registry', {});
 }
 

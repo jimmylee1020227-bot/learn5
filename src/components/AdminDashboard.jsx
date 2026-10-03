@@ -135,12 +135,12 @@ function AdminDashboard({ onOpenProgressModal }) {
   const [onlyMistakes, setOnlyMistakes] = useState(false);
   const [expandedLogIds, setExpandedLogIds] = useState({});
 
-  // 效能優化：極限降低 DOM 節點的分頁與非阻塞延遲搜尋
+  // 效能優化：極限降低 DOM 節點的分頁與非阻塞延遲搜尋 (提供靈活每頁筆數，預設 50 筆保障試卷全覽)
   const [paperPage, setPaperPage] = useState(1);
   const [logPage, setLogPage] = useState(1);
   const [auditPage, setAuditPage] = useState(1);
-  const PAPERS_PER_PAGE = 10;
-  const LOGS_PER_PAGE = 20;
+  const [papersPerPage, setPapersPerPage] = useState(50); // 預設 50 筆，支援切換全部
+  const [logsPerPage, setLogsPerPage] = useState(50);
   const AUDIT_PER_PAGE = 25;
 
   const deferredStudentSearchKeyword = React.useDeferredValue(studentSearchKeyword);
@@ -524,6 +524,73 @@ function AdminDashboard({ onOpenProgressModal }) {
       };
     });
 
+    // 1.1 融合全服排行榜 players (確保 100+ 位活躍學生完整呈現在快篩與名冊，絕無遺漏)
+    (Array.isArray(players) ? players : []).forEach(p => {
+      if (!p || !p.userId) return;
+      const targetEmail = (p.email || (p.userId && userRegistry[p.userId]?.email) || '').trim().toLowerCase();
+      if (isTestData(p.displayName || p.name, targetEmail, p.userId)) return;
+      const key = p.userId;
+      const pName = p.displayName || p.name || '會考戰友';
+      if (!studentMap[key]) {
+        studentMap[key] = {
+          name: pName,
+          displayName: pName,
+          school: p.school || '會考戰友',
+          total: p.totalPoints || p.weeklyPoints || 0,
+          correct: p.weeklyPoints || 0,
+          wrong: 0,
+          userId: p.userId,
+          email: targetEmail,
+          lastActive: p.updatedAt ? new Date(p.updatedAt).toISOString() : '',
+          accuracy: 100,
+          registryTotal: p.totalPoints || p.weeklyPoints || 0,
+          registryCorrect: p.weeklyPoints || 0,
+          registryWrong: 0,
+          hasHistoryLogs: false
+        };
+      } else {
+        if (!studentMap[key].email && targetEmail) studentMap[key].email = targetEmail;
+        if (pName && studentMap[key].name === '會考戰友') {
+          studentMap[key].name = pName;
+          studentMap[key].displayName = pName;
+        }
+        if (p.updatedAt && (!studentMap[key].lastActive || new Date(p.updatedAt) > new Date(studentMap[key].lastActive))) {
+          studentMap[key].lastActive = new Date(p.updatedAt).toISOString();
+        }
+      }
+    });
+
+    // 1.2 融合全服 75 份試卷 quizPapers (確保做過評量試卷的學生 100% 納入名冊)
+    (Array.isArray(quizPapers) ? quizPapers : []).forEach(paper => {
+      if (!paper) return;
+      const pUid = paper.userId || paper.ownerId;
+      const pName = paper.userName || paper.displayName || '會考同學';
+      const targetEmail = (paper.userEmail || (pUid && userRegistry[pUid]?.email) || '').trim().toLowerCase();
+      if (isTestData(pName, targetEmail, pUid)) return;
+      const key = pUid || (targetEmail && targetEmail !== 'test@example.com' ? `email_${targetEmail}` : pName);
+      if (!studentMap[key]) {
+        studentMap[key] = {
+          name: pName,
+          displayName: pName,
+          school: paper.userSchool || '會考戰友',
+          total: 0,
+          correct: 0,
+          wrong: 0,
+          userId: pUid,
+          email: targetEmail,
+          lastActive: paper.timestamp || '',
+          accuracy: 0,
+          registryTotal: 0,
+          registryCorrect: 0,
+          registryWrong: 0,
+          hasHistoryLogs: true
+        };
+      }
+      if (paper.timestamp && (!studentMap[key].lastActive || new Date(paper.timestamp) > new Date(studentMap[key].lastActive))) {
+        studentMap[key].lastActive = paper.timestamp;
+      }
+    });
+
     // 2. 用已載入的 allHistory 統計精準做題題數與正錯細節
     (Array.isArray(allHistory) ? allHistory : []).forEach(log => {
       if (!log) return;
@@ -665,7 +732,7 @@ function AdminDashboard({ onOpenProgressModal }) {
       totalCorrect,
       totalWrong
     };
-  }, [allHistory, registeredStudents]);
+  }, [allHistory, registeredStudents, players, quizPapers]);
 
   // 篩選做題紀錄列表
   const filteredPracticeLogs = React.useMemo(() => {
@@ -725,21 +792,21 @@ function AdminDashboard({ onOpenProgressModal }) {
     const userRegistry = getJson('user_registry', {});
     return (Array.isArray(quizPapers) ? quizPapers : []).filter(paper => {
       if (!paper) return false;
-      if (selectedStudentId !== 'ALL') {
+      if (selectedStudentId !== 'ALL' || selectedStudent !== 'ALL') {
         const paperUid = paper.userId || paper.ownerId;
-        const isMatchedId = paperUid && paperUid === selectedStudentId;
+        const isMatchedId = selectedStudentId !== 'ALL' && paperUid && paperUid === selectedStudentId;
         const regEntry = (paperUid && userRegistry[paperUid]) || {};
-        let targetEmail = regEntry.email || paper.userEmail || '';
-        targetEmail = targetEmail.trim().toLowerCase();
+        let targetEmail = (regEntry.email || paper.userEmail || '').trim().toLowerCase();
         const isMatchedEmail = selectedStudentEmail !== 'ALL' && targetEmail && targetEmail !== 'test@example.com' && targetEmail === selectedStudentEmail.trim().toLowerCase();
-        
-        const isMatchedName = !paperUid && (paper.userName === selectedStudent || (paper.displayName && paper.displayName === selectedStudent));
+        const pName = (paper.userName || paper.displayName || '').trim();
+        const isMatchedName = selectedStudent !== 'ALL' && (
+          pName === selectedStudent || 
+          paper.displayName === selectedStudent ||
+          (selectedStudent.startsWith(pName) && pName.length >= 2) ||
+          (pName.startsWith(selectedStudent) && selectedStudent.length >= 2)
+        );
 
         if (!isMatchedId && !isMatchedEmail && !isMatchedName) {
-          return false;
-        }
-      } else if (selectedStudent !== 'ALL') {
-        if (paper.userName !== selectedStudent && paper.displayName !== selectedStudent) {
           return false;
         }
       }
@@ -2452,8 +2519,87 @@ function AdminDashboard({ onOpenProgressModal }) {
                   </button>
                 </div>
               ) : (
-                filteredQuizPapers.slice((paperPage - 1) * PAPERS_PER_PAGE, paperPage * PAPERS_PER_PAGE).map((paper, paperIndex) => {
-                  const isExpanded = !!expandedPaperIds[paper.id]; // 預設收合，點擊後按需展開，極致降低萬級 DOM 渲染卡頓
+                <>
+                  {/* 試卷調閱工具列：全覽、單頁數量與展開控制 */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    padding: '12px 18px',
+                    background: 'var(--theme-card, #fffdf9)',
+                    border: '2px solid var(--theme-border, #17324d)',
+                    borderRadius: '14px',
+                    boxShadow: '3px 3px 0px var(--theme-border, #17324d)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.88rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>
+                      <FileText size={18} style={{ color: 'var(--theme-accent, #ef8354)' }} />
+                      <span>已調閱 <strong>{filteredQuizPapers.length}</strong> 份雲端完整試卷</span>
+                      {selectedStudent !== 'ALL' && (
+                        <span style={{ fontSize: '0.78rem', background: '#e0ecf8', color: '#17324d', padding: '2px 8px', borderRadius: '12px' }}>
+                          考生：{selectedStudent}
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                      {/* 每頁數量 */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 700 }}>
+                        <span>單頁筆數：</span>
+                        <select
+                          value={papersPerPage}
+                          onChange={(e) => {
+                            setPapersPerPage(Number(e.target.value));
+                            setPaperPage(1);
+                          }}
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '8px',
+                            border: '1.5px solid var(--theme-border, #17324d)',
+                            fontWeight: 800,
+                            background: '#fff'
+                          }}
+                        >
+                          <option value={20}>20 份 / 頁</option>
+                          <option value={50}>50 份 / 頁 (推薦)</option>
+                          <option value={9999}>全部顯示 (無分頁)</option>
+                        </select>
+                      </div>
+
+                      {/* 一鍵展開 / 收合全部 */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const allIds = {};
+                          const shouldExpandAll = Object.keys(expandedPaperIds).length < filteredQuizPapers.length;
+                          if (shouldExpandAll) {
+                            filteredQuizPapers.forEach(p => { if (p?.id) allIds[p.id] = true; });
+                          }
+                          setExpandedPaperIds(allIds);
+                        }}
+                        className="btn btn-secondary"
+                        style={{ padding: '5px 12px', fontSize: '0.78rem', fontWeight: 800 }}
+                      >
+                        {Object.keys(expandedPaperIds).length >= filteredQuizPapers.length && filteredQuizPapers.length > 0 ? '📁 收合全部試卷' : '📖 展開全部試卷'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleForceCloudRefresh}
+                        className="btn btn-secondary"
+                        title="立即自 Firebase RTDB 重新拉取最新考卷"
+                        style={{ padding: '5px 10px', fontSize: '0.78rem' }}
+                      >
+                        <RefreshCw size={13} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {filteredQuizPapers
+                    .slice((paperPage - 1) * papersPerPage, paperPage * papersPerPage)
+                    .map((paper, paperIndex) => {
+                      const isExpanded = !!expandedPaperIds[paper.id]; // 預設收合，點擊後按需展開，極致降低萬級 DOM 渲染卡頓
                   return (
                     <div
                       key={paper.id || paperIndex}
@@ -2698,11 +2844,10 @@ function AdminDashboard({ onOpenProgressModal }) {
                       )}
                     </div>
                   );
-                })
-              )}
+                })}
 
               {/* 試卷分頁控制列 */}
-              {filteredQuizPapers.length > PAPERS_PER_PAGE && (
+              {filteredQuizPapers.length > papersPerPage && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginTop: '16px', padding: '14px', background: 'var(--theme-card, #fffdf9)', border: '1.5px solid #ded3c5', borderRadius: '14px' }}>
                   <button
                     disabled={paperPage <= 1}
@@ -2713,10 +2858,10 @@ function AdminDashboard({ onOpenProgressModal }) {
                     ← 上一頁
                   </button>
                   <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>
-                    第 {paperPage} / {Math.ceil(filteredQuizPapers.length / PAPERS_PER_PAGE)} 頁 (共 {filteredQuizPapers.length} 份試卷)
+                    第 {paperPage} / {Math.ceil(filteredQuizPapers.length / papersPerPage)} 頁 (共 {filteredQuizPapers.length} 份試卷)
                   </span>
                   <button
-                    disabled={paperPage >= Math.ceil(filteredQuizPapers.length / PAPERS_PER_PAGE)}
+                    disabled={paperPage >= Math.ceil(filteredQuizPapers.length / papersPerPage)}
                     onClick={() => setPaperPage(p => p + 1)}
                     className="btn btn-secondary"
                     style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 800 }}
@@ -2724,6 +2869,8 @@ function AdminDashboard({ onOpenProgressModal }) {
                     下一頁 →
                   </button>
                 </div>
+              )}
+                </>
               )}
             </div>
           ) : (
