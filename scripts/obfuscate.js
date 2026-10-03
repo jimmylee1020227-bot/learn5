@@ -12,9 +12,10 @@ if (!fs.existsSync(distAssetsDir)) {
 }
 
 const files = fs.readdirSync(distAssetsDir);
-const jsFiles = files.filter(f => f.endsWith('.js'));
+// 只對我們自己的業務與題庫模組進行加密混淆，排除第三方開源庫 (vendor-*)
+const jsFiles = files.filter(f => f.endsWith('.js') && !f.startsWith('vendor-'));
 
-console.log(`🔐 開始對 GitHub 上線程式碼進行深度加密與混淆 (${jsFiles.length} 個檔案)...`);
+console.log(`🔐 開始對自研核心與題庫程式碼進行高性能加密混淆 (${jsFiles.length} 個檔案)...`);
 
 for (const file of jsFiles) {
   const filePath = path.join(distAssetsDir, file);
@@ -26,8 +27,7 @@ for (const file of jsFiles) {
     numbersToExpressions: false,
     simplify: true,
     stringArray: true,
-    stringArrayEncoding: ['base64'],
-    stringArrayThreshold: 0.8,
+    stringArrayThreshold: 0.5,
     splitStrings: false,
     transformObjectKeys: false,
     unicodeEscapeSequence: false,
@@ -38,4 +38,4 @@ for (const file of jsFiles) {
   console.log(`  ✅ 已加密混淆: ${file} (${Math.round(code.length / 1024)}KB -> ${Math.round(obfuscatedResult.getObfuscatedCode().length / 1024)}KB)`);
 }
 
-console.log('🎉 GitHub 上線加密混淆完成！程式碼具備高強度防逆向反編譯防護。');
+console.log('🎉 核心業務與題庫已完成防護，第三方開源庫維持極速直讀！');

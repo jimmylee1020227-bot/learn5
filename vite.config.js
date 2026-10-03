@@ -241,6 +241,32 @@ function cloudSyncPlugin() {
 export default defineConfig({
   base: './', // 支援 GitHub Pages 與各類靜態部署子路徑
   plugins: [react(), cloudSyncPlugin()],
+  build: {
+    target: 'es2020',
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/katex')) {
+            return 'vendor-katex';
+          }
+          if (id.includes('node_modules/firebase')) {
+            return 'vendor-firebase';
+          }
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons';
+          }
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/scheduler')) {
+            return 'vendor-react';
+          }
+          if (id.includes('/src/data/questionGenerator') || id.includes('/src/data/mathGenerator') || id.includes('/src/data/chineseHardArchetypes') || id.includes('/src/data/englishHardArchetypes')) {
+            return 'data-questions';
+          }
+        }
+      }
+    }
+  },
   server: {
     host: true,
     port: 5173
