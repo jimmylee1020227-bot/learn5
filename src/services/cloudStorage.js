@@ -1641,8 +1641,13 @@ export function recordPracticeLog(logData) {
 export function getUserPracticeHistory(userId) {
   if (userId) {
     const userHistoryKey = `practice_history_${userId}`;
-    const logs = getJson(userHistoryKey, null) || getJson('practice_history', []).filter(l => l.userId === userId);
-    return logs.map(hydrateQuestionDetails);
+    const rawVal = getJson(userHistoryKey, null);
+    const logs = Array.isArray(rawVal) 
+      ? rawVal 
+      : (rawVal && typeof rawVal === 'object' 
+          ? Object.values(rawVal) 
+          : (Array.isArray(getJson('practice_history', [])) ? getJson('practice_history', []).filter(l => l && l.userId === userId) : []));
+    return (Array.isArray(logs) ? logs : []).map(hydrateQuestionDetails);
   }
   
   // 管理員無指定 userId 視角：聚合所有已緩存的個別學生作答歷程與本機歷程
@@ -1689,8 +1694,13 @@ export async function fetchCloudUserPracticeHistory(userId) {
   }
 
   // 雲端若為空或連線異常，退回本地快取
-  const localCached = getJson(userHistoryKey, null) || getJson('practice_history', []).filter(l => l.userId === userId);
-  return localCached.map(hydrateQuestionDetails);
+  const rawLocal = getJson(userHistoryKey, null);
+  const localCached = Array.isArray(rawLocal)
+    ? rawLocal
+    : (rawLocal && typeof rawLocal === 'object'
+        ? Object.values(rawLocal)
+        : (Array.isArray(getJson('practice_history', [])) ? getJson('practice_history', []).filter(l => l && l.userId === userId) : []));
+  return (Array.isArray(localCached) ? localCached : []).map(hydrateQuestionDetails);
 }
 
 // 異步向 Firebase 雲端主動調閱指定學生的錯題本 (管理員診斷盲點核心函數)
@@ -2834,7 +2844,8 @@ export function addRedemptionCode(codeObj, operatorUser) {
   if (!code) throw new Error('兌換碼不得為空！');
   
   // 若先前曾被刪除，重新加入時解除刪除狀態
-  const deletedCodes = getJson('deleted_redemption_codes', []).filter(c => c !== code);
+  const rawDel = getJson('deleted_redemption_codes', []);
+  const deletedCodes = (Array.isArray(rawDel) ? rawDel : Object.values(rawDel || {})).filter(c => c !== code);
   setJson('deleted_redemption_codes', deletedCodes);
   updateServerSync('deleted_redemption_codes', deletedCodes);
 

@@ -41,12 +41,17 @@ export function checkIsTeacher(user) {
   if (user.role === 'teacher' || user.role === 'admin' || user.role === 'super_admin') {
     return true;
   }
-  const teachers = getJson(TEACHERS_LIST_KEY, []);
+  const teachersRaw = getJson(TEACHERS_LIST_KEY, []);
+  const teachers = Array.isArray(teachersRaw) 
+    ? teachersRaw 
+    : (teachersRaw && typeof teachersRaw === 'object' ? Object.values(teachersRaw) : []);
   const uEmail = (user.email || '').trim().toLowerCase();
   const uId = user.id || user.userId;
   return teachers.some(t => 
-    (t.id && t.id === uId) || 
-    (t.email && t.email.trim().toLowerCase() === uEmail)
+    t && (
+      (t.id && t.id === uId) || 
+      (t.email && typeof t.email === 'string' && t.email.trim().toLowerCase() === uEmail)
+    )
   );
 }
 
@@ -104,7 +109,10 @@ export async function approveTeacherApplication(appId, reviewerUser) {
   setJson(TEACHER_APPS_KEY, apps);
 
   // 加入正式教師清單
-  const teachers = getJson(TEACHERS_LIST_KEY, []);
+  const teachersRaw = getJson(TEACHERS_LIST_KEY, []);
+  const teachers = Array.isArray(teachersRaw) 
+    ? teachersRaw 
+    : (teachersRaw && typeof teachersRaw === 'object' ? Object.values(teachersRaw) : []);
   const teacherProfile = {
     id: targetApp.applicantId,
     name: targetApp.applicantName,
@@ -114,7 +122,7 @@ export async function approveTeacherApplication(appId, reviewerUser) {
     role: 'teacher',
     approvedAt: targetApp.reviewedAt
   };
-  if (!teachers.some(t => t.id === teacherProfile.id || t.email === teacherProfile.email)) {
+  if (!teachers.some(t => t && (t.id === teacherProfile.id || t.email === teacherProfile.email))) {
     teachers.push(teacherProfile);
     setJson(TEACHERS_LIST_KEY, teachers);
   }
@@ -145,8 +153,11 @@ export async function instantEnableTeacherRole(user) {
     approvedAt: new Date().toISOString()
   };
 
-  const teachers = getJson(TEACHERS_LIST_KEY, []);
-  if (!teachers.some(t => t.id === teacherProfile.id || t.email === teacherProfile.email)) {
+  const teachersRaw = getJson(TEACHERS_LIST_KEY, []);
+  const teachers = Array.isArray(teachersRaw) 
+    ? teachersRaw 
+    : (teachersRaw && typeof teachersRaw === 'object' ? Object.values(teachersRaw) : []);
+  if (!teachers.some(t => t && (t.id === teacherProfile.id || t.email === teacherProfile.email))) {
     teachers.push(teacherProfile);
     setJson(TEACHERS_LIST_KEY, teachers);
   }
@@ -470,10 +481,19 @@ export function calculateStudentUnitMastery(studentId) {
   const historyKey = `practice_history_${studentId}`;
   const mistakeKey = `mistake_notebook_${studentId}`;
   
-  const historyLogs = getJson(historyKey, null) || 
-    (getJson('practice_history', []).filter(l => l.userId === studentId));
-  const activeMistakes = getJson(mistakeKey, null) || 
-    ((getJson('mistake_notebook', {}) || {})[studentId] || []);
+  const rawHistory = getJson(historyKey, null);
+  const historyLogs = Array.isArray(rawHistory)
+    ? rawHistory
+    : (rawHistory && typeof rawHistory === 'object'
+        ? Object.values(rawHistory)
+        : (Array.isArray(getJson('practice_history', [])) ? getJson('practice_history', []).filter(l => l && l.userId === studentId) : []));
+
+  const rawMistakes = getJson(mistakeKey, null);
+  const activeMistakes = Array.isArray(rawMistakes)
+    ? rawMistakes
+    : (rawMistakes && typeof rawMistakes === 'object'
+        ? Object.values(rawMistakes)
+        : (((getJson('mistake_notebook', {}) || {})[studentId]) || []));
 
   const mistakeQuestionIds = new Set(
     (Array.isArray(activeMistakes) ? activeMistakes : [])

@@ -528,6 +528,13 @@ class AppErrorBoundary extends React.Component {
   handleResetAndHome = () => {
     try {
       window.sessionStorage.clear();
+      // 自動清理格式異常的非陣列快取（不影響使用者登入帳號）
+      ['studyhub_teachers_list', 'studyhub_teacher_applications', 'studyhub_classes'].forEach(k => {
+        const val = window.localStorage.getItem(k);
+        if (val && !val.startsWith('[')) {
+          window.localStorage.removeItem(k);
+        }
+      });
     } catch (e) {}
     window.location.href = window.location.pathname;
   };
