@@ -1043,8 +1043,8 @@ export async function fetchCloudAuditLogs(currentUser) {
 // --- 3. 全做題歷史紀錄 (Cross-Device Slim Practice History - 體積縮小 30 倍) ---
 const INITIAL_PRACTICE_HISTORY = [];
 
-// 批次記錄整份測驗結果 (Slim Schema 題號代碼化，體積縮小 30 倍，每位學生獨立節點)
-export function recordPracticeBatch({ userId, userName, userSchool, userEmail, results, timeSpentSec }) {
+// 批次記錄整份測驗結果 (包含試卷封存、錯題本、做題記錄與即時雲端同步)
+export function recordPracticeBatch({ userId, userName, userSchool, userEmail, results, timeSpentSec, customTitle }) {
   if (!results || results.length === 0) return [];
 
   const finalUserId = userId || 'guest_student';
@@ -1055,7 +1055,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, userEmail, r
   const nowIso = new Date().toISOString();
   const correctCount = results.filter(r => r.isCorrect).length;
 
-  // 1. 整理輕量化做題歷史記錄 (省略重覆冗長的題目與選項解析文字，節省 97% 體積)
+  // 1. 整理完整做題歷史記錄 (包含題幹、選項與詳解，確保日後複習 100% 完整還原)
   const userHistoryKey = `practice_history_${finalUserId}`;
   const existingLogs = getJson(userHistoryKey, null) || (getJson('practice_history', []).filter(l => l.userId === finalUserId));
 
@@ -1073,20 +1073,23 @@ export function recordPracticeBatch({ userId, userName, userSchool, userEmail, r
     conceptTag: item.conceptTag,
     difficulty: item.difficulty || 'medium',
     index: item.index || 1,
+    question: item.question,
+    options: item.options,
+    explanation: item.explanation,
+    hint: item.hint || '',
     isCorrect: item.isCorrect,
-    userChoice: item.userChoice,
+    userChoice: item.userChoice !== undefined ? item.userChoice : null,
     answer: item.answer !== undefined ? item.answer : 0,
     timeSpentSec: perQTime,
     timestamp: nowIso
   }));
 
   const combinedLogs = [...newLogEntries, ...existingLogs];
-  if (combinedLogs.length > 500) combinedLogs.length = 500; // 安全保存最新 500 筆做題歷史，徹底防止 localStorage 溢出
+  if (combinedLogs.length > 500) combinedLogs.length = 500; // 安全保存最新 500 筆做題歷史
   setJson(userHistoryKey, combinedLogs);
   if (finalUserId !== 'guest_student') {
     updateServerSync(userHistoryKey, combinedLogs);
   }
-  // REMOVED: global overwrite
 
   // 3. 即時全服作答串流推播 (供管理員中台秒級即時監控做題狀況)
   try {
@@ -1107,7 +1110,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, userEmail, r
     };
     const stream = getJson('recent_practice_stream', []);
     stream.unshift(streamItem);
-    if (stream.length > 1000) stream.length = 1000; // 擴大保留最新 1000 筆即時交卷串流
+    if (stream.length > 1000) stream.length = 1000;
     setJson('recent_practice_stream', stream);
     updateServerSync('recent_practice_stream', stream);
 
@@ -1136,7 +1139,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, userEmail, r
     console.error('Failed to update practice stream / user registry', err);
   }
 
-  // 2. 集中處理錯題本更新 (Slim Schema 輕量化錯題本)
+  // 2. 集中處理個人錯題本更新 (完整儲存題目、四個選項、學生選錯的答案與推導詳解)
   const mistakeKey = `mistake_notebook_${finalUserId}`;
   const allMistakes = getJson('mistake_notebook', {});
   const userList = getJson(mistakeKey, null) || allMistakes[finalUserId] || [];
@@ -1146,6 +1149,12 @@ export function recordPracticeBatch({ userId, userName, userSchool, userEmail, r
     if (existingIdx >= 0) {
       const m = userList[existingIdx];
       m.lastAttemptAt = nowIso;
+      m.question = item.question || m.question;
+      m.options = item.options || m.options;
+      m.explanation = item.explanation || m.explanation;
+      m.hint = item.hint || m.hint;
+      m.userChoice = item.userChoice !== undefined ? item.userChoice : m.userChoice;
+      m.answer = item.answer !== undefined ? item.answer : m.answer;
       if (item.isCorrect) {
         m.consecutiveCorrect = (m.consecutiveCorrect || 0) + 1;
         if (m.consecutiveCorrect >= 3) {
@@ -1166,7 +1175,12 @@ export function recordPracticeBatch({ userId, userName, userSchool, userEmail, r
         conceptTag: item.conceptTag,
         difficulty: item.difficulty || 'medium',
         index: item.index || 1,
+        question: item.question,
+        options: item.options,
+        userChoice: item.userChoice !== undefined ? item.userChoice : null,
         answer: item.answer !== undefined ? item.answer : 0,
+        explanation: item.explanation,
+        hint: item.hint || '',
         wrongCount: 1,
         consecutiveCorrect: 0,
         status: 'unresolved',
@@ -1176,16 +1190,15 @@ export function recordPracticeBatch({ userId, userName, userSchool, userEmail, r
     }
   });
 
-  if (userList.length > 300) userList.length = 300; // 安全保存最新 300 筆錯題
+  if (userList.length > 500) userList.length = 500; // 安全保存最新 500 筆錯題
   setJson(mistakeKey, userList);
   if (finalUserId !== 'guest_student') {
     updateServerSync(mistakeKey, userList);
   }
   allMistakes[finalUserId] = userList;
   setJson('mistake_notebook', allMistakes);
-  // 不全域同步 allMistakes，避免傳輸過大，Admin 會用 fetchCloudUserAllMistakesAndLogs 拉取個別資料
 
-  // 5. 完整試卷封存記錄 (Quiz Paper Session) - 支援調閱整份試卷每一題與作答狀況
+  // 5. 完整試卷封存記錄 (Quiz Paper Session) - 支援歷程錯題調閱整份試卷每一題與各選項作答
   try {
     const firstQ = results[0] || {};
     const subjectNames = { math: '數學', science: '自然', english: '英語', chinese: '國文', social: '社會' };
@@ -1205,7 +1218,7 @@ export function recordPracticeBatch({ userId, userName, userSchool, userEmail, r
       gradeId: firstQ.gradeId || 'g8',
       unitId: firstQ.unitId || 'u1',
       unitName: unitTitle,
-      paperTitle: `${gradeName} ${subjName}【${unitTitle}】實戰評量卷`,
+      paperTitle: customTitle || `${gradeName} ${subjName}【${unitTitle}】實戰評量卷`,
       totalQuestions: results.length,
       correctCount: correctCount,
       wrongCount: results.length - correctCount,

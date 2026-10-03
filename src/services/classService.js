@@ -417,11 +417,13 @@ export function getClassLeaderboard(classId) {
 }
 
 // 學生獲得點數時：同時累加全服總排行點數與其所屬所有班級的班級點數！
-export function recordPointsForClassAndGlobal(user, pointsEarned) {
+export function recordPointsForClassAndGlobal(user, pointsEarned, includeGlobal = false) {
   if (!user || !user.id || typeof pointsEarned !== 'number' || pointsEarned <= 0) return;
 
-  // 1. 同步累加全服總排行榜點數
-  addStudentPoints(user, pointsEarned);
+  // 1. 若呼叫端未另外發放全服點數，才在此同步累加全服總榜，嚴防雙重給分
+  if (includeGlobal) {
+    addStudentPoints(user, pointsEarned);
+  }
 
   // 2. 同步累加該生加入的所有班級的內部競賽積分
   const allClasses = getAllClasses();

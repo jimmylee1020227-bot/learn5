@@ -187,7 +187,8 @@ function MainAppContent() {
       userSchool: activeUserSchool,
       userEmail: currentUser?.email || '',
       results,
-      timeSpentSec
+      timeSpentSec,
+      customTitle: activeAssignment ? `【班級作業】${activeAssignment.title}` : undefined
     });
 
     // 3. 🚀 手機交卷立即補推雙保險：確保所有考卷、日誌與點數瞬間 100% 抵達 Firebase
@@ -208,12 +209,12 @@ function MainAppContent() {
       setActiveAssignment(null);
     }
 
-    // 5. 正確答題點數同時同步上傳至班級內部排行榜與全服榜
+    // 5. 正確答題點數同時同步累計至所屬班級內部競賽排行榜
     if (currentUser && correctCount > 0) {
       try {
-        recordPointsForClassAndGlobal(currentUser, correctCount);
+        recordPointsForClassAndGlobal(currentUser, correctCount, false);
       } catch (err) {
-        console.error('Failed to sync points for class and global', err);
+        console.error('Failed to sync points for class', err);
       }
     }
   };
