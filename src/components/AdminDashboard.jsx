@@ -584,22 +584,36 @@ function AdminDashboard({ onOpenProgressModal }) {
       }
     });
 
-    // 3. 結合同步：若尚未載入歷史題目記錄但名冊已有總數，採用名冊數據作為準確基礎
+    // 3. 雙軌智慧聚合：以雲端名冊真實累積題數為基石，結合最新做題紀錄，杜絕因快取修剪導致答對率崩跌為 7%
     Object.values(studentMap).forEach(s => {
-      if (!s.hasHistoryLogs && s.registryTotal > 0) {
-        s.total = s.registryTotal;
-        s.correct = s.registryCorrect;
-        s.wrong = s.registryWrong;
+      const regTot = Number(s.registryTotal) || 0;
+      const regCorr = Number(s.registryCorrect) || 0;
+      const logTot = Number(s.total) || 0;
+      const logCorr = Number(s.correct) || 0;
+
+      // 若名冊記錄的總題數大於本地殘留的 log 數，以名冊作為真實總量基準
+      if (regTot >= logTot) {
+        s.total = regTot;
+        s.correct = regCorr;
+        s.wrong = Math.max(0, regTot - regCorr);
+      } else {
+        // 若本地 log 較多（剛做完新試卷），採納最新 log
+        s.total = logTot;
+        s.correct = logCorr;
+        s.wrong = Math.max(0, logTot - logCorr);
       }
+
       if (s.total > 0) {
         s.accuracy = Math.round((s.correct / s.total) * 100);
+      } else {
+        s.accuracy = 0;
       }
     });
 
     let studentsList = Object.values(studentMap);
     
     // 依最後活動時間排序，並若有同名提供區分標籤（保留 s.name 真實姓名，不破壞篩選匹配）
-    studentsList.sort((a, b) => new Date(a.lastActive || 0) - new Date(b.lastActive || 0));
+    studentsList.sort((a, b) => new Date(b.lastActive || 0) - new Date(a.lastActive || 0));
     const nameMap = {};
     studentsList.forEach(s => {
       if (!s) return;
@@ -639,9 +653,9 @@ function AdminDashboard({ onOpenProgressModal }) {
       .sort((a, b) => b.correct - a.correct || b.accuracy - a.accuracy)
       .slice(0, 5);
 
-    const totalCount = studentsList.reduce((acc, cur) => acc + (cur?.total || 0), 0) || allHistory.length;
-    const totalCorrect = studentsList.reduce((acc, cur) => acc + (cur?.correct || 0), 0) || allHistory.filter(h => h?.isCorrect).length;
-    const totalWrong = studentsList.reduce((acc, cur) => acc + (cur?.wrong || 0), 0) || allHistory.filter(h => h && !h.isCorrect).length;
+    const totalCount = studentsList.reduce((acc, cur) => acc + (cur?.total || 0), 0);
+    const totalCorrect = studentsList.reduce((acc, cur) => acc + (cur?.correct || 0), 0);
+    const totalWrong = studentsList.reduce((acc, cur) => acc + (cur?.wrong || 0), 0);
 
     return {
       studentsList,
@@ -2438,8 +2452,8 @@ function AdminDashboard({ onOpenProgressModal }) {
                   </button>
                 </div>
               ) : (
-                filteredQuizPapers.map((paper, paperIndex) => {
-                  const isExpanded = expandedPaperIds[paper.id] !== false; // 預設展開顯示試卷內容
+                filteredQuizPapers.slice((paperPage - 1) * PAPERS_PER_PAGE, paperPage * PAPERS_PER_PAGE).map((paper, paperIndex) => {
+                  const isExpanded = !!expandedPaperIds[paper.id]; // 預設收合，點擊後按需展開，極致降低萬級 DOM 渲染卡頓
                   return (
                     <div
                       key={paper.id || paperIndex}
@@ -2686,6 +2700,31 @@ function AdminDashboard({ onOpenProgressModal }) {
                   );
                 })
               )}
+
+              {/* 試卷分頁控制列 */}
+              {filteredQuizPapers.length > PAPERS_PER_PAGE && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginTop: '16px', padding: '14px', background: 'var(--theme-card, #fffdf9)', border: '1.5px solid #ded3c5', borderRadius: '14px' }}>
+                  <button
+                    disabled={paperPage <= 1}
+                    onClick={() => setPaperPage(p => Math.max(1, p - 1))}
+                    className="btn btn-secondary"
+                    style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 800 }}
+                  >
+                    ← 上一頁
+                  </button>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>
+                    第 {paperPage} / {Math.ceil(filteredQuizPapers.length / PAPERS_PER_PAGE)} 頁 (共 {filteredQuizPapers.length} 份試卷)
+                  </span>
+                  <button
+                    disabled={paperPage >= Math.ceil(filteredQuizPapers.length / PAPERS_PER_PAGE)}
+                    onClick={() => setPaperPage(p => p + 1)}
+                    className="btn btn-secondary"
+                    style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 800 }}
+                  >
+                    下一頁 →
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             /* 單題題目流水帳呈現 */
@@ -2703,8 +2742,8 @@ function AdminDashboard({ onOpenProgressModal }) {
                   <div style={{ fontSize: '0.82rem', marginTop: '4px' }}>請嘗試調整搜尋關鍵字、更換學生或切換篩選條件</div>
                 </div>
               ) : (
-                filteredPracticeLogs.map((log) => {
-                const isExpanded = expandedLogIds[log.id] !== false; // 依需求：預設展開顯示題目和詳解
+                filteredPracticeLogs.slice((logPage - 1) * LOGS_PER_PAGE, logPage * LOGS_PER_PAGE).map((log) => {
+                const isExpanded = !!expandedLogIds[log.id]; // 預設收合，點擊後按需展開詳解
 
                 return (
                   <div
@@ -2906,6 +2945,31 @@ function AdminDashboard({ onOpenProgressModal }) {
                   </div>
                 );
               })
+            )}
+
+            {/* 單題明細分頁控制列 */}
+            {filteredPracticeLogs.length > LOGS_PER_PAGE && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginTop: '16px', padding: '14px', background: 'var(--theme-card, #fffdf9)', border: '1.5px solid #ded3c5', borderRadius: '14px' }}>
+                <button
+                  disabled={logPage <= 1}
+                  onClick={() => setLogPage(p => Math.max(1, p - 1))}
+                  className="btn btn-secondary"
+                  style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 800 }}
+                >
+                  ← 上一頁
+                </button>
+                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>
+                  第 {logPage} / {Math.ceil(filteredPracticeLogs.length / LOGS_PER_PAGE)} 頁 (共 {filteredPracticeLogs.length} 題作答)
+                </span>
+                <button
+                  disabled={logPage >= Math.ceil(filteredPracticeLogs.length / LOGS_PER_PAGE)}
+                  onClick={() => setLogPage(p => p + 1)}
+                  className="btn btn-secondary"
+                  style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 800 }}
+                >
+                  下一頁 →
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -3349,7 +3413,7 @@ function AdminDashboard({ onOpenProgressModal }) {
 
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {filtered.map(log => {
+                  {filtered.slice((auditPage - 1) * AUDIT_PER_PAGE, auditPage * AUDIT_PER_PAGE).map(log => {
                     const isDelete = log.actionType?.includes('DELETE') || log.actionType === 'PURGE_TEST_DATA';
                     const isHealth = log.actionType === 'SYSTEM_HEALTH_CHECK';
                     const isGrant = log.actionType?.includes('GRANT');
@@ -3389,6 +3453,31 @@ function AdminDashboard({ onOpenProgressModal }) {
                       </div>
                     );
                   })}
+
+                  {/* 審計日誌分頁控制 */}
+                  {filtered.length > AUDIT_PER_PAGE && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginTop: '16px', padding: '12px' }}>
+                      <button
+                        disabled={auditPage <= 1}
+                        onClick={() => setAuditPage(p => Math.max(1, p - 1))}
+                        className="btn btn-secondary"
+                        style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 800 }}
+                      >
+                        ← 上一頁
+                      </button>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--theme-border, #17324d)' }}>
+                        第 {auditPage} / {Math.ceil(filtered.length / AUDIT_PER_PAGE)} 頁 (共 {filtered.length} 筆)
+                      </span>
+                      <button
+                        disabled={auditPage >= Math.ceil(filtered.length / AUDIT_PER_PAGE)}
+                        onClick={() => setAuditPage(p => p + 1)}
+                        className="btn btn-secondary"
+                        style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 800 }}
+                      >
+                        下一頁 →
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })()}
